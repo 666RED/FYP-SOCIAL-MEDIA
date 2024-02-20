@@ -12,10 +12,10 @@ import ViewFriends from "./pages/profilePages/ViewFriends.jsx";
 export const ServerContext = createContext();
 
 function App() {
-	// const [server, setServer] = useState(
-	// 	"https://fyp-fsktm-connect.onrender.com"
-	// );
-	const [server, setServer] = useState("http://localhost:3001");
+	const [server, setServer] = useState(
+		"https://fyp-fsktm-connect.onrender.com"
+	);
+	// const [server, setServer] = useState("http://localhost:3001");
 
 	return (
 		<ServerContext.Provider value={server}>
