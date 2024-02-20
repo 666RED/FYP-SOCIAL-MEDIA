@@ -17,8 +17,7 @@ import {
 	emailExisted,
 	phoneNumberExisted,
 	successRegister,
-	loadingTrue,
-	loadingFalse,
+	setLoading,
 	clearRegisterState,
 } from "../../features/registerSlice.js";
 import { clearState, setDisplayRegForm } from "../../features/loginSlice.js";
@@ -43,7 +42,7 @@ const RegisterForm = () => {
 	const handleSubmit = async (e) => {
 		e.preventDefault();
 		try {
-			dispatch(loadingTrue());
+			dispatch(setLoading(true));
 			const emailReg = /^(.+)@(student\.uthm\.edu\.my|uthm\.edu\.my)$/;
 			const phoneReg = /^0[0-9]{8,}$/;
 			if (!phoneReg.test(phoneNumber)) {
@@ -92,12 +91,12 @@ const RegisterForm = () => {
 						}
 					});
 			}
-			dispatch(loadingFalse());
+			dispatch(setLoading(false));
 		} catch (error) {
 			console.log(error);
 
 			enqueueSnackbar("Could not connect to the server", { variant: "error" });
-			dispatch(loadingFalse());
+			dispatch(setLoading(false));
 		}
 	};
 

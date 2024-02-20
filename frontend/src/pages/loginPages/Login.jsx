@@ -37,7 +37,7 @@ const Login = () => {
 
 	const handleSubmit = async (e) => {
 		e.preventDefault();
-		setLoading(true);
+		dispatch(setLoading(true));
 
 		try {
 			await fetch(`${serverURL}/auth/login`, {
@@ -66,11 +66,11 @@ const Login = () => {
 						enqueueSnackbar("Login", { variant: "success" });
 						navigate("/home");
 					}
-					setLoading(false);
+					dispatch(setLoading(false));
 				});
 		} catch (error) {
 			enqueueSnackbar("Could not connect to the server", { variant: "error" });
-			setLoading(false);
+			dispatch(setLoading(false));
 		}
 	};
 

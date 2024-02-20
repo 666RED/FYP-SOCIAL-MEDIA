@@ -17,8 +17,8 @@ const loginSlice = createSlice({
 		setDisplayRegForm: (state) => {
 			state.displayRegForm = !state.displayRegForm;
 		},
-		setLoading: (state) => {
-			state.loading = true;
+		setLoading: (state, action) => {
+			state.loading = action.payload;
 		},
 		userNotExist: (state) => {
 			state.isUserExist = false;

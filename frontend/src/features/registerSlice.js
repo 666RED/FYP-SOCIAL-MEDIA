@@ -35,8 +35,8 @@ const registerSlice = createSlice({
 			state.viewPassword =
 				state.viewPassword === "password" ? "text" : "password";
 		},
-		loadingTrue: (state) => {
-			state.loading = true;
+		setLoading: (state, action) => {
+			state.loading = action.payload;
 		},
 		invalidPhoneNumber: (state) => {
 			state.validEmail = true;
@@ -56,9 +56,6 @@ const registerSlice = createSlice({
 		},
 		successRegister: (state) => {
 			state.displayRegForm = false;
-		},
-		loadingFalse: (state) => {
-			state.loading = false;
 		},
 		clearRegisterState: (state) => {
 			state.name = "";
@@ -81,13 +78,12 @@ export const {
 	setPhoneNumber,
 	setPassword,
 	togglePassword,
-	loadingTrue,
+	setLoading,
 	invalidPhoneNumber,
 	invalidEmail,
 	emailExisted,
 	phoneNumberExisted,
 	successRegister,
-	loadingFalse,
 	clearRegisterState,
 } = registerSlice.actions;
 
