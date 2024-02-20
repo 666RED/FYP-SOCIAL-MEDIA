@@ -21,4 +21,16 @@
 	.btn-green {
 		@apply bg-green-600 text-white rounded-lg text-xl hover:opacity-80 transition py-2 px-3;
 	}
+	.main-container {
+		@apply absolute top-0 bottom-0 left-0 right-0 flex justify-center items-center;
+	}
+	.form-container {
+		@apply border border-gray-600 rounded-lg p-3 max-w-80 shadow-2xl;
+	}
+	.icon {
+		@apply cursor-pointer hover:text-blue-700 text-2xl;
+	}
+	.sidebar-list > li {
+		@apply w-full hover:bg-gray-400 px-1 py-3 rounded-md cursor-pointer;
+	}
 }

@@ -12,10 +12,8 @@ import ViewFriends from "./pages/profilePages/ViewFriends.jsx";
 export const ServerContext = createContext();
 
 function App() {
-	const [server, setServer] = useState(
-		"https://fyp-fsktm-connect.onrender.com"
-	);
-	// const [server, setServer] = useState("http://localhost:3001");
+	const server = "https://fyp-fsktm-connect.onrender.com";
+	// const server = "http://localhost:3001";
 
 	return (
 		<ServerContext.Provider value={server}>
@@ -32,7 +30,7 @@ function App() {
 						path="/recover-password/reset-password/:userId"
 						element={<ResetPassword />}
 					/>
-					<Route path="/profile/:userId" element={<Profile />} />
+					<Route path="/profile" element={<Profile />} />
 					<Route path="/profile/edit-profile" element={<EditProfile />} />
 					<Route path="/profile/view-friends" element={<ViewFriends />} />
 				</Routes>

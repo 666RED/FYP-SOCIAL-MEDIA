@@ -2,9 +2,10 @@ import { React, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSnackbar } from "notistack";
 import { useDispatch, useSelector } from "react-redux";
-import { BsEyeFill } from "react-icons/bs/index.js";
+import { BsEyeFill, BsEyeSlashFill } from "react-icons/bs/index.js";
 import RegisterForm from "./RegisterForm.jsx";
 import Spinner from "../../components/Spinner.jsx";
+import HorizontalRule from "../../components/HorizontalRule.jsx";
 import {
 	setDisplayRegForm,
 	setLoading,
@@ -14,7 +15,8 @@ import {
 	setPassword,
 	setViewPassword,
 	successLogin,
-} from "../../features/loginSlice.js";
+	clearState,
+} from "./features/loginSlice.js";
 import { setUser } from "../../features/authSlice.js";
 import { ServerContext } from "../../App.js";
 
@@ -78,14 +80,14 @@ const Login = () => {
 		<div>
 			{loading && <Spinner />}
 			{displayRegForm && <RegisterForm />}
-			<div className="mt-5 w-1/2 mx-auto min-w-80 max-w-md text-center">
+			<div className="mt-5 w-1/2 mx-auto min-w-80 max-w-96 text-center">
 				<h1 className="text-2xl">Logo</h1>
 				<form
 					onSubmit={handleSubmit}
 					className="p-3 border-gray-400 border rounded-lg mt-16 sm:mt-10"
 				>
 					<h1 className="text-center title mb-2">User Login</h1>
-					<hr className="border-gray-400" />
+					<HorizontalRule />
 					<input
 						type="email"
 						id="email"
@@ -113,15 +115,25 @@ const Login = () => {
 							placeholder="Password"
 							required
 						/>
-						<BsEyeFill
-							className="absolute top-9 right-2 text-xl cursor-pointer hover:text-blue-600"
-							onClick={() => dispatch(setViewPassword())}
-						/>
+						{viewPassword ? (
+							<BsEyeSlashFill
+								className="absolute text-xl top-9 right-2 cursor-pointer hover:text-blue-600"
+								onClick={() => dispatch(setViewPassword())}
+							/>
+						) : (
+							<BsEyeFill
+								className="absolute text-xl top-9 right-2 cursor-pointer hover:text-blue-600"
+								onClick={() => dispatch(setViewPassword())}
+							/>
+						)}
 					</div>
 					<button className="btn-blue block w-1/2 mx-auto mt-5">LOGIN</button>
 					<p
 						className="text-center block mt-5 text-blue-600 cursor-pointer text-sm"
-						onClick={() => navigate("/recover-password")}
+						onClick={() => {
+							dispatch(clearState());
+							navigate("/recover-password");
+						}}
 					>
 						Forgot password?
 					</p>

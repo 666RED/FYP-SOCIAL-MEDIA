@@ -9,9 +9,14 @@ import {
 	PURGE,
 	REGISTER,
 } from "redux-persist";
-import registerReducer from "../features/registerSlice.js";
-import loginReducer from "../features/loginSlice.js";
+import registerReducer from "../pages/loginPages/features/registerSlice.js";
+import loginReducer from "../pages/loginPages/features/loginSlice.js";
 import authReducer from "../features/authSlice.js";
+import recoverPasswordReducer from "../pages/recoverPasswordPages/features/recoverPassword.js";
+import authVerificationCodeReducer from "../pages/recoverPasswordPages/features/authVerificationCode.js";
+import resetPasswordReducer from "../pages/recoverPasswordPages/features/resetPassword.js";
+import homepageReducer from "../pages/homepages/features/homepage.js";
+
 import storage from "redux-persist/lib/storage";
 
 const persistConfig = { key: "auth", storage, version: 1 };
@@ -22,6 +27,10 @@ const rootReducer = combineReducers({
 	auth: persistedAuthReducer,
 	register: registerReducer,
 	login: loginReducer,
+	recoverPassword: recoverPasswordReducer,
+	authVerificationCode: authVerificationCodeReducer,
+	resetPassword: resetPasswordReducer,
+	homepage: homepageReducer,
 });
 
 export const store = configureStore({

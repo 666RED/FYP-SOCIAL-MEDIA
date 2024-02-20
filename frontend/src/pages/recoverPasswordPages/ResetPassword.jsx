@@ -1,43 +1,55 @@
-import { React, useState } from "react";
+import { React, useContext } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { useParams, useNavigate } from "react-router-dom";
 import BackArrow from "../../components/BackArrow.jsx";
 import Spinner from "../../components/Spinner.jsx";
+import HorizontalRule from "../../components/HorizontalRule.jsx";
 import { useSnackbar } from "notistack";
+import {
+	setLoading,
+	setNewPassword,
+	setConfirmPassword,
+	setValidNewPassword,
+	setValidConfirmPassword,
+} from "./features/resetPassword.js";
+import { ServerContext } from "../../App.js";
 
 const ResetPassword = () => {
+	const serverURL = useContext(ServerContext);
+
 	const userId = useParams().userId;
-	const [newPassword, setNewPassword] = useState("");
-	const [validNewPassword, setValidNewPassword] = useState(true);
-	const [confirmPassword, setConfirmPassword] = useState("");
-	const [validConfirmPassword, setValidConfirmPassword] = useState(true);
-	const [loading, setLoading] = useState(false);
 	const { enqueueSnackbar } = useSnackbar();
 	const navigate = useNavigate();
+	const dispatch = useDispatch();
+	const {
+		newPassword,
+		validNewPassword,
+		confirmPassword,
+		validConfirmPassword,
+		loading,
+	} = useSelector((store) => store.resetPassword);
 
 	const handleSubmit = async (e) => {
 		e.preventDefault();
-		setLoading(true);
+		dispatch(setLoading(true));
 		try {
 			if (newPassword !== confirmPassword) {
+				dispatch(setValidNewPassword(false));
+				dispatch(setValidConfirmPassword(false));
 				enqueueSnackbar("Not matched", {
 					variant: "error",
 				});
-				setValidNewPassword(false);
-				setValidConfirmPassword(false);
 			} else {
-				await fetch(
-					`https://fyp-fsktm-connect.onrender.com/recover-password/reset-password`,
-					{
-						method: "POST",
-						headers: {
-							"Content-Type": "application/json",
-						},
-						body: JSON.stringify({
-							userId: userId,
-							newPassword: newPassword,
-						}),
-					}
-				)
+				await fetch(`${serverURL}/recover-password/reset-password`, {
+					method: "POST",
+					headers: {
+						"Content-Type": "application/json",
+					},
+					body: JSON.stringify({
+						userId: userId,
+						newPassword: newPassword,
+					}),
+				})
 					.then((res) => res.json())
 					.then((data) => {
 						if (data.msg === "User not found") {
@@ -48,64 +60,60 @@ const ResetPassword = () => {
 							enqueueSnackbar("Password reset", {
 								variant: "success",
 							});
-							setValidNewPassword(true);
-							setValidConfirmPassword(true);
+							dispatch(setValidNewPassword(true));
+							dispatch(setValidConfirmPassword(true));
+							dispatch(setNewPassword(""));
+							dispatch(setConfirmPassword(""));
 							navigate("/");
 						}
 					});
 			}
-			setLoading(false);
+			dispatch(setLoading(false));
 		} catch (err) {
 			enqueueSnackbar("Could not connect to the server", {
 				variant: "error",
 			});
-			setLoading(false);
+			dispatch(setLoading(false));
 		}
 	};
 
 	return (
-		<div className="position-absolute top-0 bottom-0 start-0 end-0 d-flex justify-content-center align-items-center">
+		<div className="main-container">
 			{loading && <Spinner />}
-			<form
-				className="form border border-secondary rounded-4 p-3"
-				style={{ maxWidth: "340px" }}
-				onSubmit={handleSubmit}
-			>
-				<div className="d-flex align-items-center justify-content-center position-relative">
-					<div className="position-absolute start-0">
+			<form className="form-container max-w-lg" onSubmit={handleSubmit}>
+				<div className="relative">
+					<div className="absolute left-0 top-1">
 						<BackArrow destination={`/recover-password/auth/${userId}`} />
 					</div>
-					<h3 className="text-center m-0">Reset Password</h3>
+					<h2 className="text-center font-semibold">Reset Password</h2>
 				</div>
-				<hr />
+				<HorizontalRule />
 				<p className="text-center">Enter new password and confirm password</p>
 				<input
 					type="password"
-					className={`form-control ${
-						validNewPassword ? "border-secondary" : "border-danger"
+					className={`border w-full rounded-lg my-3 ${
+						validNewPassword ? "border-gray-500" : "border-red-500"
 					}`}
 					placeholder="New password"
 					minLength={8}
 					required
 					value={newPassword}
-					onChange={(e) => setNewPassword(e.target.value)}
+					onChange={(e) => dispatch(setNewPassword(e.target.value))}
 				/>
 				<br />
 				<input
 					type="password"
-					className={`form-control ${
-						validConfirmPassword ? "border-secondary" : "border-danger"
+					className={`border w-full rounded-lg my-3 ${
+						validConfirmPassword ? "border-gray-500" : "border-red-500"
 					}`}
 					placeholder="Confirm password"
 					minLength={8}
 					required
 					value={confirmPassword}
-					onChange={(e) => setConfirmPassword(e.target.value)}
+					onChange={(e) => dispatch(setConfirmPassword(e.target.value))}
 				/>
-				<p className="mt-1 ms-2">At least 8 characters</p>
-				<button className="btn btn-primary d-block mx-auto w-25 mt-4">
-					Reset
-				</button>
+				<p className="mt-1 ml-2 text-sm text-gray-800">At least 8 characters</p>
+				<button className="btn-blue block mx-auto w-1/2 mt-8">Reset</button>
 			</form>
 		</div>
 	);

@@ -1,35 +1,43 @@
-import { React, useEffect, useState } from "react";
+import { React, useEffect, useContext } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { useParams } from "react-router-dom";
 import { useSnackbar } from "notistack";
 import { useNavigate } from "react-router-dom";
 import BackArrow from "../../components/BackArrow.jsx";
 import Spinner from "../../components/Spinner.jsx";
+import HorizontalRule from "../../components/HorizontalRule.jsx";
+import { ServerContext } from "../../App.js";
+import {
+	setCode,
+	setLoading,
+	setValidCode,
+	setResend,
+	setRemainingTime,
+} from "./features/authVerificationCode.js";
 
 const AuthVerificationCode = () => {
-	const codeExpireTime = 60;
-	const [code, setCode] = useState("");
-	const [validCode, setValidCode] = useState(true);
-	const userId = useParams().userId;
 	const { enqueueSnackbar } = useSnackbar();
 	const navigate = useNavigate();
-	const [loading, setLoading] = useState(false);
-	const [resend, setResend] = useState(false);
-	const [remainingTime, setRemainingTime] = useState(codeExpireTime);
+	const userId = useParams().userId;
+	const dispatch = useDispatch();
+	const serverURL = useContext(ServerContext);
+
+	const { code, validCode, loading, resend, remainingTime } = useSelector(
+		(store) => store.authVerificationCode
+	);
 	let timeoutId = null;
+	const codeExpireTime = 60;
 
 	useEffect(() => {
 		const autoClearCodeRequest = async () => {
 			try {
-				await fetch(
-					"https://fyp-fsktm-connect.onrender.com/recover-password/auto-clear-code",
-					{
-						method: "POST",
-						headers: {
-							"Content-Type": "application/json",
-						},
-						body: JSON.stringify({ userId }),
-					}
-				)
+				await fetch(`${serverURL}/recover-password/auto-clear-code`, {
+					method: "POST",
+					headers: {
+						"Content-Type": "application/json",
+					},
+					body: JSON.stringify({ userId }),
+				})
 					.then((res) => res.json())
 					.then((data) => {
 						if (data.msg === "User not found") {
@@ -53,7 +61,7 @@ const AuthVerificationCode = () => {
 
 	useEffect(() => {
 		const countdown = () => {
-			setRemainingTime((prevRemainingTime) => prevRemainingTime - 1);
+			dispatch(setRemainingTime(remainingTime - 1));
 		};
 
 		const countdownInterval = setInterval(countdown, 1000);
@@ -72,24 +80,21 @@ const AuthVerificationCode = () => {
 		if (!reg.test(value.charAt(value.length - 1)) && value.length !== 0) {
 			return code;
 		} else {
-			setCode(value);
+			dispatch(setCode(value));
 		}
 	};
 
 	const handleReturn = async () => {
 		try {
-			await fetch(
-				"https://fyp-fsktm-connect.onrender.com/recover-password/remove-code",
-				{
-					method: "POST",
-					headers: {
-						"Content-Type": "application/json",
-					},
-					body: JSON.stringify({
-						userId: userId,
-					}),
-				}
-			)
+			await fetch(`${serverURL}/recover-password/remove-code`, {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+				},
+				body: JSON.stringify({
+					userId: userId,
+				}),
+			})
 				.then((res) => res.json())
 				.then((data) => {
 					if (data.msg === "User not found") {
@@ -107,64 +112,57 @@ const AuthVerificationCode = () => {
 		e.preventDefault();
 
 		try {
-			setLoading(true);
-			await fetch(
-				`https://fyp-fsktm-connect.onrender.com/recover-password/auth-verification-code`,
-				{
-					method: "POST",
-					headers: {
-						"Content-Type": "application/json",
-					},
-					body: JSON.stringify({
-						userId: userId,
-						verificationCode: code,
-					}),
-				}
-			)
+			dispatch(setLoading(true));
+			await fetch(`${serverURL}/recover-password/auth-verification-code`, {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+				},
+				body: JSON.stringify({
+					userId: userId,
+					verificationCode: code,
+				}),
+			})
 				.then((res) => res.json())
 				.then((data) => {
 					if (data.msg === "Invalid code") {
+						dispatch(setValidCode(false));
 						enqueueSnackbar("Invalid code", {
 							variant: "error",
 						});
-						setValidCode(false);
 					} else if (data.msg === "Valid code") {
+						dispatch(setValidCode(true));
+						dispatch(setCode(""));
 						navigate(`/recover-password/reset-password/${userId}`);
-						setValidCode(true);
 					}
-					setLoading(false);
+					dispatch(setLoading(false));
 				});
 		} catch (err) {
 			enqueueSnackbar("Could not connect to the server", {
 				variant: "error",
 			});
-			setLoading(false);
+			dispatch(setLoading(false));
 		}
 	};
 
 	const handleResend = async () => {
 		try {
 			clearTimeout(timeoutId);
-			setLoading(true);
-			setRemainingTime(codeExpireTime);
-			const resendLink = document.getElementById("resend-link");
-			resendLink.style.cursor = "";
-			await fetch(
-				`https://fyp-fsktm-connect.onrender.com/recover-password/resend-code`,
-				{
-					method: "POST",
-					headers: {
-						"Content-Type": "application/json",
-					},
-					body: JSON.stringify({
-						userId: userId,
-					}),
-				}
-			)
+			dispatch(setLoading(true));
+			dispatch(setRemainingTime(codeExpireTime));
+			await fetch(`${serverURL}/recover-password/resend-code`, {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+				},
+				body: JSON.stringify({
+					userId: userId,
+				}),
+			})
 				.then((res) => res.json())
 				.then((data) => {
 					if (data.msg === "User not found") {
-						enqueueSnackbar("User not found", {
+						enqueueSnackbar("Some error occurred. Please go to previous page", {
 							variant: "error",
 						});
 					} else if (data.msg === "Success") {
@@ -172,32 +170,28 @@ const AuthVerificationCode = () => {
 							variant: "success",
 						});
 					}
-					setLoading(false);
-					setResend((prevResend) => !prevResend);
+					dispatch(setLoading(false));
+					dispatch(setResend(!resend));
 				});
 		} catch (err) {
 			enqueueSnackbar("Could not connect to the server", {
 				variant: "error",
 			});
-			setLoading(false);
+			dispatch(setLoading(false));
 		}
 	};
 
 	return (
-		<div className="position-absolute top-0 bottom-0 start-0 end-0 d-flex justify-content-center align-items-center">
+		<div className="main-container">
 			{loading && <Spinner />}
-			<form
-				onSubmit={handleSubmit}
-				className="border border-secondary rounded-4 px-3 pt-3 position-relative"
-				style={{ maxWidth: "340px" }}
-			>
-				<div className="d-flex justify-content-center position-relative align-items-center">
-					<div className="position-absolute start-0" onClick={handleReturn}>
+			<form onSubmit={handleSubmit} className="form-container">
+				<div className="relative">
+					<div className="absolute top-1" onClick={handleReturn}>
 						<BackArrow destination="/recover-password" />
 					</div>
-					<h3 className="text-center m-0">Verify Code</h3>
+					<h2 className="text-center font-semibold">Verify Code</h2>
 				</div>
-				<hr />
+				<HorizontalRule />
 				<p>Please enter 6-digit verification code</p>
 				<input
 					type="text"
@@ -206,26 +200,25 @@ const AuthVerificationCode = () => {
 					minLength={6}
 					maxLength={6}
 					required
-					className={`form-control ${
-						validCode ? "border-secondary" : "border-danger"
+					className={`border w-full rounded-xl my-3 ${
+						validCode ? "border-gray-500" : "border-red-500"
 					}`}
 					placeholder="Verification code"
 				/>
 				<div
-					className="d-flex align-items-center justify-content-between my-3"
+					className="flex items-center justify-between mb-3"
 					id="resend-link"
 				>
 					<p
-						className={`m-0 ${
-							remainingTime === 0 ? "text-primary" : "text-secondary"
+						className={`m-0 w-3/5 text-sm ${
+							remainingTime === 0 ? "text-blue-500" : "text-gray-500"
 						} fw-semibold`}
-						style={{ fontSize: "13px", width: "60%" }}
 						onClick={remainingTime === 0 ? handleResend : null}
 					>
 						Resend verification code{" "}
 						{remainingTime === 0 ? "" : `in ${remainingTime}s`}
 					</p>
-					<button className="btn btn-primary">NEXT</button>
+					<button className="btn-blue text-base">NEXT</button>
 				</div>
 			</form>
 		</div>

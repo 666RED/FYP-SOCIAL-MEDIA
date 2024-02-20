@@ -1,8 +1,9 @@
 import { React, useContext } from "react";
-import { BsEyeFill } from "react-icons/bs/index.js";
+import { BsEyeFill, BsEyeSlashFill } from "react-icons/bs/index.js";
 import { MdCancel } from "react-icons/md/index.js";
 import { enqueueSnackbar } from "notistack";
 import Spinner from "../../components/Spinner.jsx";
+import HorizontalRule from "../../components/HorizontalRule.jsx";
 import Filter from "../../components/Filter.jsx";
 import { useDispatch, useSelector } from "react-redux";
 import {
@@ -19,8 +20,8 @@ import {
 	successRegister,
 	setLoading,
 	clearRegisterState,
-} from "../../features/registerSlice.js";
-import { clearState, setDisplayRegForm } from "../../features/loginSlice.js";
+} from "./features/registerSlice.js";
+import { clearState, setDisplayRegForm } from "./features/loginSlice.js";
 import { ServerContext } from "../../App.js";
 
 const RegisterForm = () => {
@@ -117,7 +118,7 @@ const RegisterForm = () => {
 							dispatch(clearRegisterState());
 						}}
 					/>
-					<hr className="mt-2" />
+					<HorizontalRule />
 					{/* inputs */}
 					{/* NAME */}
 					<label htmlFor="register-name">Name:</label>
@@ -207,10 +208,17 @@ const RegisterForm = () => {
 							onChange={(e) => dispatch(setPassword(e.target.value))}
 							required
 						/>
-						<BsEyeFill
-							className="absolute text-xl top-5 right-2 cursor-pointer hover:text-blue-600"
-							onClick={() => dispatch(togglePassword())}
-						/>
+						{viewPassword === "password" ? (
+							<BsEyeFill
+								className="absolute text-xl top-5 right-2 cursor-pointer hover:text-blue-600"
+								onClick={() => dispatch(togglePassword())}
+							/>
+						) : (
+							<BsEyeSlashFill
+								className="absolute text-xl top-5 right-2 cursor-pointer hover:text-blue-600"
+								onClick={() => dispatch(togglePassword())}
+							/>
+						)}
 					</div>
 					{/* SUBMIT BUTTON */}
 					<button className="btn-green block w-50 mx-auto py-2 px-5 mt-4">

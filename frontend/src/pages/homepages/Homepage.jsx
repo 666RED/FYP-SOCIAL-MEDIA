@@ -1,45 +1,45 @@
-import { React, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { React, useContext } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
 import { GiHamburgerMenu } from "react-icons/gi/index.js";
 import { GoBellFill } from "react-icons/go/index.js";
 import { FaSearch } from "react-icons/fa/index.js";
+import { setExtendSideBar } from "./features/homepage.js";
+import { ServerContext } from "../../App.js";
+import SideBar from "../../components/SideBar.jsx";
 
 const Homepage = () => {
-	const [show, setShow] = useState(false);
-	const handleClose = () => setShow(false);
-	const handleShow = () => setShow(true);
+	const serverURL = useContext(ServerContext);
+
+	const dispatch = useDispatch();
+	const { extendSideBar } = useSelector((store) => store.homepage);
+	const auth = useSelector((store) => store.auth);
+
 	const navigate = useNavigate();
-	const userId = useParams().userId;
 
 	return (
-		<>
-			<div className="container-fluid d-flex align-items-center justify-content-between fixed-top mt-2">
-				<div className="d-flex align-items-center align-items-center">
+		<div className="mx-3 mt-2">
+			{extendSideBar && <SideBar />}
+			{/* HEADER */}
+			<div className="grid grid-cols-12 grid-rows-1 ">
+				<div className="col-start-1 col-span-3 flex items-center">
 					<GiHamburgerMenu
-						onClick={handleShow}
-						className="fs-1  me-3"
-						style={{ cursor: "pointer" }}
+						onClick={() => dispatch(setExtendSideBar(!extendSideBar))}
+						className="mr-3 icon"
 					/>
-					<h1 className="m-0">Logo</h1>
+					<p>Logo</p>
 				</div>
 
-				<div className="row justify-content-end align-items-center">
-					<div className="col-1 me-2">
-						<GoBellFill className="fs-3 " style={{ cursor: "pointer" }} />
+				<div className="col-start-8 col-span-5 flex justify-end items-center">
+					<div className="mr-3">
+						<GoBellFill className="icon " />
 					</div>
-					<div className="col-sm-10 col-8">
-						<div className="border rounded-2 border-secondary d-flex align-items-center py-1 px-1">
-							<input
-								type="text"
-								className="w-100"
-								style={{ border: "none", outline: "none" }}
-							/>
-							<FaSearch />
-						</div>
+					<div>
+						<FaSearch className="icon " />
 					</div>
 				</div>
 			</div>
-		</>
+		</div>
 	);
 };
 
