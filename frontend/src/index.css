@@ -1,0 +1,24 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+	h1 {
+		@apply text-3xl font-semibold;
+	}
+	h2 {
+		@apply text-2xl;
+	}
+	h3 {
+		@apply text-xl;
+	}
+	input {
+		@apply outline-blue-500 p-3;
+	}
+	.btn-blue {
+		@apply bg-blue-600 text-white rounded-lg text-xl hover:opacity-80 transition py-2 px-3;
+	}
+	.btn-green {
+		@apply bg-green-600 text-white rounded-lg text-xl hover:opacity-80 transition py-2 px-3;
+	}
+}

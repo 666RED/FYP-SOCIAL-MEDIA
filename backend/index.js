@@ -11,6 +11,7 @@ import authRoute from "./routes/authRoute.js";
 import recoverPasswordRoute from "./routes/recoverPasswordRoute.js";
 import profileRoute from "./routes/profileRoute.js";
 import postRoute from "./routes/postRoute.js";
+import { verifyToken } from "./middleware/auth.js";
 import { register } from "./controllers/auth.js";
 import { editProfile } from "./controllers/profile.js";
 import { addNewPost } from "./controllers/post.js";
@@ -18,7 +19,7 @@ import { addNewPost } from "./controllers/post.js";
 const app = express();
 dotenv.config();
 
-app.use(express.json({ limit: "50mb" }));
+app.use(express.json({ limit: "50mb", extended: true }));
 app.use(cors());
 
 // IMAGE MANAGEMENT
@@ -70,13 +71,18 @@ app.use(
 );
 
 // DIRECT PATH
-app.post("/auth/register", register);
 app.post(
 	"/profile/edit-profile",
+	verifyToken,
 	profileUpload.fields([{ name: "profileImage" }, { name: "coverImage" }]),
 	editProfile
 );
-app.post("/post/add-new-post", postUpload.single("image"), addNewPost);
+app.post(
+	"/post/add-new-post",
+	verifyToken,
+	postUpload.single("image"),
+	addNewPost
+);
 
 // ROUTES
 app.use("/auth", authRoute);
@@ -85,11 +91,11 @@ app.use("/profile", profileRoute);
 app.use("/post", postRoute);
 
 // DATABASE CONFIGURATION
-const dbUrl = process.env.MONGO_URL;
+const databaseUrl = process.env.MONGO_URL;
 const PORT = process.env.PORT || 6001;
 
 mongoose
-	.connect(dbUrl)
+	.connect(databaseUrl)
 	.then(() => {
 		console.log("Connected to database.");
 		app.listen(PORT, () => {

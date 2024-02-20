@@ -41,6 +41,8 @@ export const register = async (req, res) => {
 
 		const savedUser = await newUser.save();
 
+		delete savedUser.password;
+
 		res.status(201).json({ msg: "Success", savedUser }); // 201: something has been created, frontend receive savedUser as the response
 	} catch (err) {
 		res.status(500).json({ error: err.message });
@@ -64,7 +66,9 @@ export const login = async (req, res) => {
 		// token => enhance the security and functionality of the login process (authentication & authorization)
 		// improve the user experience by reducing the need for users to re-enter their credentials frequently
 		const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET);
-		delete user.password; // does not send back to the frontend
+
+		user.userPassword = null;
+
 		res.status(200).json({ msg: "Success", token, user });
 	} catch (err) {
 		res.status(500).json({ error: err.message });
