@@ -13,9 +13,22 @@ const authSlice = createSlice({
 			state.token = action.payload.token;
 			state.user = action.payload.user;
 		},
+		logout: (state) => {
+			state.token = null;
+			state.user = null;
+		},
+		updateUserInfo: (state, action) => {
+			console.log(action.payload);
+			const { name, bio, profileImagePath, coverImagePath } = action.payload;
+
+			state.user.userName = name;
+			state.user.userProfile.bio = bio;
+			state.user.userProfile.profileImagePath = profileImagePath;
+			state.user.userProfile.coverImagePath = coverImagePath;
+		},
 	},
 });
 
-export const { setUser } = authSlice.actions;
+export const { setUser, logout, updateUserInfo } = authSlice.actions;
 
 export default authSlice.reducer;

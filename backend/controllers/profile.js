@@ -2,17 +2,17 @@ import { User } from "../models/userModel.js";
 
 export const getUserProfile = async (req, res) => {
 	try {
-		const { userId } = req.query;
+		const { userId } = req.body;
 
-		const user = await User.findById(userId);
+		const userInfo = await User.findById(userId);
 
-		if (!user) {
+		if (!userInfo) {
 			return res.status(400).json({ msg: "User not found" });
 		}
 
-		delete user.userPassword;
+		delete userInfo.userPassword;
 
-		res.status(200).json({ msg: "Success", user });
+		res.status(200).json({ msg: "Success", userInfo });
 	} catch (err) {
 		res.status(500).json({ error: err.message });
 	}
@@ -20,7 +20,7 @@ export const getUserProfile = async (req, res) => {
 
 export const editProfile = async (req, res) => {
 	try {
-		const { userId, bio } = req.body;
+		const { userId, userName, bio } = req.body;
 
 		const profileImage = req.files && req.files.profileImage;
 		const coverImage = req.files && req.files.coverImage;
@@ -32,7 +32,8 @@ export const editProfile = async (req, res) => {
 				userId,
 				{
 					$set: {
-						"userProfile.profileObj.profileBio": bio,
+						userName,
+						"userProfile.profileBio": bio,
 					},
 				},
 				{ new: true }
@@ -42,9 +43,9 @@ export const editProfile = async (req, res) => {
 				userId,
 				{
 					$set: {
-						"userProfile.profileObj.profileCoverImagePath":
-							coverImage[0].filename,
-						"userProfile.profileObj.profileBio": bio,
+						"userProfile.profileCoverImagePath": coverImage[0].filename,
+						userName,
+						"userProfile.profileBio": bio,
 					},
 				},
 				{ new: true }
@@ -54,8 +55,9 @@ export const editProfile = async (req, res) => {
 				userId,
 				{
 					$set: {
-						"userProfile.profileObj.profileImagePath": profileImage[0].filename,
-						"userProfile.profileObj.profileBio": bio,
+						"userProfile.profileImagePath": profileImage[0].filename,
+						userName,
+						"userProfile.profileBio": bio,
 					},
 				},
 				{ new: true }
@@ -65,10 +67,10 @@ export const editProfile = async (req, res) => {
 				userId,
 				{
 					$set: {
-						"userProfile.profileObj.profileImagePath": profileImage[0].filename,
-						"userProfile.profileObj.profileCoverImagePath":
-							coverImage[0].filename,
-						"userProfile.profileObj.profileBio": bio,
+						"userProfile.profileImagePath": profileImage[0].filename,
+						"userProfile.profileCoverImagePath": coverImage[0].filename,
+						userName,
+						"userProfile.profileBio": bio,
 					},
 				},
 				{ new: true }
@@ -81,8 +83,6 @@ export const editProfile = async (req, res) => {
 
 		res.status(200).json({ msg: "Success", user });
 	} catch (err) {
-		console.log(err);
-
 		res.status(500).json({ error: err.message });
 	}
 };

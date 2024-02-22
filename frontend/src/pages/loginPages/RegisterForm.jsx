@@ -1,58 +1,34 @@
-import { React, useContext } from "react";
+import { React, useContext, useReducer } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { BsEyeFill, BsEyeSlashFill } from "react-icons/bs/index.js";
 import { MdCancel } from "react-icons/md/index.js";
 import { enqueueSnackbar } from "notistack";
 import Spinner from "../../components/Spinner.jsx";
 import HorizontalRule from "../../components/HorizontalRule.jsx";
 import Filter from "../../components/Filter.jsx";
-import { useDispatch, useSelector } from "react-redux";
-import {
-	setName,
-	setGender,
-	setEmail,
-	setPhoneNumber,
-	setPassword,
-	togglePassword,
-	invalidPhoneNumber,
-	invalidEmail,
-	emailExisted,
-	phoneNumberExisted,
-	successRegister,
-	setLoading,
-	clearRegisterState,
-} from "./features/registerSlice.js";
-import { clearState, setDisplayRegForm } from "./features/loginSlice.js";
+import { registerReducer, INITIAL_STATE } from "./reducers/registerReducer.js";
+import { ACTION_TYPES } from "./actionTypes/registerActionTypes.js";
 import { ServerContext } from "../../App.js";
+import { clearState } from "./reducers/loginSlice.js";
 
-const RegisterForm = () => {
-	const {
-		loading,
-		name,
-		gender,
-		validEmail,
-		email,
-		validPhoneNumber,
-		phoneNumber,
-		viewPassword,
-		password,
-	} = useSelector((store) => store.register);
-
-	const dispatch = useDispatch();
+const RegisterForm = ({ displayRegForm, setDisplayRegForm }) => {
 	const serverURL = useContext(ServerContext);
+	const [state, dispatch] = useReducer(registerReducer, INITIAL_STATE);
+	const loginDispatch = useDispatch();
 
 	const handleSubmit = async (e) => {
 		e.preventDefault();
 		try {
-			dispatch(setLoading(true));
+			dispatch({ type: ACTION_TYPES.SET_LOADING, payload: true });
 			const emailReg = /^(.+)@(student\.uthm\.edu\.my|uthm\.edu\.my)$/;
 			const phoneReg = /^0[0-9]{8,}$/;
-			if (!phoneReg.test(phoneNumber)) {
-				dispatch(invalidPhoneNumber());
+			if (!phoneReg.test(state.phoneNumber)) {
+				dispatch({ type: ACTION_TYPES.INVALID_PHONE_NUMBER });
 				enqueueSnackbar("Invalid phone number", {
 					variant: "error",
 				});
-			} else if (!emailReg.test(email)) {
-				dispatch(invalidEmail());
+			} else if (!emailReg.test(state.email)) {
+				dispatch({ type: ACTION_TYPES.INVALID_EMAIL });
 				enqueueSnackbar("Only Student / Staff Email Address", {
 					variant: "error",
 				});
@@ -63,22 +39,22 @@ const RegisterForm = () => {
 						"Content-Type": "application/json",
 					},
 					body: JSON.stringify({
-						userName: name,
-						userGender: gender,
-						userEmailAddress: email.toLowerCase(),
-						userPhoneNumber: phoneNumber,
-						userPassword: password,
+						userName: state.name,
+						userGender: state.gender,
+						userEmailAddress: state.email.toLowerCase(),
+						userPhoneNumber: state.phoneNumber,
+						userPassword: state.password,
 					}),
 				})
 					.then((res) => res.json())
 					.then((data) => {
 						if (data.msg === "Email existed") {
-							dispatch(emailExisted());
+							dispatch({ type: ACTION_TYPES.EMAIL_EXISTED });
 							enqueueSnackbar("Email already existed", {
 								variant: "error",
 							});
 						} else if (data.msg === "Phone number existed") {
-							dispatch(phoneNumberExisted());
+							dispatch({ type: ACTION_TYPES.PHONE_NUMBER_EXISTED });
 							enqueueSnackbar("Phone number already existed", {
 								variant: "error",
 							});
@@ -86,24 +62,22 @@ const RegisterForm = () => {
 							enqueueSnackbar("Registered successfully", {
 								variant: "success",
 							});
-							dispatch(successRegister());
-							dispatch(clearRegisterState());
-							dispatch(clearState());
+							loginDispatch(clearState());
+							dispatch({ type: ACTION_TYPES.SUGGESS_REGISTER });
+							setDisplayRegForm(false);
 						}
 					});
 			}
-			dispatch(setLoading(false));
+			dispatch({ type: ACTION_TYPES.SET_LOADING, payload: false });
 		} catch (error) {
-			console.log(error);
-
 			enqueueSnackbar("Could not connect to the server", { variant: "error" });
-			dispatch(setLoading(false));
+			dispatch({ type: ACTION_TYPES.SET_LOADING, payload: false });
 		}
 	};
 
 	return (
 		<div>
-			{loading && <Spinner />}
+			{state.loading && <Spinner />}
 			<Filter />
 			<div className="z-20 fixed top-0 bottom-0 left-0 right-0 flex items-center justify-center">
 				<form
@@ -114,8 +88,7 @@ const RegisterForm = () => {
 					<MdCancel
 						className="absolute text-3xl right-1 top-4 cursor-pointer text-red-600 hover:opacity-80"
 						onClick={() => {
-							dispatch(setDisplayRegForm());
-							dispatch(clearRegisterState());
+							setDisplayRegForm(false);
 						}}
 					/>
 					<HorizontalRule />
@@ -125,8 +98,10 @@ const RegisterForm = () => {
 					<input
 						type="text"
 						id="register-name"
-						value={name}
-						onChange={(e) => dispatch(setName(e.target.value))}
+						value={state.name}
+						onChange={(e) =>
+							dispatch({ type: ACTION_TYPES.SET_NAME, payload: e.target.value })
+						}
 						className={
 							"inline border border-gray-500 w-full  rounded-lg mt-1 mb-3"
 						}
@@ -143,7 +118,12 @@ const RegisterForm = () => {
 								id="genderRadioMale"
 								name="gender"
 								value="male"
-								onChange={(e) => dispatch(setGender(e.target.value))}
+								onChange={(e) =>
+									dispatch({
+										type: ACTION_TYPES.SET_GENDER,
+										payload: e.target.value,
+									})
+								}
 								required
 							/>
 							<label htmlFor="genderRadioMale" className="mr-3 ml-1">
@@ -157,7 +137,14 @@ const RegisterForm = () => {
 								name="gender"
 								value="female"
 								required
-								onChange={(e) => dispatch(setGender(e.target.value))}
+								onChange={(e) =>
+									dispatch(
+										dispatch({
+											type: ACTION_TYPES.SET_GENDER,
+											payload: e.target.value,
+										})
+									)
+								}
 							/>
 							<label htmlFor="genderRadioFemale" className="ml-1">
 								Female
@@ -170,13 +157,18 @@ const RegisterForm = () => {
 						type="email"
 						id="register-email"
 						className={`w-full  mt-1 mb-3 border rounded-lg ${
-							validEmail ? "border-gray-500" : "border-red-500"
+							state.validEmail ? "border-gray-500" : "border-red-500"
 						}`}
 						placeholder="Student / Stuff Email Address"
-						value={email}
+						value={state.email}
 						minLength={20}
 						maxLength={50}
-						onChange={(e) => dispatch(setEmail(e.target.value))}
+						onChange={(e) =>
+							dispatch({
+								type: ACTION_TYPES.SET_EMAIL,
+								payload: e.target.value,
+							})
+						}
 						required
 					/>
 					{/* PHONE NUMBER */}
@@ -185,12 +177,15 @@ const RegisterForm = () => {
 						type="text"
 						id="register-phone-number"
 						className={` mt-1 mb-3 border w-full rounded-lg ${
-							validPhoneNumber ? "border-gray-500" : "border-red-500"
+							state.validPhoneNumber ? "border-gray-500" : "border-red-500"
 						}`}
 						placeholder="e.g. 0137829473"
-						value={phoneNumber}
+						value={state.phoneNumber}
 						onChange={(e) => {
-							dispatch(setPhoneNumber(e.target.value));
+							dispatch({
+								type: ACTION_TYPES.SET_PHONE_NUMBER,
+								payload: e.target.value,
+							});
 						}}
 						required
 					/>
@@ -200,23 +195,28 @@ const RegisterForm = () => {
 						<input
 							minLength={8}
 							maxLength={30}
-							type={viewPassword}
+							type={state.viewPassword}
 							id="register-password"
-							className={" mt-1 w-full rounded-lg mb-3 border border-gray-500"}
+							className="mt-1 w-full rounded-lg mb-3 border border-gray-500"
 							placeholder="At least 8 characters"
-							value={password}
-							onChange={(e) => dispatch(setPassword(e.target.value))}
+							value={state.password}
+							onChange={(e) =>
+								dispatch({
+									type: ACTION_TYPES.SET_PASSWORD,
+									payload: e.target.value,
+								})
+							}
 							required
 						/>
-						{viewPassword === "password" ? (
+						{state.viewPassword === "password" ? (
 							<BsEyeFill
 								className="absolute text-xl top-5 right-2 cursor-pointer hover:text-blue-600"
-								onClick={() => dispatch(togglePassword())}
+								onClick={() => dispatch({ type: ACTION_TYPES.TOGGLE_PASSWORD })}
 							/>
 						) : (
 							<BsEyeSlashFill
 								className="absolute text-xl top-5 right-2 cursor-pointer hover:text-blue-600"
-								onClick={() => dispatch(togglePassword())}
+								onClick={() => dispatch({ type: ACTION_TYPES.TOGGLE_PASSWORD })}
 							/>
 						)}
 					</div>

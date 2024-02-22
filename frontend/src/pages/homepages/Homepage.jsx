@@ -4,9 +4,9 @@ import { useNavigate } from "react-router-dom";
 import { GiHamburgerMenu } from "react-icons/gi/index.js";
 import { GoBellFill } from "react-icons/go/index.js";
 import { FaSearch } from "react-icons/fa/index.js";
-import { setExtendSideBar } from "./features/homepage.js";
+import { setExtendSideBar } from "./features/homepageSlice.js";
 import { ServerContext } from "../../App.js";
-import SideBar from "../../components/SideBar.jsx";
+import SideBar from "../../components/Sidebar/SideBar.jsx";
 
 const Homepage = () => {
 	const serverURL = useContext(ServerContext);
@@ -15,11 +15,9 @@ const Homepage = () => {
 	const { extendSideBar } = useSelector((store) => store.homepage);
 	const auth = useSelector((store) => store.auth);
 
-	const navigate = useNavigate();
-
 	return (
 		<div className="mx-3 mt-2">
-			{extendSideBar && <SideBar />}
+			{extendSideBar && <SideBar selectedSection="Home" />}
 			{/* HEADER */}
 			<div className="grid grid-cols-12 grid-rows-1 ">
 				<div className="col-start-1 col-span-3 flex items-center">

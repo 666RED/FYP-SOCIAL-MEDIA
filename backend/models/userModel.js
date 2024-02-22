@@ -41,26 +41,24 @@ const userSchema = mongoose.Schema(
 			default: "",
 		},
 		userProfile: {
-			profileObj: {
-				profileImagePath: {
-					type: String,
-					default: "",
-				},
-				profileCoverImagePath: {
-					type: String,
-					default: "",
-				},
-				profileBio: {
-					type: String,
-					// maybe will be changed later
-					max: 100,
-					default: "",
-				},
-				profileFrameColor: {
-					type: String,
-					required: true,
-					default: "default",
-				},
+			profileImagePath: {
+				type: String,
+				default: "",
+			},
+			profileCoverImagePath: {
+				type: String,
+				default: "",
+			},
+			profileBio: {
+				type: String,
+				// maybe will be changed later
+				max: 200,
+				default: "",
+			},
+			profileFrameColor: {
+				type: String,
+				required: true,
+				default: "default",
 			},
 		},
 	},

@@ -1,9 +1,10 @@
 import express from "express";
 import { getUserProfile, editProfile } from "../controllers/profile.js";
+import { verifyToken } from "../middleware/auth.js";
 
 const router = express.Router();
 
-router.get("/", getUserProfile);
-router.post("/edit-profile", editProfile);
+router.post("/", verifyToken, getUserProfile);
+router.post("/edit-profile", verifyToken, editProfile);
 
 export default router;

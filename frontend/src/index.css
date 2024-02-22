@@ -12,7 +12,8 @@
 	h3 {
 		@apply text-xl;
 	}
-	input {
+	input,
+	textarea {
 		@apply outline-blue-500 p-3;
 	}
 	.btn-blue {

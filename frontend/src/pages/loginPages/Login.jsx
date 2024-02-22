@@ -1,45 +1,38 @@
-import { React, useContext } from "react";
+import { React, useContext, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { useSnackbar } from "notistack";
-import { useDispatch, useSelector } from "react-redux";
 import { BsEyeFill, BsEyeSlashFill } from "react-icons/bs/index.js";
 import RegisterForm from "./RegisterForm.jsx";
 import Spinner from "../../components/Spinner.jsx";
 import HorizontalRule from "../../components/HorizontalRule.jsx";
 import {
-	setDisplayRegForm,
-	setLoading,
-	userNotExist,
-	invalidCredentials,
 	setEmail,
 	setPassword,
-	setViewPassword,
+	userNotExist,
+	invalidCredentials,
 	successLogin,
+	toggleViewPassword,
 	clearState,
-} from "./features/loginSlice.js";
+} from "./reducers/loginSlice.js";
 import { setUser } from "../../features/authSlice.js";
 import { ServerContext } from "../../App.js";
 
 const Login = () => {
 	const serverURL = useContext(ServerContext);
+	const [displayRegForm, setDisplayRegForm] = useState(false);
+	const [loading, setLoading] = useState(false);
 
 	const dispatch = useDispatch();
-	const {
-		email,
-		password,
-		isUserExist,
-		isPasswordCorrect,
-		displayRegForm,
-		viewPassword,
-		loading,
-	} = useSelector((store) => store.login);
-
+	const authDispatch = useDispatch();
+	const { email, password, isUserExist, isPasswordCorrect, viewPassword } =
+		useSelector((store) => store.login);
 	const navigate = useNavigate();
 	const { enqueueSnackbar } = useSnackbar();
 
 	const handleSubmit = async (e) => {
 		e.preventDefault();
-		dispatch(setLoading(true));
+		setLoading(true);
 
 		try {
 			await fetch(`${serverURL}/auth/login`, {
@@ -61,25 +54,28 @@ const Login = () => {
 						dispatch(invalidCredentials());
 						enqueueSnackbar("Incorrect password", { variant: "error" });
 					} else if (data.msg === "Success") {
-						console.log(data);
-
-						dispatch(setUser({ token: data.token, user: data.user }));
+						authDispatch(setUser({ token: data.token, user: data.user }));
 						dispatch(successLogin());
 						enqueueSnackbar("Login", { variant: "success" });
 						navigate("/home");
 					}
-					dispatch(setLoading(false));
+					setLoading(false);
 				});
 		} catch (error) {
 			enqueueSnackbar("Could not connect to the server", { variant: "error" });
-			dispatch(setLoading(false));
+			setLoading(false);
 		}
 	};
 
 	return (
 		<div>
 			{loading && <Spinner />}
-			{displayRegForm && <RegisterForm />}
+			{displayRegForm && (
+				<RegisterForm
+					displayRegForm={displayRegForm}
+					setDisplayRegForm={setDisplayRegForm}
+				/>
+			)}
 			<div className="mt-5 w-1/2 mx-auto min-w-80 max-w-96 text-center">
 				<h1 className="text-2xl">Logo</h1>
 				<form
@@ -118,18 +114,18 @@ const Login = () => {
 						{viewPassword ? (
 							<BsEyeSlashFill
 								className="absolute text-xl top-9 right-2 cursor-pointer hover:text-blue-600"
-								onClick={() => dispatch(setViewPassword())}
+								onClick={() => dispatch(toggleViewPassword())}
 							/>
 						) : (
 							<BsEyeFill
 								className="absolute text-xl top-9 right-2 cursor-pointer hover:text-blue-600"
-								onClick={() => dispatch(setViewPassword())}
+								onClick={() => dispatch(toggleViewPassword())}
 							/>
 						)}
 					</div>
 					<button className="btn-blue block w-1/2 mx-auto mt-5">LOGIN</button>
 					<p
-						className="text-center block mt-5 text-blue-600 cursor-pointer text-sm"
+						className="text-center inline-block mx-auto mt-5 text-blue-600 cursor-pointer text-sm hover:opacity-80"
 						onClick={() => {
 							dispatch(clearState());
 							navigate("/recover-password");
@@ -141,7 +137,7 @@ const Login = () => {
 				<h2 className="text-center my-4">OR</h2>
 				<button
 					className="btn-green block mx-auto mb-3"
-					onClick={() => dispatch(setDisplayRegForm())}
+					onClick={() => setDisplayRegForm(true)}
 				>
 					Register New Account
 				</button>

@@ -5,7 +5,7 @@ import Homepage from "./pages/homepages/Homepage.jsx";
 import RecoverPassword from "./pages/recoverPasswordPages/RecoverPassword.jsx";
 import AuthVerificationCode from "./pages/recoverPasswordPages/AuthVerificationCode.jsx";
 import ResetPassword from "./pages/recoverPasswordPages/ResetPassword.jsx";
-import Profile from "./pages/profilePages/UserProfile.jsx";
+import Profile from "./pages/profilePages/UserProfilePage.jsx";
 import EditProfile from "./pages/profilePages/EditProfile.jsx";
 import ViewFriends from "./pages/profilePages/ViewFriends.jsx";
 

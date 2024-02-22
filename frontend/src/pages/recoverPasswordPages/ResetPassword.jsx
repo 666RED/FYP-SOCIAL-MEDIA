@@ -1,17 +1,14 @@
-import { React, useContext } from "react";
-import { useDispatch, useSelector } from "react-redux";
+import { React, useContext, useReducer } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import BackArrow from "../../components/BackArrow.jsx";
 import Spinner from "../../components/Spinner.jsx";
 import HorizontalRule from "../../components/HorizontalRule.jsx";
 import { useSnackbar } from "notistack";
 import {
-	setLoading,
-	setNewPassword,
-	setConfirmPassword,
-	setValidNewPassword,
-	setValidConfirmPassword,
-} from "./features/resetPassword.js";
+	resetPasswordReducer,
+	INITIAL_STATE,
+} from "./features/resetPasswordReducer.js";
+import { ACTION_TYPES } from "./actionTypes/resetPasswordActionTypes.js";
 import { ServerContext } from "../../App.js";
 
 const ResetPassword = () => {
@@ -20,22 +17,14 @@ const ResetPassword = () => {
 	const userId = useParams().userId;
 	const { enqueueSnackbar } = useSnackbar();
 	const navigate = useNavigate();
-	const dispatch = useDispatch();
-	const {
-		newPassword,
-		validNewPassword,
-		confirmPassword,
-		validConfirmPassword,
-		loading,
-	} = useSelector((store) => store.resetPassword);
+	const [state, dispatch] = useReducer(resetPasswordReducer, INITIAL_STATE);
 
 	const handleSubmit = async (e) => {
 		e.preventDefault();
-		dispatch(setLoading(true));
+		dispatch({ type: ACTION_TYPES.SET_LOADING, payload: true });
 		try {
-			if (newPassword !== confirmPassword) {
-				dispatch(setValidNewPassword(false));
-				dispatch(setValidConfirmPassword(false));
+			if (state.newPassword !== state.confirmPassword) {
+				dispatch({ type: ACTION_TYPES.SET_VALID_PASSWORDS, payload: false });
 				enqueueSnackbar("Not matched", {
 					variant: "error",
 				});
@@ -47,7 +36,7 @@ const ResetPassword = () => {
 					},
 					body: JSON.stringify({
 						userId: userId,
-						newPassword: newPassword,
+						newPassword: state.newPassword,
 					}),
 				})
 					.then((res) => res.json())
@@ -60,26 +49,26 @@ const ResetPassword = () => {
 							enqueueSnackbar("Password reset", {
 								variant: "success",
 							});
-							dispatch(setValidNewPassword(true));
-							dispatch(setValidConfirmPassword(true));
-							dispatch(setNewPassword(""));
-							dispatch(setConfirmPassword(""));
+							dispatch({
+								type: ACTION_TYPES.SET_VALID_PASSWORDS,
+								payload: false,
+							});
 							navigate("/");
 						}
 					});
 			}
-			dispatch(setLoading(false));
+			dispatch({ type: ACTION_TYPES.SET_LOADING, payload: false });
 		} catch (err) {
 			enqueueSnackbar("Could not connect to the server", {
 				variant: "error",
 			});
-			dispatch(setLoading(false));
+			dispatch({ type: ACTION_TYPES.SET_LOADING, payload: false });
 		}
 	};
 
 	return (
 		<div className="main-container">
-			{loading && <Spinner />}
+			{state.loading && <Spinner />}
 			<form className="form-container max-w-lg" onSubmit={handleSubmit}>
 				<div className="relative">
 					<div className="absolute left-0 top-1">
@@ -92,25 +81,35 @@ const ResetPassword = () => {
 				<input
 					type="password"
 					className={`border w-full rounded-lg my-3 ${
-						validNewPassword ? "border-gray-500" : "border-red-500"
+						state.validNewPassword ? "border-gray-500" : "border-red-500"
 					}`}
 					placeholder="New password"
 					minLength={8}
 					required
-					value={newPassword}
-					onChange={(e) => dispatch(setNewPassword(e.target.value))}
+					value={state.newPassword}
+					onChange={(e) =>
+						dispatch({
+							type: ACTION_TYPES.SET_NEW_PASSWORD,
+							payload: e.target.value,
+						})
+					}
 				/>
 				<br />
 				<input
 					type="password"
 					className={`border w-full rounded-lg my-3 ${
-						validConfirmPassword ? "border-gray-500" : "border-red-500"
+						state.validConfirmPassword ? "border-gray-500" : "border-red-500"
 					}`}
 					placeholder="Confirm password"
 					minLength={8}
 					required
-					value={confirmPassword}
-					onChange={(e) => dispatch(setConfirmPassword(e.target.value))}
+					value={state.confirmPassword}
+					onChange={(e) =>
+						dispatch({
+							type: ACTION_TYPES.SET_CONFIRM_PASSWORD,
+							payload: e.target.value,
+						})
+					}
 				/>
 				<p className="mt-1 ml-2 text-sm text-gray-800">At least 8 characters</p>
 				<button className="btn-blue block mx-auto w-1/2 mt-8">Reset</button>

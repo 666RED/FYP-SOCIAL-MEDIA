@@ -1,5 +1,4 @@
-import { React, useEffect, useContext } from "react";
-import { useDispatch, useSelector } from "react-redux";
+import { React, useEffect, useContext, useReducer } from "react";
 import { useParams } from "react-router-dom";
 import { useSnackbar } from "notistack";
 import { useNavigate } from "react-router-dom";
@@ -8,23 +7,21 @@ import Spinner from "../../components/Spinner.jsx";
 import HorizontalRule from "../../components/HorizontalRule.jsx";
 import { ServerContext } from "../../App.js";
 import {
-	setCode,
-	setLoading,
-	setValidCode,
-	setResend,
-	setRemainingTime,
-} from "./features/authVerificationCode.js";
+	authVerificationCodeReducer,
+	INITIAL_STATE,
+} from "./features/authVerificationCodeReducer.js";
+import { ACTION_TYPES } from "./actionTypes/authVerificationCodeActionTypes.js";
 
 const AuthVerificationCode = () => {
 	const { enqueueSnackbar } = useSnackbar();
 	const navigate = useNavigate();
+	const [state, dispatch] = useReducer(
+		authVerificationCodeReducer,
+		INITIAL_STATE
+	);
 	const userId = useParams().userId;
-	const dispatch = useDispatch();
 	const serverURL = useContext(ServerContext);
 
-	const { code, validCode, loading, resend, remainingTime } = useSelector(
-		(store) => store.authVerificationCode
-	);
 	let timeoutId = null;
 	const codeExpireTime = 60;
 
@@ -57,30 +54,33 @@ const AuthVerificationCode = () => {
 
 		// Clean up the timeout to prevent memory leaks
 		return () => clearTimeout(timeoutId);
-	}, [resend]);
+	}, [state.resend]);
 
 	useEffect(() => {
 		const countdown = () => {
-			dispatch(setRemainingTime(remainingTime - 1));
+			dispatch({
+				type: ACTION_TYPES.SET_REMAINING_TIME,
+				payload: state.remainingTime - 1,
+			});
 		};
 
 		const countdownInterval = setInterval(countdown, 1000);
 
-		if (remainingTime == 0) {
+		if (state.remainingTime == 0) {
 			const resendLink = document.getElementById("resend-link");
 			resendLink.style.cursor = "pointer";
 			clearInterval(countdownInterval);
 		}
 
 		return () => clearInterval(countdownInterval);
-	}, [remainingTime]);
+	}, [state.remainingTime]);
 
 	const handleChange = (value) => {
 		const reg = /[0-9]/;
 		if (!reg.test(value.charAt(value.length - 1)) && value.length !== 0) {
-			return code;
+			return state.code;
 		} else {
-			dispatch(setCode(value));
+			dispatch({ type: ACTION_TYPES.SET_CODE, payload: value });
 		}
 	};
 
@@ -112,7 +112,7 @@ const AuthVerificationCode = () => {
 		e.preventDefault();
 
 		try {
-			dispatch(setLoading(true));
+			dispatch({ type: ACTION_TYPES.SET_LOADING, payload: true });
 			await fetch(`${serverURL}/recover-password/auth-verification-code`, {
 				method: "POST",
 				headers: {
@@ -120,36 +120,37 @@ const AuthVerificationCode = () => {
 				},
 				body: JSON.stringify({
 					userId: userId,
-					verificationCode: code,
+					verificationCode: state.code,
 				}),
 			})
 				.then((res) => res.json())
 				.then((data) => {
 					if (data.msg === "Invalid code") {
-						dispatch(setValidCode(false));
+						dispatch({ type: ACTION_TYPES.INVALID_CODE });
 						enqueueSnackbar("Invalid code", {
 							variant: "error",
 						});
 					} else if (data.msg === "Valid code") {
-						dispatch(setValidCode(true));
-						dispatch(setCode(""));
 						navigate(`/recover-password/reset-password/${userId}`);
 					}
-					dispatch(setLoading(false));
+					dispatch({ type: ACTION_TYPES.SET_LOADING, payload: false });
 				});
 		} catch (err) {
 			enqueueSnackbar("Could not connect to the server", {
 				variant: "error",
 			});
-			dispatch(setLoading(false));
+			dispatch({ type: ACTION_TYPES.SET_LOADING, payload: false });
 		}
 	};
 
 	const handleResend = async () => {
 		try {
 			clearTimeout(timeoutId);
-			dispatch(setLoading(true));
-			dispatch(setRemainingTime(codeExpireTime));
+			dispatch({ type: ACTION_TYPES.SET_LOADING, payload: true });
+			dispatch({
+				type: ACTION_TYPES.SET_REMAINING_TIME,
+				payload: codeExpireTime,
+			});
 			await fetch(`${serverURL}/recover-password/resend-code`, {
 				method: "POST",
 				headers: {
@@ -170,20 +171,20 @@ const AuthVerificationCode = () => {
 							variant: "success",
 						});
 					}
-					dispatch(setLoading(false));
-					dispatch(setResend(!resend));
+					dispatch({ type: ACTION_TYPES.SET_LOADING, payload: false });
+					dispatch({ type: ACTION_TYPES.SET_RESEND, paylaod: !state.resend });
 				});
 		} catch (err) {
 			enqueueSnackbar("Could not connect to the server", {
 				variant: "error",
 			});
-			dispatch(setLoading(false));
+			dispatch({ type: ACTION_TYPES.SET_LOADING, payload: false });
 		}
 	};
 
 	return (
 		<div className="main-container">
-			{loading && <Spinner />}
+			{state.loading && <Spinner />}
 			<form onSubmit={handleSubmit} className="form-container">
 				<div className="relative">
 					<div className="absolute top-1" onClick={handleReturn}>
@@ -196,12 +197,12 @@ const AuthVerificationCode = () => {
 				<input
 					type="text"
 					onChange={(e) => handleChange(e.target.value)}
-					value={code}
+					value={state.code}
 					minLength={6}
 					maxLength={6}
 					required
 					className={`border w-full rounded-xl my-3 ${
-						validCode ? "border-gray-500" : "border-red-500"
+						state.validCode ? "border-gray-500" : "border-red-500"
 					}`}
 					placeholder="Verification code"
 				/>
@@ -211,12 +212,12 @@ const AuthVerificationCode = () => {
 				>
 					<p
 						className={`m-0 w-3/5 text-sm ${
-							remainingTime === 0 ? "text-blue-500" : "text-gray-500"
+							state.remainingTime === 0 ? "text-blue-500" : "text-gray-500"
 						} fw-semibold`}
-						onClick={remainingTime === 0 ? handleResend : null}
+						onClick={state.remainingTime === 0 ? handleResend : null}
 					>
 						Resend verification code{" "}
-						{remainingTime === 0 ? "" : `in ${remainingTime}s`}
+						{state.remainingTime === 0 ? "" : `in ${state.remainingTime}s`}
 					</p>
 					<button className="btn-blue text-base">NEXT</button>
 				</div>

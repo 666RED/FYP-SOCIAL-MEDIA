@@ -1,68 +1,96 @@
-import { React, useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import {
+	React,
+	useEffect,
+	useContext,
+	useState,
+	useReducer,
+	useRef,
+} from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
 import BackArrow from "../../components/BackArrow.jsx";
+import EditText from "./components/EditText.jsx";
 import { useSnackbar } from "notistack";
 import Spinner from "../../components/Spinner.jsx";
+import {
+	editProfileReducer,
+	INITIAL_STATE,
+} from "./features/editProfileReducer.js";
+import { ACTION_TYPES } from "./actionTypes/editProfileActionTypes.js";
+import { ServerContext } from "../../App.js";
+import { updateUserInfo } from "../../features/authSlice.js";
 
 const EditProfile = () => {
-	const userId = useParams().userId;
+	const firstRender = useRef(true);
 	const navigate = useNavigate();
-	const [windowWidth, setWindowWidth] = useState(window.innerWidth);
-	const [profileImagePath, setProfileImagePath] = useState("");
-	const [coverImagePath, setCoverImagePath] = useState("");
-	const [profileImage, setProfileImage] = useState();
-	const [coverImage, setCoverImage] = useState();
-	const [bio, setBio] = useState("");
+	const authDispatch = useDispatch();
+	const [state, dispatch] = useReducer(editProfileReducer, INITIAL_STATE);
+
+	const serverURL = useContext(ServerContext);
+	const { user, token } = useSelector((store) => store.auth);
+	const [profileImage, setProfileImage] = useState({});
+	const [coverImage, setCoverImage] = useState({});
+
 	const { enqueueSnackbar } = useSnackbar();
-	const [loading, setLoading] = useState(false);
-	const [toggleEdit, setToggleEdit] = useState(true);
-	const filePath =
-		"https://fyp-social-media.onrender.com/public/images/profile/";
-
-	useEffect(() => {
-		const handleResize = () => {
-			setWindowWidth(window.innerWidth);
-		};
-
-		window.addEventListener("resize", handleResize);
-
-		return () => {
-			window.removeEventListener("resize", handleResize);
-		};
-	}, [windowWidth]);
+	const filePath = `${serverURL}/public/images/profile/`;
 
 	useEffect(() => {
 		const fetchData = async () => {
-			setLoading(true);
+			dispatch({ type: ACTION_TYPES.SET_LOADING, payload: true });
 			try {
-				await fetch(
-					`https://fyp-social-media.onrender.com/profile?userId=${userId}`,
-					{
-						method: "GET",
-						headers: {
-							"Content-Type": "application/json",
-						},
+				const res = await fetch(`${serverURL}/profile`, {
+					method: "POST",
+					headers: {
+						"Content-Type": "application/json",
+						Authorization: `Bearer ${token}`,
+					},
+					body: JSON.stringify({
+						userId: user._id,
+					}),
+				});
+
+				if (!res.ok) {
+					if (res.status == 403) {
+						enqueueSnackbar("Access Denied", {
+							variant: "error",
+						});
+					} else {
+						enqueueSnackbar("Server Error", {
+							variant: "error",
+						});
 					}
-				)
-					.then((res) => res.json())
-					.then(({ msg, user = {} }) => {
-						if (msg === "User not found") {
-							enqueueSnackbar("User not found", {
-								variant: "error",
-							});
-						} else if (msg === "Success") {
-							const profile = user.userProfile.profileObj;
-							setProfileImagePath(filePath + profile.profileImagePath);
-							setCoverImagePath(filePath + profile.profileCoverImagePath);
-							setBio(profile.profileBio);
-						}
+					return;
+				}
+
+				const { msg, userInfo } = await res.json();
+
+				if (msg === "User not found") {
+					enqueueSnackbar("User not found", {
+						variant: "error",
 					});
-				setLoading(false);
+				} else if (msg === "Success") {
+					const userProfile = userInfo.userProfile;
+					dispatch({
+						type: ACTION_TYPES.SET_PROFILE_IMAGE_PATH,
+						payload: filePath + userProfile.profileImagePath,
+					});
+					dispatch({
+						type: ACTION_TYPES.SET_COVER_IMAGE_PATH,
+						payload: filePath + userProfile.profileCoverImagePath,
+					});
+
+					dispatch({ type: ACTION_TYPES.SET_NAME, payload: userInfo.userName });
+					dispatch({
+						type: ACTION_TYPES.SET_BIO,
+						payload: userProfile.profileBio,
+					});
+				}
+				dispatch({ type: ACTION_TYPES.SET_LOADING, payload: false });
 			} catch (err) {
 				enqueueSnackbar("Could not connect to server", {
 					variant: "error",
 				});
-				setLoading(false);
+				dispatch({ type: ACTION_TYPES.SET_LOADING, payload: false });
 			}
 		};
 		fetchData();
@@ -70,20 +98,21 @@ const EditProfile = () => {
 
 	const handleSave = async () => {
 		try {
-			setLoading(true);
+			dispatch({ type: ACTION_TYPES.SET_LOADING, payload: true });
 			const formdata = new FormData();
 			formdata.append("profileImage", profileImage);
 			formdata.append("coverImage", coverImage);
-			formdata.append("userId", userId);
-			formdata.append("bio", bio);
+			formdata.append("userId", user._id);
+			formdata.append("userName", state.name);
+			formdata.append("bio", state.bio);
 
-			await fetch(
-				"https://fyp-social-media.onrender.com/profile/edit-profile",
-				{
-					method: "POST",
-					body: formdata,
-				}
-			)
+			await fetch(`${serverURL}/profile/edit-profile`, {
+				method: "POST",
+				headers: {
+					Authorization: `Bearer ${token}`,
+				},
+				body: formdata,
+			})
 				.then((res) => res.json())
 				.then((data) => {
 					if (data.msg === "User not found") {
@@ -94,15 +123,25 @@ const EditProfile = () => {
 						enqueueSnackbar("Profile updated", {
 							variant: "success",
 						});
-						navigate(`/profile/${userId}`);
+						authDispatch(
+							updateUserInfo({
+								name: state.name,
+								bio: state.bio,
+								profileImagePath: state.profileImagePath,
+								coverImagePage: state.coverImagePath,
+							})
+						);
+						navigate("/profile");
 					}
 				});
-			setLoading(false);
+			dispatch({ type: ACTION_TYPES.SET_LOADING, payload: false });
 		} catch (err) {
+			console.log(err);
+
 			enqueueSnackbar("Could not connect to the server", {
 				variant: "error",
 			});
-			setLoading(false);
+			dispatch({ type: ACTION_TYPES.SET_LOADING, payload: false });
 		}
 	};
 
@@ -114,9 +153,14 @@ const EditProfile = () => {
 
 			image.onload = () => {
 				// Check if the image is square
+
 				if (Math.abs(image.width - image.height) < 30) {
-					setProfileImagePath(URL.createObjectURL(file));
+					dispatch({
+						type: ACTION_TYPES.SET_PROFILE_IMAGE_PATH,
+						payload: URL.createObjectURL(file),
+					});
 					setProfileImage(file);
+					dispatch({ type: ACTION_TYPES.MADE_CHANGES });
 				} else {
 					enqueueSnackbar("Please choose a square image", {
 						variant: "warning",
@@ -132,97 +176,127 @@ const EditProfile = () => {
 		const file = event.target.files[0];
 
 		if (file) {
-			setCoverImagePath(URL.createObjectURL(file));
+			dispatch({
+				type: ACTION_TYPES.SET_COVER_IMAGE_PATH,
+				payload: URL.createObjectURL(file),
+			});
+			dispatch({ type: ACTION_TYPES.MADE_CHANGES });
 			setCoverImage(file);
 		}
 	};
 
 	return (
-		<div
-			className={`${
-				windowWidth > 1000 ? "container w-75" : "container-fluid"
-			} my-3`}
-		>
-			{loading && <Spinner />}
-			<div>
-				<BackArrow destination={`/profile/${userId}`} />
-			</div>
-			<div className="container-fluid">
-				<div className="row">
-					<div className="col-12">
-						<div className="d-flex align-items-center justify-content-between mb-3">
-							<h3 className="m-0">Profile Picture</h3>
-							<label
-								htmlFor="profileImageInput"
-								className="fs-3 text-primary m-0"
-								style={{ cursor: "pointer" }}
-							>
-								Edit
-							</label>
-							<input
-								type="file"
-								id="profileImageInput"
-								accept="image/*"
-								style={{ display: "none" }}
-								onChange={handleProfileImageChange}
-							/>
-						</div>
-						<img
-							src={profileImagePath}
-							alt="Profile image"
-							className="img-fluid rounded-circle
-              w-25 mx-auto d-block"
-						/>
-					</div>
-					<hr className="my-3" />
-					<div className="col-12">
-						<div className="d-flex align-items-center justify-content-between mb-3">
-							<h3 className="m-0">Cover Image</h3>
-							<label
-								htmlFor="coverImageInput"
-								className="fs-3 text-primary m-0"
-								style={{ cursor: "pointer" }}
-							>
-								Edit
-							</label>
-							<input
-								type="file"
-								// width={}
-								id="coverImageInput"
-								accept="image/*"
-								style={{ display: "none" }}
-								onChange={handleCoverImageChange}
-							/>
-						</div>
-						<img src={coverImagePath} alt="Cover image" className="img-fluid" />
-					</div>
-					<hr className="my-3" />
-					<div className="col-12">
-						<div className="d-flex align-items-center justify-content-between mb-3">
-							<h3 className="m-0">Bio</h3>
+		<div className="mx-3 mt-2">
+			{state.loading && <Spinner />}
+			<BackArrow destination="/profile" discardChanges={state.makeChanges} />
+			<div className="mt-2">
+				<div className="flex items-center justify-between mb-3">
+					<h3>Profile Picture</h3>
+					<EditText forInput="profileImageInput" />
+					<input
+						type="file"
+						id="profileImageInput"
+						accept="image/*"
+						onChange={handleProfileImageChange}
+						className="hidden"
+					/>
+				</div>
+				<img
+					src={state.profileImagePath}
+					alt="Profile image"
+					className="rounded-full
+              w-1/4 lg:w-1/6 mx-auto block border border-blue-400"
+				/>
+				<hr className="my-5 border border-gray-300" />
+				<div className="flex items-center justify-between mb-3">
+					<h3>Cover Image</h3>
+					<EditText forInput="coverImageInput" />
+					<input
+						type="file"
+						id="coverImageInput"
+						accept="image/*"
+						onChange={handleCoverImageChange}
+						className="hidden"
+					/>
+				</div>
+				<img
+					src={state.coverImagePath}
+					alt="Cover image"
+					className="rounded-xl w-full md:w-2/3 block mx-auto"
+				/>
+				<hr className="my-5 border border-gray-300" />
+				<div className="grid grid-cols-9">
+					<div className="md:col-span-4 col-span-9">
+						<div className="flex items-center justify-between mb-3">
+							<h3>Name</h3>
 							<p
-								className="fs-3 text-primary m-0"
-								style={{ cursor: "pointer" }}
-								onClick={() => setToggleEdit(!toggleEdit)}
+								className="text-lg text-blue-600 cursor-pointer hover:opacity-80"
+								onClick={() =>
+									dispatch({ type: ACTION_TYPES.TOGGLE_IS_NAME_EDIT })
+								}
 							>
 								Edit
 							</p>
 						</div>
-						{/* <p>{bio}</p> */}
 						<textarea
+							required
+							minLength={3}
+							maxLength={50}
 							rows="4"
-							style={{ resize: "none" }}
-							className="border-secondary border py-1 px-2 rounded-3 w-100"
-							readOnly={toggleEdit}
-							disabled={toggleEdit}
-							value={bio}
-							onChange={(e) => setBio(e.target.value)}
+							className={`border ${
+								state.isNameEdit
+									? "border-gray-600 text-black"
+									: "border-gray-300 text-gray-500"
+							} py-1 px-2 rounded-xl w-full resize-none`}
+							readOnly={!state.isNameEdit}
+							disabled={!state.isNameEdit}
+							value={state.name}
+							onChange={(e) => {
+								dispatch({
+									type: ACTION_TYPES.SET_NAME,
+									payload: e.target.value,
+								});
+								dispatch({ type: ACTION_TYPES.MADE_CHANGES });
+							}}
+						/>
+					</div>
+					<hr className="md:hidden my-5 border border-gray-300 col-span-9" />
+					<div className="md:col-start-6 md:col-span-4 col-span-9">
+						<div className="flex items-center justify-between mb-3">
+							<h3>Bio</h3>
+							<p
+								className="text-lg text-blue-600 cursor-pointer hover:opacity-80"
+								onClick={() =>
+									dispatch({ type: ACTION_TYPES.TOGGLE_IS_BIO_EDIT })
+								}
+							>
+								Edit
+							</p>
+						</div>
+						<textarea
+							maxLength={200}
+							rows="4"
+							className={`border ${
+								state.isBioEdit
+									? "border-gray-600 text-black"
+									: "border-gray-300 text-gray-500"
+							} py-1 px-2 rounded-xl w-full resize-none`}
+							readOnly={!state.isBioEdit}
+							disabled={!state.isBioEdit}
+							value={state.bio}
+							onChange={(e) => {
+								dispatch({
+									type: ACTION_TYPES.SET_BIO,
+									payload: e.target.value,
+								});
+								dispatch({ type: ACTION_TYPES.MADE_CHANGES });
+							}}
 						/>
 					</div>
 				</div>
 			</div>
 			<button
-				className="btn btn-success mt-3 fs-4 d-block mx-auto px-4"
+				className="btn-green mt-8 block mx-auto w-1/2 md:w-1/4 mb-5"
 				onClick={handleSave}
 			>
 				SAVE

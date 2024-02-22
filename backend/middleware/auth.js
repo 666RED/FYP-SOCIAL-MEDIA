@@ -6,10 +6,12 @@ export const verifyToken = async (req, res, next) => {
 		let token = req.header("Authorization"); // grab the token from the frontend "Authorization" header
 
 		if (!token) {
-			return res.status(403).send("Access Denied"); // token doesn't exist, not even sending it (.send() => send back the plain text "Access Denied")
+			return res.status(403).json({ error: "Access Denied" }); // token doesn't exist, not even sending it (.send() => send back the plain text "Access Denied")
 		}
 
-		if (token.startsWith("Bearer ")) {
+		if (!token.startsWith("Bearer ")) {
+			return res.status(403).json({ error: "Access Denied" });
+		} else {
 			token = token.slice(7, token.length).trimLeft(); // remove "Bearer" from the token (trimLeft => remove whitespace before the token)
 		}
 
