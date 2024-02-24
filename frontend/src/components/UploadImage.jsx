@@ -1,8 +1,11 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import { FaImages } from "react-icons/fa/index.js";
+import { MyContext } from "../pages/profilePages/components/AddNewPostForm.jsx";
+import { ACTION_TYPES } from "../pages/profilePages/actionTypes/addNewPostFormActionTypes.js";
 
-const UploadImage = ({ setImage, setImagePath, imagePath }) => {
+const UploadImage = () => {
 	const [isImageAdded, setIsImageAdded] = useState(false);
+	const { state, dispatch } = useContext(MyContext);
 
 	const handleClick = () => {
 		const file = document.getElementById("img-file");
@@ -13,37 +16,42 @@ const UploadImage = ({ setImage, setImagePath, imagePath }) => {
 		const file = event.target.files[0];
 
 		if (file) {
-			setImagePath(URL.createObjectURL(file));
-			setImage(file);
+			dispatch({
+				type: ACTION_TYPES.SET_IMAGE_PATH,
+				payload: URL.createObjectURL(file),
+			});
+			dispatch({ type: ACTION_TYPES.SET_IMAGE, payload: file });
+			dispatch({ type: ACTION_TYPES.MADE_CHANGE, payload: true });
 			setIsImageAdded(true);
 		}
 	};
 
 	return (
 		<div
-			className="border border-secondary rounded-3 d-flex align-items-center justify-content-center "
-			style={{ minHeight: "150px", cursor: "pointer" }}
+			className={`border border-gray-600 rounded-xl flex items-center justify-center cursor-pointer my-2 hover:opacity-80 ${
+				!isImageAdded && "py-5"
+			}`}
 			onClick={handleClick}
 			id="upload-img-container"
 		>
 			{isImageAdded ? (
 				<img
-					src={imagePath}
+					src={state.imagePath}
 					alt="Post image"
-					className="img-fluid rounded-3 add-new-image"
+					className="rounded-xl h-full max-h-52"
 				/>
 			) : (
-				<div className="d-flex align-items-center">
-					<FaImages className="fs-4 me-2" />
-					<p className="m-0">Upload image</p>
+				<div className="flex items-center">
+					<FaImages className="mr-2" />
+					<p>Upload image</p>
 				</div>
 			)}
 
 			<input
+				className="hidden"
 				type="file"
 				id="img-file"
 				accept="image/*"
-				style={{ display: "none" }}
 				onChange={handleImageChange}
 			/>
 		</div>

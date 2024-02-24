@@ -70,12 +70,7 @@ const Login = () => {
 	return (
 		<div>
 			{loading && <Spinner />}
-			{displayRegForm && (
-				<RegisterForm
-					displayRegForm={displayRegForm}
-					setDisplayRegForm={setDisplayRegForm}
-				/>
-			)}
+			{displayRegForm && <RegisterForm setDisplayRegForm={setDisplayRegForm} />}
 			<div className="mt-5 w-1/2 mx-auto min-w-80 max-w-96 text-center">
 				<h1 className="text-2xl">Logo</h1>
 				<form

@@ -1,17 +1,16 @@
 import { React, useContext, useReducer } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { BsEyeFill, BsEyeSlashFill } from "react-icons/bs/index.js";
-import { MdCancel } from "react-icons/md/index.js";
 import { enqueueSnackbar } from "notistack";
 import Spinner from "../../components/Spinner.jsx";
-import HorizontalRule from "../../components/HorizontalRule.jsx";
 import Filter from "../../components/Filter.jsx";
+import FormHeader from "../../components/FormHeader.jsx";
 import { registerReducer, INITIAL_STATE } from "./reducers/registerReducer.js";
 import { ACTION_TYPES } from "./actionTypes/registerActionTypes.js";
 import { ServerContext } from "../../App.js";
 import { clearState } from "./reducers/loginSlice.js";
 
-const RegisterForm = ({ displayRegForm, setDisplayRegForm }) => {
+const RegisterForm = ({ setDisplayRegForm }) => {
 	const serverURL = useContext(ServerContext);
 	const [state, dispatch] = useReducer(registerReducer, INITIAL_STATE);
 	const loginDispatch = useDispatch();
@@ -79,19 +78,12 @@ const RegisterForm = ({ displayRegForm, setDisplayRegForm }) => {
 		<div>
 			{state.loading && <Spinner />}
 			<Filter />
-			<div className="z-20 fixed top-0 bottom-0 left-0 right-0 flex items-center justify-center">
-				<form
-					onSubmit={handleSubmit}
-					className="bg-white  border rounded-xl max-w-80 relative p-3"
-				>
-					<h1 className="text-center">Register</h1>
-					<MdCancel
-						className="absolute text-3xl right-1 top-4 cursor-pointer text-red-600 hover:opacity-80"
-						onClick={() => {
-							setDisplayRegForm(false);
-						}}
+			<div className="z-40 fixed top-0 bottom-0 left-0 right-0 flex items-center justify-center">
+				<form onSubmit={handleSubmit} className="form">
+					<FormHeader
+						title="Register"
+						closeFunction={() => dispatch(setDisplayRegForm(false))}
 					/>
-					<HorizontalRule />
 					{/* inputs */}
 					{/* NAME */}
 					<label htmlFor="register-name">Name:</label>

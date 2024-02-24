@@ -7,15 +7,19 @@ const commentSchema = mongoose.Schema(
 			ref: "User",
 			required: true,
 		},
+		postId: {
+			type: mongoose.Schema.Types.ObjectId,
+			ref: "Post",
+			required: true,
+		},
 		commentDescription: {
 			type: String,
 			required: true,
-		},
-		commentLikes: {
-			type: Number,
+			min: 1,
+			max: 200,
 		},
 		commentTime: {
-			type: Date,
+			type: String,
 			required: true,
 		},
 	},

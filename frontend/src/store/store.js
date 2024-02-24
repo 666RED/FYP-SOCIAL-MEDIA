@@ -11,8 +11,8 @@ import {
 } from "redux-persist";
 import authReducer from "../features/authSlice.js";
 import loginReducer from "../pages/loginPages/reducers/loginSlice.js";
-import homepageReducer from "../pages/homepages/features/homepageSlice.js";
-import userProfileReducer from "../pages/profilePages/features/userProfileSlice.js";
+// import homepageReducer from "../pages/homepages/features/homepageSlice.js";
+import userProfilePageReducer from "../pages/profilePages/features/userProfilePageSlice.js";
 
 import storage from "redux-persist/lib/storage";
 
@@ -23,8 +23,8 @@ const persistedAuthReducer = persistReducer(persistConfig, authReducer);
 const rootReducer = combineReducers({
 	auth: persistedAuthReducer,
 	login: loginReducer,
-	homepage: homepageReducer,
-	userProfile: userProfileReducer,
+	// homepage: homepageReducer,
+	userProfilePage: userProfilePageReducer,
 });
 
 export const store = configureStore({

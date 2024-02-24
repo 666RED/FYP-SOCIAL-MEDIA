@@ -1,23 +1,13 @@
 import { Post } from "../models/postModel.js";
+import { formatDateTime } from "../usefulFunction.js";
+import { Comment } from "../models/commentModel.js";
 // import { User } from "../models/userModel.js";
-
-function formatDateTime(date) {
-	const day = String(date.getDate()).padStart(2, "0");
-	const month = String(date.getMonth() + 1).padStart(2, "0");
-	const year = date.getFullYear();
-	const hours = String(date.getHours()).padStart(2, "0");
-	const minutes = String(date.getMinutes()).padStart(2, "0");
-
-	return `${day}/${month}/${year} ${hours}${minutes}`;
-}
 
 export const addNewPost = async (req, res) => {
 	try {
 		const { userId, text } = req.body;
 
 		const image = req.file;
-
-		console.log(userId, text, image);
 
 		const postTime = new Date();
 		const formattedPostTime = formatDateTime(postTime);
@@ -43,8 +33,6 @@ export const addNewPost = async (req, res) => {
 
 		res.status(201).json({ msg: "Success", savedPost });
 	} catch (err) {
-		console.log(err);
-
 		res.status(500).json({ error: err.message });
 	}
 };
@@ -56,7 +44,7 @@ export const getPosts = async (req, res) => {
 		const posts = await Post.find({ userId })
 			.populate({
 				path: "userId",
-				select: "userName userProfile.profileObj.profileImagePath",
+				select: "userName userProfile.profileImagePath",
 			})
 			.sort({ createdAt: -1 });
 

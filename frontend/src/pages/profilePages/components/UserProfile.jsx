@@ -1,87 +1,56 @@
-import { React, useEffect, useContext } from "react";
+import { React, useEffect, useContext, useReducer, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import Spinner from "../../../components/Spinner.jsx";
 import { useSnackbar } from "notistack";
 import {
-	setName,
-	setProfileImagePath,
-	setCoverImagePath,
-	setBio,
-	setLoading,
-	setShowAddNewPostForm,
-} from "../features/userProfileSlice.js";
+	userProfileReducer,
+	INITIAL_STATE,
+} from "../features/userProfileReducer.js";
+import { ACTION_TYPES } from "../actionTypes/userProfileActionTypes.js";
 import { ServerContext } from "../../../App.js";
+import { setShowAddNewPostForm } from "../features/userProfilePageSlice.js";
+import Spinner from "../../../components/Spinner.jsx";
 
 const UserProfile = () => {
-	const dispatch = useDispatch();
-	const {
-		name,
-		profileImagePath,
-		coverImagePath,
-		bio,
-		loading,
-		showAddNewPostForm,
-	} = useSelector((store) => store.userProfile);
-	const { user, token } = useSelector((store) => store.auth);
+	const sliceDispatch = useDispatch();
 	const navigate = useNavigate();
-	const serverURL = useContext(ServerContext);
 	const { enqueueSnackbar } = useSnackbar();
+	const [state, dispatch] = useReducer(userProfileReducer, INITIAL_STATE);
+
+	const { user, token } = useSelector((store) => store.auth);
+	const serverURL = useContext(ServerContext);
 
 	const filePath = `${serverURL}/public/images/profile/`;
 
 	useEffect(() => {
 		const fetchData = async () => {
-			dispatch(setLoading(true));
 			try {
-				const res = await fetch(`${serverURL}/profile`, {
-					method: "POST",
-					headers: {
-						"Content-Type": "application/json",
-						Authorization: `Bearer ${token}`,
+				dispatch({ type: ACTION_TYPES.SET_LOADING, payload: true });
+				const name = user.userName;
+
+				const userProfile = user.userProfile;
+				const profileImagePath = userProfile.profileImagePath;
+				const coverImagePath = userProfile.profileCoverImagePath;
+				const profileBio = userProfile.profileBio;
+
+				dispatch({
+					type: ACTION_TYPES.FETCH_DATA,
+					payload: {
+						name,
+						profileImagePath: filePath + profileImagePath,
+						coverImagePath: filePath + coverImagePath,
+						bio: profileBio,
 					},
-					body: JSON.stringify({
-						userId: user._id,
-					}),
 				});
-
-				if (!res.ok) {
-					if (res.status == 403) {
-						enqueueSnackbar("Access Denied", {
-							variant: "error",
-						});
-					} else {
-						enqueueSnackbar("Server Error", {
-							variant: "error",
-						});
-					}
-					return;
-				}
-
-				const { msg, userInfo } = await res.json();
-
-				if (msg === "User not found") {
-					enqueueSnackbar("User not found", {
-						variant: "error",
-					});
-				} else if (msg === "Success") {
-					const name = userInfo.userName;
-
-					const userProfile = userInfo.userProfile;
-					const profileImagePath = userProfile.profileImagePath;
-					const coverImagePath = userProfile.profileCoverImagePath;
-					const profileBio = userProfile.profileBio;
-					dispatch(setName(name));
-					dispatch(setProfileImagePath(filePath + profileImagePath));
-					dispatch(setCoverImagePath(filePath + coverImagePath));
-					dispatch(setBio(profileBio));
-				}
-				dispatch(setLoading(false));
+				dispatch({ type: ACTION_TYPES.SET_LOADING, payload: false });
 			} catch (err) {
 				enqueueSnackbar("Could not connect to the server", {
 					variant: "error",
 				});
-				dispatch(setLoading(false));
+				dispatch({
+					type: ACTION_TYPES.SET_LOADING,
+					payload: false,
+				});
 			}
 		};
 		fetchData();
@@ -89,53 +58,50 @@ const UserProfile = () => {
 
 	return (
 		<div>
-			{/* {loading && <Spinner />} */}
-			<img
-				src={coverImagePath}
-				alt="Profile cover photo"
-				className="rounded-xl w-full mt-3"
-			/>
-			<div className="container-fluid my-3 rounded-3 pt-3">
-				<div className="row align-items-center justify-content-around shadow-lg rounded-3 py-3 bg-light">
-					<div className="col-sm-5 col-7 d-flex flex-column align-items-center justify content-center">
+			{state.loading && <Spinner />}
+			<div className="px-3 py-2 bg-gray-200">
+				<img
+					src={state.coverImagePath}
+					alt="Profile cover photo"
+					className="rounded-xl w-full md:w-7/12 mt-3 mx-auto"
+				/>
+				<div className="w-full md:w-7/12 mx-auto my-3 shadow-xl rounded-xl py-3 bg-white grid grid-cols-12 items-center">
+					<div className="flex flex-col items-center justify -center col-span-5">
 						<img
-							src={profileImagePath}
+							src={state.profileImagePath}
 							alt="Profile picture"
-							className="img-fluid rounded-circle w-75"
-							style={{ maxWidth: "300px" }}
+							className="rounded-full md:w-36 w-28 border border-blue-400"
 						/>
-						<p className={`my-3`}>{name}</p>
+						<p className="my-3 md:text-lg text-sm font-semibold">
+							{state.name}
+						</p>
 					</div>
-					<div className="col-sm-4 col-5 d-flex flex-column">
-						<div className="container">
-							<div className="row gy-3 flex-column">
-								<button
-									className="btn btn-success col-11"
-									onClick={() => navigate("/profile/edit-profile")}
-								>
-									Edit Profile
-								</button>
-								<button
-									className="btn btn-primary col-11"
-									onClick={() =>
-										dispatch(setShowAddNewPostForm(!showAddNewPostForm))
-									}
-								>
-									Add New Post
-								</button>
-								<button
-									className="btn btn-secondary col-11"
-									onClick={() => navigate("/profile/view-friends")}
-								>
-									View Friends
-								</button>
-							</div>
-						</div>
+					<div className="flex flex-col col-span-5 col-start-7">
+						<button
+							className="btn-green my-2 text-sm sm:text-base"
+							onClick={() => navigate("/profile/edit-profile")}
+						>
+							Edit Profile
+						</button>
+						<button
+							className="btn-blue my-2 text-sm sm:text-base"
+							onClick={() => sliceDispatch(setShowAddNewPostForm(true))}
+						>
+							Add New Post
+						</button>
+						<button
+							className="btn-gray my-2 text-sm sm:text-base"
+							onClick={() => navigate("/profile/view-friends")}
+						>
+							View Friends
+						</button>
 					</div>
 				</div>
+				<hr />
+				<p className="shadow-2xl bg-white p-2 rounded-xl text-black md:w-7/12 w-full mx-auto">
+					{state.bio}
+				</p>
 			</div>
-			<hr />
-			<p className="shadow bg-light py-3 px-2 rounded-3">{bio}</p>
 		</div>
 	);
 };

@@ -10,15 +10,16 @@ import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import BackArrow from "../../components/BackArrow.jsx";
 import EditText from "./components/EditText.jsx";
-import { useSnackbar } from "notistack";
 import Spinner from "../../components/Spinner.jsx";
+import Error from "../../components/Error.jsx";
+import { useSnackbar } from "notistack";
 import {
 	editProfileReducer,
 	INITIAL_STATE,
 } from "./features/editProfileReducer.js";
 import { ACTION_TYPES } from "./actionTypes/editProfileActionTypes.js";
 import { ServerContext } from "../../App.js";
-import { updateUserInfo } from "../../features/authSlice.js";
+import { setUser } from "../../features/authSlice.js";
 
 const EditProfile = () => {
 	const firstRender = useRef(true);
@@ -93,7 +94,9 @@ const EditProfile = () => {
 				dispatch({ type: ACTION_TYPES.SET_LOADING, payload: false });
 			}
 		};
-		fetchData();
+		if (user && token) {
+			fetchData();
+		}
 	}, []);
 
 	const handleSave = async () => {
@@ -106,34 +109,38 @@ const EditProfile = () => {
 			formdata.append("userName", state.name);
 			formdata.append("bio", state.bio);
 
-			await fetch(`${serverURL}/profile/edit-profile`, {
+			const res = await fetch(`${serverURL}/profile/edit-profile`, {
 				method: "POST",
 				headers: {
 					Authorization: `Bearer ${token}`,
 				},
 				body: formdata,
-			})
-				.then((res) => res.json())
-				.then((data) => {
-					if (data.msg === "User not found") {
-						enqueueSnackbar("User not found", {
-							variant: "error",
-						});
-					} else if (data.msg === "Success") {
-						enqueueSnackbar("Profile updated", {
-							variant: "success",
-						});
-						authDispatch(
-							updateUserInfo({
-								name: state.name,
-								bio: state.bio,
-								profileImagePath: state.profileImagePath,
-								coverImagePage: state.coverImagePath,
-							})
-						);
-						navigate("/profile");
-					}
+			});
+
+			if (!res.ok) {
+				if (res.status === 403) {
+					enqueueSnackbar("Access denied", { variant: "error" });
+				} else {
+					enqueueSnackbar("Server error", { variant: "error" });
+				}
+				return;
+			}
+
+			const data = await res.json();
+
+			if (data.msg === "User not found") {
+				enqueueSnackbar("User not found", {
+					variant: "error",
 				});
+			} else if (data.msg === "Success") {
+				enqueueSnackbar("Profile updated", {
+					variant: "success",
+				});
+
+				// update auth state
+				authDispatch(setUser({ user: data.user, token: token }));
+				navigate("/profile");
+			}
 			dispatch({ type: ACTION_TYPES.SET_LOADING, payload: false });
 		} catch (err) {
 			console.log(err);
@@ -153,7 +160,7 @@ const EditProfile = () => {
 
 			image.onload = () => {
 				// Check if the image is square
-
+				// change dimension later
 				if (Math.abs(image.width - image.height) < 30) {
 					dispatch({
 						type: ACTION_TYPES.SET_PROFILE_IMAGE_PATH,
@@ -185,7 +192,7 @@ const EditProfile = () => {
 		}
 	};
 
-	return (
+	return user && token ? (
 		<div className="mx-3 mt-2">
 			{state.loading && <Spinner />}
 			<BackArrow destination="/profile" discardChanges={state.makeChanges} />
@@ -302,6 +309,8 @@ const EditProfile = () => {
 				SAVE
 			</button>
 		</div>
+	) : (
+		<Error />
 	);
 };
 

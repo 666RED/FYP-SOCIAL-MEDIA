@@ -1,19 +1,13 @@
 import { createSlice } from "@reduxjs/toolkit";
 
-const initialState = {
-	extendSideBar: false,
-};
+const initialState = {};
 
 const homepageSlice = createSlice({
 	name: "homepage",
 	initialState,
-	reducers: {
-		setExtendSideBar: (state, action) => {
-			state.extendSideBar = action.payload;
-		},
-	},
+	reducers: {},
 });
 
-export const { setExtendSideBar } = homepageSlice.actions;
+export const {} = homepageSlice.actions;
 
 export default homepageSlice.reducer;

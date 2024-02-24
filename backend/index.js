@@ -11,8 +11,8 @@ import authRoute from "./routes/authRoute.js";
 import recoverPasswordRoute from "./routes/recoverPasswordRoute.js";
 import profileRoute from "./routes/profileRoute.js";
 import postRoute from "./routes/postRoute.js";
+import commentRoute from "./routes/commentRoute.js";
 import { verifyToken } from "./middleware/auth.js";
-import { register } from "./controllers/auth.js";
 import { editProfile } from "./controllers/profile.js";
 import { addNewPost } from "./controllers/post.js";
 
@@ -89,6 +89,7 @@ app.use("/auth", authRoute);
 app.use("/recover-password", recoverPasswordRoute);
 app.use("/profile", profileRoute);
 app.use("/post", postRoute);
+app.use("/comment", commentRoute);
 
 // DATABASE CONFIGURATION
 const databaseUrl = process.env.MONGO_URL;
