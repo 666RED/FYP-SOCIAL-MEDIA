@@ -43,11 +43,11 @@ const userSchema = mongoose.Schema(
 		userProfile: {
 			profileImagePath: {
 				type: String,
-				default: "",
+				default: "default-profile-image.png",
 			},
 			profileCoverImagePath: {
 				type: String,
-				default: "",
+				default: "default-cover-image.jpg",
 			},
 			profileBio: {
 				type: String,

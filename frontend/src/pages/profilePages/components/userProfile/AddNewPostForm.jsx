@@ -1,21 +1,18 @@
-import { React, useEffect, useReducer, useContext, createContext } from "react";
+import { React, useReducer, useContext } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import Spinner from "../../../components/Spinner.jsx";
-import UploadImage from "../../../components/UploadImage.jsx";
-import Filter from "../../../components/Filter.jsx";
-import FormHeader from "../../../components/FormHeader.jsx";
+import Spinner from "../../../../components/Spinner.jsx";
+import UploadImage from "../../../../components/UploadImage.jsx";
+import Filter from "../../../../components/Filter.jsx";
+import FormHeader from "../../../../components/FormHeader.jsx";
 import { useSnackbar } from "notistack";
-import {
-	setShowAddNewPostForm,
-	setPostAdded,
-} from "../features/userProfilePageSlice.js";
+import { setShowAddNewPostForm } from "../../features/userProfilePageSlice.js";
 import {
 	addNewPostFormReducer,
 	INITIAL_STATE,
-} from "../features/addNewPostFormReducer.js";
-import { ACTION_TYPES } from "../actionTypes/addNewPostFormActionTypes.js";
-import { ServerContext } from "../../../App.js";
-export const MyContext = createContext(null); // pass state to child component
+} from "../../features/addNewPostFormReducer.js";
+import { ACTION_TYPES } from "../../actionTypes/addNewPostFormActionTypes.js";
+import { ServerContext } from "../../../../App.js";
+import { addNewPost } from "../../features/userPosts/userPostSlice.js";
 
 const AddNewPostForm = () => {
 	const { enqueueSnackbar } = useSnackbar();
@@ -27,8 +24,15 @@ const AddNewPostForm = () => {
 	const handleSubmit = async (e) => {
 		try {
 			e.preventDefault();
+			if (state.text.trim() === "") {
+				enqueueSnackbar("Please enter post description", {
+					variant: "warning",
+				});
+				return;
+			}
 			dispatch({ type: ACTION_TYPES.SET_LOADING, payload: true });
 			const formdata = new FormData();
+
 			formdata.append("text", state.text);
 			formdata.append("image", state.image);
 			formdata.append("userId", user._id);
@@ -54,13 +58,14 @@ const AddNewPostForm = () => {
 				return;
 			}
 
-			const { msg, savedPost } = await res.json();
+			const { msg, returnPost } = await res.json();
+
 			if (msg == "Success") {
 				enqueueSnackbar("New post added", {
 					variant: "success",
 				});
 				sliceDispatch(setShowAddNewPostForm(false));
-				sliceDispatch(setPostAdded(true));
+				sliceDispatch(addNewPost(returnPost));
 			}
 
 			dispatch({ type: ACTION_TYPES.SET_LOADING, payload: false });
@@ -99,12 +104,23 @@ const AddNewPostForm = () => {
 						className="w-full resize-none my-1"
 						rows={6}
 						maxLength={2000}
+						required
 					/>
 					{/* IMAGE */}
 					<label>Image:</label>
-					<MyContext.Provider value={{ state, dispatch }}>
-						<UploadImage />
-					</MyContext.Provider>
+					<UploadImage
+						imagePath={state.imagePath}
+						dispatch={{
+							setImage: (payload) =>
+								dispatch({ type: ACTION_TYPES.SET_IMAGE, payload }),
+							setImagePath: (payload) => {
+								dispatch({ type: ACTION_TYPES.SET_IMAGE_PATH, payload });
+							},
+							setHasChanged: (payload) => {
+								dispatch({ type: ACTION_TYPES.MADE_CHANGE, payload });
+							},
+						}}
+					/>
 
 					{/* SUBMIT BUTTON */}
 					<button className="btn-green block w-1/2 mx-auto mt-5">ADD</button>

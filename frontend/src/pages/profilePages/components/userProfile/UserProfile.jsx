@@ -5,11 +5,11 @@ import { useSnackbar } from "notistack";
 import {
 	userProfileReducer,
 	INITIAL_STATE,
-} from "../features/userProfileReducer.js";
-import { ACTION_TYPES } from "../actionTypes/userProfileActionTypes.js";
-import { ServerContext } from "../../../App.js";
-import { setShowAddNewPostForm } from "../features/userProfilePageSlice.js";
-import Spinner from "../../../components/Spinner.jsx";
+} from "../../features/userProfileReducer.js";
+import { ACTION_TYPES } from "../../actionTypes/userProfileActionTypes.js";
+import { ServerContext } from "../../../../App.js";
+import { setShowAddNewPostForm } from "../../features/userProfilePageSlice.js";
+import Spinner from "../../../../components/Spinner.jsx";
 
 const UserProfile = () => {
 	const sliceDispatch = useDispatch();

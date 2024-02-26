@@ -1,6 +1,5 @@
 import { Post } from "../models/postModel.js";
 import { Comment } from "../models/commentModel.js";
-import { User } from "../models/userModel.js";
 import { formatDateTime } from "../usefulFunction.js";
 
 export const getComments = async (req, res) => {
@@ -80,4 +79,30 @@ export const getComment = async (req, res) => {
 	}
 
 	res.status(200).json({ msg: "Success", comment });
+};
+
+export const editComment = async (req, res) => {
+	try {
+		const { commentId, newComment } = req.body;
+
+		const updatedComment = await Comment.findByIdAndUpdate(
+			commentId,
+			{
+				commentDescription: newComment,
+			},
+			{ new: true }
+		).populate({
+			path: "userId",
+			select: "userName userProfile.profileImagePath",
+		});
+
+		if (!updatedComment) {
+			res.status(404).json({ msg: "Comment not found" });
+			return;
+		}
+
+		res.status(200).json({ msg: "Success", updatedComment });
+	} catch (err) {
+		res.status(500).json({ error: err.message });
+	}
 };

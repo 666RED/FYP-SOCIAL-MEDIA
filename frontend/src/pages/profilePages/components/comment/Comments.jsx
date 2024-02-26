@@ -1,27 +1,24 @@
-import { React, useEffect, useContext, useReducer, createContext } from "react";
-import { useSelector } from "react-redux";
+import { React, useEffect, useContext, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import Comment from "./Comment.jsx";
 import CommentInput from "./CommentInput.jsx";
 import Loader from "../../../../components/Loader.jsx";
 import Error from "../../../../components/Error.jsx";
-import {
-	commentsReducer,
-	INITIAL_STATE,
-} from "../../features/comment/commentsReducer.js";
-import ACTION_TYPES from "../../actionTypes/comment/commentsActionTypes.js";
 import { ServerContext } from "../../../../App.js";
 import { useSnackbar } from "notistack";
-export const CommentsContext = createContext(null);
+import { gotComment, noComment } from "../../features/comment/commentSlice.js";
 
 const Comments = ({ post }) => {
+	const sliceDispatch = useDispatch();
 	const serverURL = useContext(ServerContext);
 	const { user, token } = useSelector((store) => store.auth);
 	const { enqueueSnackbar } = useSnackbar();
-	const [state, dispatch] = useReducer(commentsReducer, INITIAL_STATE);
+	const [loading, setLoading] = useState(false);
+	const { commentsArray } = useSelector((store) => store.comment);
 
 	useEffect(() => {
 		const fetchComments = async () => {
-			dispatch({ type: ACTION_TYPES.SET_LOADING, payload: true });
+			setLoading(true);
 			try {
 				const res = await fetch(`${serverURL}/comment/get-comments`, {
 					method: "POST",
@@ -44,19 +41,17 @@ const Comments = ({ post }) => {
 				const { msg, comments } = await res.json();
 
 				if (msg === "Success") {
-					dispatch({
-						type: ACTION_TYPES.HAS_COMMENT,
-						payload: comments,
-					});
-				} else if (msg === "No Comment") {
-					dispatch({ type: ACTION_TYPES.NO_COMMENT });
+					sliceDispatch(gotComment({ postId: post._id, comments }));
+				} else if (msg === "No comment") {
+					sliceDispatch(noComment(post._id));
 				}
 
-				dispatch({ type: ACTION_TYPES.SET_LOADING, payload: false });
+				setLoading(false);
 			} catch (err) {
 				enqueueSnackbar("Could not connect to the server", {
 					variant: "error",
 				});
+				setLoading(false);
 			}
 		};
 
@@ -65,25 +60,21 @@ const Comments = ({ post }) => {
 
 	return user && token ? (
 		<div>
-			{state.loading ? (
+			{loading ? (
 				<Loader />
 			) : (
 				<div className="mt-3 border border-gray-600 py-4 px-2 rounded-xl relative">
-					{state.hasComment ? (
-						<CommentsContext.Provider value={{ state, dispatch }}>
-							<div className="max-h-64 overflow-y-auto scrollbar">
-								{state.commentsArray.map((comment, id) => (
-									<Comment key={id} comment={comment} post={post} />
-								))}
-							</div>
-						</CommentsContext.Provider>
-					) : (
-						<p className="text-gray-600 mb-2 text-lg ml-5">No comment...</p>
-					)}
+					<div className="max-h-64 overflow-y-auto scrollbar">
+						{commentsArray.map((commentObj, id) => {
+							if (commentObj.postId === post._id) {
+								return commentObj.comments.map((comment, commentId) => (
+									<Comment key={commentId} comment={comment} post={post} />
+								));
+							}
+						})}
+					</div>
 					<hr className="border-2 border-gray-700 my-3" />
-					<CommentsContext.Provider value={{ state, dispatch }}>
-						<CommentInput post={post} />
-					</CommentsContext.Provider>
+					<CommentInput post={post} />
 				</div>
 			)}
 		</div>

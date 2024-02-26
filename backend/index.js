@@ -14,7 +14,7 @@ import postRoute from "./routes/postRoute.js";
 import commentRoute from "./routes/commentRoute.js";
 import { verifyToken } from "./middleware/auth.js";
 import { editProfile } from "./controllers/profile.js";
-import { addNewPost } from "./controllers/post.js";
+import { addNewPost, editPost } from "./controllers/post.js";
 
 const app = express();
 dotenv.config();
@@ -24,7 +24,7 @@ app.use(cors());
 
 // IMAGE MANAGEMENT
 const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+export const __dirname = dirname(__filename);
 
 // STORAGE CONFIGURATION
 const profileStorage = multer.diskStorage({
@@ -82,6 +82,12 @@ app.post(
 	verifyToken,
 	postUpload.single("image"),
 	addNewPost
+);
+app.post(
+	"/post/edit-post",
+	verifyToken,
+	postUpload.single("postImage"),
+	editPost
 );
 
 // ROUTES

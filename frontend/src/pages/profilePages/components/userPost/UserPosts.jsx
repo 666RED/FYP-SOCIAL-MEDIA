@@ -1,25 +1,23 @@
-import { React, useEffect, useContext, createContext, useReducer } from "react";
-import { useSelector } from "react-redux";
+import { React, useEffect, useContext, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import Post from "./UserPost.jsx";
-import Loader from "../../../components/Loader.jsx";
-import { ServerContext } from "../../../App.js";
+import Loader from "../../../../components/Loader.jsx";
+import { ServerContext } from "../../../../App.js";
 import { enqueueSnackbar } from "notistack";
-import {
-	userPostsReducer,
-	INITIAL_STATE,
-} from "../features/userPosts/userPostsReducer.js";
-import { ACTION_TYPES } from "../actionTypes/userPosts/userPostsActionTypes.js";
+import { setPost } from "../../features/userPosts/userPostSlice.js";
 
 const UserPosts = () => {
+	const sliceDispatch = useDispatch();
 	const serverURL = useContext(ServerContext);
 	const { user, token } = useSelector((store) => store.auth);
-	const { postAdded } = useSelector((store) => store.userProfilePage);
-	const [state, dispatch] = useReducer(userPostsReducer, INITIAL_STATE);
+	const { posts } = useSelector((store) => store.post);
+	const [loading, setLoading] = useState(false);
+	const [hasPost, setHasPost] = useState(false);
 
 	useEffect(() => {
 		const getPost = async () => {
 			try {
-				dispatch({ type: ACTION_TYPES.SET_LOADING, payload: true });
+				setLoading(true);
 
 				const res = await fetch(`${serverURL}/post/get-posts`, {
 					method: "POST",
@@ -44,35 +42,30 @@ const UserPosts = () => {
 				const { msg, posts } = await res.json();
 
 				if (msg === "No post") {
-					dispatch({ type: ACTION_TYPES.SET_HAS_POST, payload: false });
+					setHasPost(false);
 				} else if (msg === "Success") {
-					dispatch({
-						type: ACTION_TYPES.SET_POSTS,
-						payload: posts.map((post, id) => <Post key={id} post={post} />),
-					});
-					dispatch({ type: ACTION_TYPES.SET_HAS_POST, payload: true });
+					sliceDispatch(setPost(posts));
+					setHasPost(true);
 				}
-				dispatch({ type: ACTION_TYPES.SET_LOADING, payload: false });
+				setLoading(false);
 			} catch (err) {
-				console.log(err);
-
 				enqueueSnackbar("Could not connect to the server", {
 					variant: "error",
 				});
-				dispatch({ type: ACTION_TYPES.SET_LOADING, payload: false });
+				setLoading(false);
 			}
 		};
 		getPost();
-	}, [postAdded]);
+	}, []);
 
 	return (
 		<div>
-			{state.loading ? (
+			{loading ? (
 				<Loader />
 			) : (
 				<div className="bg-gray-200 w-full py-1 px-3">
-					{state.hasPost ? (
-						state.posts
+					{hasPost || posts.length > 0 ? (
+						posts.map((post) => <Post key={post._id} post={post} />)
 					) : (
 						<h2 className="text-center my-2">No post</h2>
 					)}

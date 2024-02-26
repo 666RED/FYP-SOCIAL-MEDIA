@@ -1,11 +1,4 @@
-import {
-	React,
-	useEffect,
-	useContext,
-	useState,
-	useReducer,
-	useRef,
-} from "react";
+import { React, useEffect, useContext, useState, useReducer } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import BackArrow from "../../components/BackArrow.jsx";
@@ -22,7 +15,6 @@ import { ServerContext } from "../../App.js";
 import { setUser } from "../../features/authSlice.js";
 
 const EditProfile = () => {
-	const firstRender = useRef(true);
 	const navigate = useNavigate();
 	const authDispatch = useDispatch();
 	const [state, dispatch] = useReducer(editProfileReducer, INITIAL_STATE);
@@ -99,15 +91,25 @@ const EditProfile = () => {
 		}
 	}, []);
 
-	const handleSave = async () => {
+	const handleSave = async (e) => {
+		e.preventDefault();
 		try {
+			if (state.name.trim() === "") {
+				enqueueSnackbar("Please enter your name", { variant: "warning" });
+				return;
+			} else if (state.name.trim().length < 3) {
+				enqueueSnackbar("Name should not less than 3 characters", {
+					variant: "warning",
+				});
+				return;
+			}
 			dispatch({ type: ACTION_TYPES.SET_LOADING, payload: true });
 			const formdata = new FormData();
 			formdata.append("profileImage", profileImage);
 			formdata.append("coverImage", coverImage);
 			formdata.append("userId", user._id);
-			formdata.append("userName", state.name);
-			formdata.append("bio", state.bio);
+			formdata.append("userName", state.name.trim());
+			formdata.append("bio", state.bio.trim());
 
 			const res = await fetch(`${serverURL}/profile/edit-profile`, {
 				method: "POST",
@@ -193,10 +195,11 @@ const EditProfile = () => {
 	};
 
 	return user && token ? (
-		<div className="mx-3 mt-2">
+		<form className="mx-3 mt-2" onSubmit={handleSave}>
 			{state.loading && <Spinner />}
 			<BackArrow destination="/profile" discardChanges={state.makeChanges} />
 			<div className="mt-2">
+				{/* PROFILE PICTURE */}
 				<div className="flex items-center justify-between mb-3">
 					<h3>Profile Picture</h3>
 					<EditText forInput="profileImageInput" />
@@ -215,6 +218,7 @@ const EditProfile = () => {
               w-1/4 lg:w-1/6 mx-auto block border border-blue-400"
 				/>
 				<hr className="my-5 border border-gray-300" />
+				{/* COVER IMAGE */}
 				<div className="flex items-center justify-between mb-3">
 					<h3>Cover Image</h3>
 					<EditText forInput="coverImageInput" />
@@ -232,6 +236,7 @@ const EditProfile = () => {
 					className="rounded-xl w-full md:w-2/3 block mx-auto"
 				/>
 				<hr className="my-5 border border-gray-300" />
+				{/* NAME */}
 				<div className="grid grid-cols-9">
 					<div className="md:col-span-4 col-span-9">
 						<div className="flex items-center justify-between mb-3">
@@ -268,6 +273,7 @@ const EditProfile = () => {
 						/>
 					</div>
 					<hr className="md:hidden my-5 border border-gray-300 col-span-9" />
+					{/* BIO */}
 					<div className="md:col-start-6 md:col-span-4 col-span-9">
 						<div className="flex items-center justify-between mb-3">
 							<h3>Bio</h3>
@@ -302,13 +308,10 @@ const EditProfile = () => {
 					</div>
 				</div>
 			</div>
-			<button
-				className="btn-green mt-8 block mx-auto w-1/2 md:w-1/4 mb-5"
-				onClick={handleSave}
-			>
+			<button className="btn-green mt-8 block mx-auto w-1/2 md:w-1/4 mb-5">
 				SAVE
 			</button>
-		</div>
+		</form>
 	) : (
 		<Error />
 	);

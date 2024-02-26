@@ -1,6 +1,8 @@
 export const INITIAL_STATE = {
+	loading: false,
 	commentDescription: "",
 	showOptions: false,
+	showEditCommentForm: false,
 };
 
 export const commentReducer = (state, action) => {
@@ -15,6 +17,18 @@ export const commentReducer = (state, action) => {
 			return {
 				...state,
 				showOptions: !state.showOptions,
+			};
+		}
+		case "TOGGLE_EDIT_COMMENT_FORM": {
+			return {
+				...state,
+				showEditCommentForm: !state.showEditCommentForm,
+			};
+		}
+		case "SET_LOADING": {
+			return {
+				...state,
+				loading: action.payload,
 			};
 		}
 		default: {

@@ -1,6 +1,7 @@
 export const INITIAL_STATE = {
 	comment: "",
 	isProcessing: false,
+	loading: false,
 };
 
 export const commentInputReducer = (state, action) => {
@@ -19,10 +20,19 @@ export const commentInputReducer = (state, action) => {
 		}
 		case "SENT_COMMENT": {
 			return {
+				...state,
 				comment: "",
 				isProcessing: false,
+				loading: false,
 			};
 		}
+		case "SET_LOADING": {
+			return {
+				...state,
+				loading: action.payload,
+			};
+		}
+
 		default: {
 			return state;
 		}

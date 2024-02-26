@@ -1,11 +1,12 @@
 export const INITIAL_STATE = {
-	postDescription: "",
 	postImagePath: "",
 	isLiked: false,
 	likesCount: 0,
 	processing: false,
 	showComment: false,
-	commentsCount: 0,
+	showOptionDiv: false,
+	showEditPostForm: false,
+	loading: false,
 };
 
 export const userPostReducer = (state, action) => {
@@ -31,14 +32,12 @@ export const userPostReducer = (state, action) => {
 			};
 		}
 		case "FIRST_RENDER": {
-			const { isLiked, postComments, postDescription, postLikes } =
-				action.payload.post;
+			const { likesMap, postLikes, userId } = action.payload.post;
+
 			return {
 				...state,
-				isLiked,
+				isLiked: likesMap.hasOwnProperty(userId._id),
 				likesCount: postLikes,
-				commentsCount: postComments,
-				postDescription,
 				postImagePath: action.payload.postImagePath,
 			};
 		}
@@ -54,34 +53,28 @@ export const userPostReducer = (state, action) => {
 				showComment: !state.showComment,
 			};
 		}
-		case "INCREASE_COMMENTS_COUNT": {
-			return {
-				...state,
-				commentsCount: state.commentsCount + 1,
-			};
-		}
-		case "DECREASE_COMMENTS_COUNT": {
-			return {
-				...state,
-				commentsCount: state.commentsCount - 1,
-			};
-		}
-		case "SET_POST_DESCRIPTION": {
-			return {
-				...state,
-				postDescription: action.payload,
-			};
-		}
 		case "SET_PROFILE_IMAGE_PATH": {
 			return {
 				...state,
 				profileImagePath: action.payload,
 			};
 		}
-		case "SET_COMMENTS_COUNT": {
+		case "TOGGLE_SHOW_OPTION_DIV": {
 			return {
 				...state,
-				commentsCount: action.payload,
+				showOptionDiv: !state.showOptionDiv,
+			};
+		}
+		case "TOGGLE_SHOW_EDIT_POST_FORM": {
+			return {
+				...state,
+				showEditPostForm: !state.showEditPostForm,
+			};
+		}
+		case "SET_LOADING": {
+			return {
+				...state,
+				loading: action.payload,
 			};
 		}
 		default: {

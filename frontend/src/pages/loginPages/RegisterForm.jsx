@@ -17,10 +17,22 @@ const RegisterForm = ({ setDisplayRegForm }) => {
 
 	const handleSubmit = async (e) => {
 		e.preventDefault();
+		if (state.name.trim() === "") {
+			enqueueSnackbar("Please enter your name", {
+				variant: "warning",
+			});
+			return;
+		} else if (state.name.trim().length < 3) {
+			enqueueSnackbar("Name should not less than 3 characters", {
+				variant: "warning",
+			});
+			return;
+		}
 		try {
 			dispatch({ type: ACTION_TYPES.SET_LOADING, payload: true });
 			const emailReg = /^(.+)@(student\.uthm\.edu\.my|uthm\.edu\.my)$/;
 			const phoneReg = /^0[0-9]{8,}$/;
+
 			if (!phoneReg.test(state.phoneNumber)) {
 				dispatch({ type: ACTION_TYPES.INVALID_PHONE_NUMBER });
 				enqueueSnackbar("Invalid phone number", {
@@ -38,7 +50,7 @@ const RegisterForm = ({ setDisplayRegForm }) => {
 						"Content-Type": "application/json",
 					},
 					body: JSON.stringify({
-						userName: state.name,
+						userName: state.name.trim(),
 						userGender: state.gender,
 						userEmailAddress: state.email.toLowerCase(),
 						userPhoneNumber: state.phoneNumber,

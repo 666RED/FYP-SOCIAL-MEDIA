@@ -1,30 +1,33 @@
 import { React, useContext, useReducer } from "react";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { MdSend } from "react-icons/md";
+import Spinner from "../../../../components/Spinner.jsx";
 import { ServerContext } from "../../../../App.js";
 import { useSnackbar } from "notistack";
-import { CommentsContext } from "./Comments.jsx";
-import ACTION_TYPES from "../../actionTypes/comment/commentsActionTypes.js";
 import {
 	commentInputReducer,
 	INITIAL_STATE,
 } from "../../features/comment/commentInputReducer.js";
-import COMMENT_INPUT_ACTION_TYPES from "../../actionTypes/comment/commentInputActionTypes.js";
-import { UserPostContext } from "../UserPost.jsx";
+import ACTION_TYPES from "../../actionTypes/comment/commentInputActionTypes.js";
+import {
+	addComment,
+	increaseCommentCount,
+} from "../../features/comment/commentSlice.js";
 
 const CommentInput = ({ post }) => {
+	const sliceDispatch = useDispatch();
 	const serverURL = useContext(ServerContext);
 	const { user, token } = useSelector((store) => store.auth);
 	const { enqueueSnackbar } = useSnackbar();
-	const commentReducer = useContext(CommentsContext);
 	const [state, dispatch] = useReducer(commentInputReducer, INITIAL_STATE);
-	const userPostReducer = useContext(UserPostContext);
+	const { commentsArray } = useSelector((store) => store.comment);
 
 	const handleSend = async (e) => {
 		e.preventDefault();
+		dispatch({ type: ACTION_TYPES.SET_LOADING, payload: true });
 		try {
 			dispatch({
-				type: COMMENT_INPUT_ACTION_TYPES.SET_IS_PROCESSING,
+				type: ACTION_TYPES.SET_IS_PROCESSING,
 				payload: true,
 			});
 			const res = await fetch(`${serverURL}/comment/add-comment`, {
@@ -75,25 +78,22 @@ const CommentInput = ({ post }) => {
 				const { msg, comment } = await response.json();
 
 				if (msg === "Success") {
-					commentReducer.dispatch({
-						type: ACTION_TYPES.ADD_NEW_COMMENT,
-						payload: comment,
-					});
-					commentReducer.dispatch({
-						type: ACTION_TYPES.SET_HAS_COMMENT,
-						payload: true,
-					});
+					sliceDispatch(
+						addComment({
+							postId: post._id,
+							newComment: comment,
+						})
+					);
 				}
 
 				dispatch({
-					type: COMMENT_INPUT_ACTION_TYPES.SENT_COMMENT,
+					type: ACTION_TYPES.SENT_COMMENT,
 				});
+				sliceDispatch(increaseCommentCount({ postId: post._id }));
 
-				userPostReducer.dispatch({
-					type: userPostReducer.ACTION_TYPES.INCREASE_COMMENTS_COUNT,
-				});
 				enqueueSnackbar("Comment posted", { variant: "success" });
 			}
+			dispatch({ type: ACTION_TYPES.SET_LOADING, payload: false });
 		} catch (err) {
 			console.log(err);
 
@@ -101,14 +101,16 @@ const CommentInput = ({ post }) => {
 				variant: "error",
 			});
 			dispatch({
-				type: COMMENT_INPUT_ACTION_TYPES.SET_IS_PROCESSING,
+				type: ACTION_TYPES.SET_IS_PROCESSING,
 				payload: false,
 			});
+			dispatch({ type: ACTION_TYPES.SET_LOADING, payload: false });
 		}
 	};
 
 	return (
 		<form className="grid grid-cols-2" onSubmit={(e) => handleSend(e)}>
+			{state.loading && <Spinner />}
 			<input
 				maxLength={200}
 				type="text"
@@ -118,7 +120,7 @@ const CommentInput = ({ post }) => {
 				value={state.comment}
 				onChange={(e) =>
 					dispatch({
-						type: COMMENT_INPUT_ACTION_TYPES.SET_COMMENT,
+						type: ACTION_TYPES.SET_COMMENT,
 						payload: e.target.value,
 					})
 				}

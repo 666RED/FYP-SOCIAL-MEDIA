@@ -8,6 +8,7 @@ import ResetPassword from "./pages/recoverPasswordPages/ResetPassword.jsx";
 import Profile from "./pages/profilePages/UserProfilePage.jsx";
 import EditProfile from "./pages/profilePages/EditProfile.jsx";
 import ViewFriends from "./pages/profilePages/ViewFriends.jsx";
+import CampusCondition from "./pages/campusConditionPages/pages/mainPage/CampusCondition.jsx";
 
 export const ServerContext = createContext();
 
@@ -33,6 +34,7 @@ function App() {
 					<Route path="/profile" element={<Profile />} />
 					<Route path="/profile/edit-profile" element={<EditProfile />} />
 					<Route path="/profile/view-friends" element={<ViewFriends />} />
+					<Route path="/campus-condition" element={<CampusCondition />} />
 				</Routes>
 			</BrowserRouter>
 		</ServerContext.Provider>
