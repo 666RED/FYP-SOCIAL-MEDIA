@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { useSnackbar } from "notistack";
 import { BsEyeFill, BsEyeSlashFill } from "react-icons/bs/index.js";
 import RegisterForm from "./RegisterForm.jsx";
-import Spinner from "../../components/Spinner.jsx";
+import Spinner from "../../components/Spinner/Spinner.jsx";
 import HorizontalRule from "../../components/HorizontalRule.jsx";
 import {
 	setEmail,
@@ -19,6 +19,7 @@ import { setUser } from "../../features/authSlice.js";
 import { ServerContext } from "../../App.js";
 
 const Login = () => {
+	localStorage.setItem("previous", JSON.stringify([])); // for back arrow purpose
 	const serverURL = useContext(ServerContext);
 	const [displayRegForm, setDisplayRegForm] = useState(false);
 	const [loading, setLoading] = useState(false);
@@ -35,7 +36,7 @@ const Login = () => {
 		setLoading(true);
 
 		try {
-			await fetch(`${serverURL}/auth/login`, {
+			const res = await fetch(`${serverURL}/auth/login`, {
 				method: "POST",
 				headers: {
 					"Content-Type": "application/json",
@@ -44,23 +45,26 @@ const Login = () => {
 					userEmailAddress: email,
 					userPassword: password,
 				}),
-			})
-				.then((res) => res.json())
-				.then((data) => {
-					if (data.msg === "Not exist") {
-						dispatch(userNotExist());
-						enqueueSnackbar("User does not exist", { variant: "error" });
-					} else if (data.msg === "Invalid credentials") {
-						dispatch(invalidCredentials());
-						enqueueSnackbar("Incorrect password", { variant: "error" });
-					} else if (data.msg === "Success") {
-						authDispatch(setUser({ token: data.token, user: data.user }));
-						dispatch(successLogin());
-						enqueueSnackbar("Login", { variant: "success" });
-						navigate("/home");
-					}
-					setLoading(false);
-				});
+			});
+
+			const data = await res.json();
+
+			if (data.msg === "Not exist") {
+				dispatch(userNotExist());
+				enqueueSnackbar("User does not exist", { variant: "error" });
+			} else if (data.msg === "Invalid credentials") {
+				dispatch(invalidCredentials());
+				enqueueSnackbar("Incorrect password", { variant: "error" });
+			} else if (data.msg === "Success") {
+				authDispatch(setUser({ token: data.token, user: data.user }));
+				dispatch(successLogin());
+				enqueueSnackbar("Login", { variant: "success" });
+				navigate("/home");
+			} else {
+				enqueueSnackbar("An error occurred", { variant: "error" });
+			}
+
+			setLoading(false);
 		} catch (error) {
 			enqueueSnackbar("Could not connect to the server", { variant: "error" });
 			setLoading(false);

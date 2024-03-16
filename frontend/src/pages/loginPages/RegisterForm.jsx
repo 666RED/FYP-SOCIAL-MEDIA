@@ -2,7 +2,7 @@ import { React, useContext, useReducer } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { BsEyeFill, BsEyeSlashFill } from "react-icons/bs/index.js";
 import { enqueueSnackbar } from "notistack";
-import Spinner from "../../components/Spinner.jsx";
+import Spinner from "../../components/Spinner/Spinner.jsx";
 import Filter from "../../components/Filter.jsx";
 import FormHeader from "../../components/FormHeader.jsx";
 import { registerReducer, INITIAL_STATE } from "./reducers/registerReducer.js";
@@ -44,7 +44,7 @@ const RegisterForm = ({ setDisplayRegForm }) => {
 					variant: "error",
 				});
 			} else {
-				await fetch(`${serverURL}/auth/register`, {
+				const res = await fetch(`${serverURL}/auth/register`, {
 					method: "POST",
 					headers: {
 						"Content-Type": "application/json",
@@ -56,29 +56,34 @@ const RegisterForm = ({ setDisplayRegForm }) => {
 						userPhoneNumber: state.phoneNumber,
 						userPassword: state.password,
 					}),
-				})
-					.then((res) => res.json())
-					.then((data) => {
-						if (data.msg === "Email existed") {
-							dispatch({ type: ACTION_TYPES.EMAIL_EXISTED });
-							enqueueSnackbar("Email already existed", {
-								variant: "error",
-							});
-						} else if (data.msg === "Phone number existed") {
-							dispatch({ type: ACTION_TYPES.PHONE_NUMBER_EXISTED });
-							enqueueSnackbar("Phone number already existed", {
-								variant: "error",
-							});
-						} else if (data.msg === "Success") {
-							enqueueSnackbar("Registered successfully", {
-								variant: "success",
-							});
-							loginDispatch(clearState());
-							dispatch({ type: ACTION_TYPES.SUGGESS_REGISTER });
-							setDisplayRegForm(false);
-						}
+				});
+
+				const data = await res.json();
+
+				if (data.msg === "Email existed") {
+					dispatch({ type: ACTION_TYPES.EMAIL_EXISTED });
+					enqueueSnackbar("Email already existed", {
+						variant: "error",
 					});
+				} else if (data.msg === "Phone number existed") {
+					dispatch({ type: ACTION_TYPES.PHONE_NUMBER_EXISTED });
+					enqueueSnackbar("Phone number already existed", {
+						variant: "error",
+					});
+				} else if (data.msg === "Success") {
+					enqueueSnackbar("Registered successfully", {
+						variant: "success",
+					});
+					loginDispatch(clearState());
+					dispatch({ type: ACTION_TYPES.SUGGESS_REGISTER });
+					setDisplayRegForm(false);
+				} else {
+					enqueueSnackbar("An error occurred", {
+						variant: "success",
+					});
+				}
 			}
+
 			dispatch({ type: ACTION_TYPES.SET_LOADING, payload: false });
 		} catch (error) {
 			enqueueSnackbar("Could not connect to the server", { variant: "error" });
@@ -90,7 +95,7 @@ const RegisterForm = ({ setDisplayRegForm }) => {
 		<div>
 			{state.loading && <Spinner />}
 			<Filter />
-			<div className="z-40 fixed top-0 bottom-0 left-0 right-0 flex items-center justify-center">
+			<div className="center-container">
 				<form onSubmit={handleSubmit} className="form">
 					<FormHeader
 						title="Register"
@@ -116,6 +121,7 @@ const RegisterForm = ({ setDisplayRegForm }) => {
 					{/* GENDER */}
 					<label>Gender:</label>
 					<div className="flex mt-1 mb-3">
+						{/* MALE */}
 						<div>
 							<input
 								type="radio"
@@ -134,6 +140,7 @@ const RegisterForm = ({ setDisplayRegForm }) => {
 								Male
 							</label>
 						</div>
+						{/* FEMALE */}
 						<div>
 							<input
 								type="radio"
@@ -142,12 +149,10 @@ const RegisterForm = ({ setDisplayRegForm }) => {
 								value="female"
 								required
 								onChange={(e) =>
-									dispatch(
-										dispatch({
-											type: ACTION_TYPES.SET_GENDER,
-											payload: e.target.value,
-										})
-									)
+									dispatch({
+										type: ACTION_TYPES.SET_GENDER,
+										payload: e.target.value,
+									})
 								}
 							/>
 							<label htmlFor="genderRadioFemale" className="ml-1">

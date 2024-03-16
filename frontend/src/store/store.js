@@ -11,10 +11,13 @@ import {
 } from "redux-persist";
 import authReducer from "../features/authSlice.js";
 import loginReducer from "../pages/loginPages/reducers/loginSlice.js";
+import searchReducer from "../features/searchSlice.js";
 // import homepageReducer from "../pages/homepages/features/homepageSlice.js";
-import userProfilePageReducer from "../pages/profilePages/features/userProfilePageSlice.js";
 import commentReducer from "../pages/profilePages/features/comment/commentSlice.js";
 import userPostReducer from "../pages/profilePages/features/userPosts/userPostSlice.js";
+import campusConditionReducer from "../pages/campusConditionPages/features/campusConditionSlice.js";
+import friendReducer from "../features/friendSlice.js";
+import groupReducer from "../features/groupSlice.js";
 
 import storage from "redux-persist/lib/storage";
 
@@ -26,9 +29,12 @@ const rootReducer = combineReducers({
 	auth: persistedAuthReducer,
 	login: loginReducer,
 	// homepage: homepageReducer,
-	userProfilePage: userProfilePageReducer,
 	comment: commentReducer,
 	post: userPostReducer,
+	campusCondition: campusConditionReducer,
+	friend: friendReducer,
+	search: searchReducer,
+	group: groupReducer,
 });
 
 export const store = configureStore({

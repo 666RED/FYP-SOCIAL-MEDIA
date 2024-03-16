@@ -35,10 +35,18 @@ export const addNewPost = async (req, res) => {
 
 		const savedPost = await newPost.save();
 
+		if (!savedPost) {
+			return res.status(400).json({ msg: "Fail to add new post" });
+		}
+
 		const returnPost = await savedPost.populate(
 			"userId",
 			"userName userProfile"
 		);
+
+		if (!returnPost) {
+			return res.status(404).json({ msg: "Post not found" });
+		}
 
 		res.status(201).json({ msg: "Success", returnPost });
 	} catch (err) {
@@ -48,14 +56,22 @@ export const addNewPost = async (req, res) => {
 
 export const getPosts = async (req, res) => {
 	try {
-		const { userId } = req.body;
+		const limit = 10;
+		const count = parseInt(req.query.count) || 0;
+		const userId = req.query.userId;
 
 		const posts = await Post.find({ userId })
 			.populate({
 				path: "userId",
 				select: "userName userProfile.profileImagePath",
 			})
-			.sort({ createdAt: -1 });
+			.sort({ createdAt: -1 })
+			.skip(count)
+			.limit(limit);
+
+		if (!posts) {
+			return res.status(400).json({ msg: "Fail to retrieve posts" });
+		}
 
 		if (posts.length === 0) {
 			return res.status(200).json({ msg: "No post" });
@@ -63,17 +79,23 @@ export const getPosts = async (req, res) => {
 
 		res.status(200).json({ msg: "Success", posts });
 	} catch (err) {
+		console.log(err);
+
 		res.status(500).json({ error: err.message });
 	}
 };
 
 export const upLikes = async (req, res) => {
 	try {
-		const { postId } = req.body;
+		const { postId, userId } = req.body;
 
 		const post = await Post.findById(postId);
 
-		post.likesMap.set(post.userId, true);
+		if (!post) {
+			return res.status(404).json({ msg: "Post not found" });
+		}
+
+		post.likesMap.set(userId, true);
 
 		const updatedPost = await Post.findOneAndUpdate(
 			{ _id: postId },
@@ -85,7 +107,7 @@ export const upLikes = async (req, res) => {
 		);
 
 		if (!updatedPost) {
-			return res.status(400).json({ msg: "Post not found" });
+			return res.status(400).json({ msg: "Fail to update post" });
 		}
 
 		res.status(200).json({ msg: "Success", updatedPost });
@@ -98,13 +120,15 @@ export const upLikes = async (req, res) => {
 
 export const downLikes = async (req, res) => {
 	try {
-		const { postId } = req.body;
+		const { postId, userId } = req.body;
 
 		const post = await Post.findById(postId);
 
-		const isLiked = post.likesMap.get(post.userId);
+		if (!post) {
+			return res.status(404).json({ msg: "Post not found" });
+		}
 
-		post.likesMap.delete(post.userId);
+		post.likesMap.delete(userId);
 
 		const updatedPost = await Post.findOneAndUpdate(
 			{ _id: postId },
@@ -116,7 +140,7 @@ export const downLikes = async (req, res) => {
 		);
 
 		if (!updatedPost) {
-			return res.status(400).json({ msg: "Post not found" });
+			return res.status(400).json({ msg: "Fail to update post" });
 		}
 
 		res.status(200).json({ msg: "Success", updatedPost });
@@ -129,7 +153,7 @@ export const downLikes = async (req, res) => {
 
 export const editPost = async (req, res) => {
 	try {
-		const { postId, postDescription, userId, postImagePath } = req.body;
+		const { postId, postDescription, postImagePath } = req.body;
 		const postImage = req.file;
 
 		const originalPost = await Post.findById(postId);
@@ -174,7 +198,7 @@ export const editPost = async (req, res) => {
 			).populate("userId", "userName userProfile");
 		}
 		if (!updatedPost) {
-			return res.status(400).json({ msg: "Post not found" });
+			return res.status(400).json({ msg: "Fail to update post" });
 		}
 
 		res.status(200).json({ msg: "Success", updatedPost });
@@ -190,22 +214,28 @@ export const deletePost = async (req, res) => {
 		const { post } = req.body;
 
 		// delete all comments in the post
-		await Comment.deleteMany({ postId: post._id });
+		const deletedComments = await Comment.deleteMany({ postId: post._id });
 
-		const originalPost = await Post.findById(post._id);
+		if (!deletedComments) {
+			return res.status(400).json({ msg: "Fail to delete comments" });
+		}
 
 		// delete post image if got any
 		if (post.postImagePath !== "") {
 			const postImagePath = path.join(
 				__dirname,
 				"public/images/post",
-				originalPost.postImagePath
+				post.postImagePath
 			);
 			fs.unlinkSync(postImagePath);
 		}
 
 		// delete post
-		await Post.findByIdAndDelete(post._id);
+		const deletedPost = await Post.findByIdAndDelete(post._id);
+
+		if (!deletePost) {
+			return res.status(400).json({ msg: "Fail to delete post" });
+		}
 
 		res.status(200).json({ msg: "Success" });
 	} catch (err) {

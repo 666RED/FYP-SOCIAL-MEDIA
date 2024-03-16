@@ -4,14 +4,27 @@ import { formatDateTime } from "../usefulFunction.js";
 
 export const getComments = async (req, res) => {
 	try {
-		const { postId } = req.body;
+		const limit = 10;
+		const postId = req.query.postId;
+		const count = req.query.count || 0;
+		let currentTime;
+		if (!req.query.currentTime) {
+			currentTime = new Date();
+		} else {
+			currentTime = new Date(req.query.currentTime);
+		}
 
-		const comments = await Comment.find({ postId })
+		const comments = await Comment.find({
+			postId,
+			createdAt: { $lt: currentTime },
+		})
 			.sort({ createdAt: -1 })
 			.populate({
 				path: "userId",
 				select: "userName userProfile.profileImagePath",
 			})
+			.skip(count)
+			.limit(limit)
 			.exec();
 
 		if (!comments) {
@@ -26,6 +39,8 @@ export const getComments = async (req, res) => {
 
 		res.status(200).json({ msg: "Success", comments });
 	} catch (err) {
+		console.log(err);
+
 		res.status(500).json({ error: err.message });
 	}
 };
@@ -46,6 +61,10 @@ export const addComment = async (req, res) => {
 
 		const savedComment = await newComment.save();
 
+		if (!savedComment) {
+			return res.status(400).json({ msg: "Fail to add new comment" });
+		}
+
 		await Post.findByIdAndUpdate(postId, { $inc: { postComments: 1 } });
 
 		res.status(200).json({ msg: "Success", savedComment });
@@ -58,7 +77,11 @@ export const deleteComment = async (req, res) => {
 	try {
 		const { commentId, postId } = req.body;
 
-		await Comment.findByIdAndDelete(commentId);
+		const deletedComment = await Comment.findByIdAndDelete(commentId);
+
+		if (!deletedComment) {
+			return res.status(404).json({ msg: "Fail to delete comment" });
+		}
 
 		await Post.findByIdAndUpdate(postId, { $inc: { postComments: -1 } });
 		res.status(200).json({ msg: "Success" });
@@ -97,7 +120,7 @@ export const editComment = async (req, res) => {
 		});
 
 		if (!updatedComment) {
-			res.status(404).json({ msg: "Comment not found" });
+			res.status(404).json({ msg: "Fail to update comment" });
 			return;
 		}
 

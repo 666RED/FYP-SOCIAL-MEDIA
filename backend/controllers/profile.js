@@ -5,7 +5,7 @@ import { __dirname } from "../index.js";
 
 export const getUserProfile = async (req, res) => {
 	try {
-		const { userId } = req.body;
+		const { userId } = req.query;
 
 		const userInfo = await User.findById(userId);
 

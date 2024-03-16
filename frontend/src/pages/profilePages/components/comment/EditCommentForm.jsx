@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { useSnackbar } from "notistack";
 import Filter from "../../../../components/Filter.jsx";
 import FormHeader from "../../../../components/FormHeader.jsx";
-import Spinner from "../../../../components/Spinner.jsx";
+import Spinner from "../../../../components/Spinner/Spinner.jsx";
 import { ServerContext } from "../../../../App.js";
 import { updateComment } from "../../features/comment/commentSlice.js";
 
@@ -43,12 +43,9 @@ const EditCommentForm = ({
 				},
 			});
 
-			if (!res.ok) {
-				if (res.status === 403) {
-					enqueueSnackbar("Access Denied", { variant: "error" });
-				} else {
-					enqueueSnackbar("Server Error", { variant: "error" });
-				}
+			if (!res.ok && res.status === 403) {
+				setLoading(false);
+				enqueueSnackbar("Access Denied", { variant: "error" });
 				return;
 			}
 
@@ -72,7 +69,14 @@ const EditCommentForm = ({
 				toggleEditCommentForm();
 				toggleShowOptions();
 				enqueueSnackbar("Comment edited", { variant: "success" });
+			} else if (msg === "Fail to update comment") {
+				enqueueSnackbar("Fail to edit comment", {
+					variant: "error",
+				});
+			} else {
+				enqueueSnackbar("An error occurred", { variant: "error" });
 			}
+
 			setLoading(false);
 		} catch (err) {
 			enqueueSnackbar("Could not connect to the server", {

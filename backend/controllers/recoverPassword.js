@@ -40,10 +40,8 @@ export const authEmail = async (req, res) => {
 		// Send the email
 		transporter.sendMail(mailOptions, (error, info) => {
 			if (error) {
-				console.error("Error:", error);
 				return res.status(400).json({ msg: "Error" });
 			} else {
-				console.log("Email sent:", info.response);
 				res.status(200).json({ msg: "Success", user });
 			}
 		});
@@ -97,6 +95,10 @@ export const authVerificationCode = async (req, res) => {
 
 		const user = await User.findById(userId);
 
+		if (!user) {
+			return res.status(404).json({ msg: "User not found" });
+		}
+
 		if (user && user.verificationCode === verificationCode) {
 			user.verificationCode = "";
 			await user.save();
@@ -125,7 +127,11 @@ export const resendCode = async (req, res) => {
 
 		// to be used at authVerificationCode
 		user.verificationCode = verificationCode;
-		await user.save();
+		const savedUser = await user.save();
+
+		if (!savedUser) {
+			return res.status(400).json({ msg: "Fail to set verification code" });
+		}
 
 		// Create a transporter using SMTP
 		const transporter = nodemailer.createTransport({

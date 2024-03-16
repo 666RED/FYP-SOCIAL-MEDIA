@@ -21,24 +21,6 @@ export const editPostFormReducer = (state, action) => {
 				hasPostDescriptionChanged: action.payload,
 			};
 		}
-		case "SET_HAS_IMAGE_PATH_CHANGED": {
-			return {
-				...state,
-				hasImagePathChanged: action.payload,
-			};
-		}
-		case "SET_IMAGE": {
-			return {
-				...state,
-				image: action.payload,
-			};
-		}
-		case "SET_POST_IMAGE_PATH": {
-			return {
-				...state,
-				postImagePath: action.payload,
-			};
-		}
 		case "SET_LOADING": {
 			return {
 				...state,
@@ -58,6 +40,15 @@ export const editPostFormReducer = (state, action) => {
 				...state,
 				postDescription: action.payload.postDescription,
 				postImagePath: action.payload.postImagePath,
+			};
+		}
+		case "UPLOAD_IMAGE": {
+			const { imagePath, image, hasChanged } = action.payload;
+			return {
+				...state,
+				postImagePath: imagePath,
+				image: image,
+				hasImagePathChanged: hasChanged,
 			};
 		}
 		default: {

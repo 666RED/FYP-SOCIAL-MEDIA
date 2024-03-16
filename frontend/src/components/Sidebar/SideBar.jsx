@@ -2,7 +2,6 @@ import React from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router";
 import { MdCancel } from "react-icons/md/index.js";
-import { setExtendSideBar } from "../../pages/homepages/features/homepageSlice.js";
 import SidebarListElement from "./SidebarListElement.jsx";
 import { logout } from "../../features/authSlice.js";
 import Filter from "../Filter.jsx";
@@ -10,11 +9,11 @@ import Filter from "../Filter.jsx";
 const SideBar = ({ selectedSection, setExtendSideBar }) => {
 	const dispatch = useDispatch();
 	const navigate = useNavigate();
-	const { user, token } = useSelector((store) => store.auth);
+	const { user } = useSelector((store) => store.auth);
 
 	const sidebarListElements = [
 		{ page: "Home", destination: "/home" },
-		{ page: "Profile", destination: "/profile" },
+		{ page: "Profile", destination: `/profile/${user._id}` },
 		{ page: "Group", destination: "/group" },
 		{ page: "Campus Condition", destination: "/campus-condition" },
 		{ page: "Friend", destination: "/friend" },

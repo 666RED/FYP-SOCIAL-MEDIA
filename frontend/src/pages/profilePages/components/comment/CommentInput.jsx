@@ -1,7 +1,7 @@
 import { React, useContext, useReducer } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { MdSend } from "react-icons/md";
-import Spinner from "../../../../components/Spinner.jsx";
+import Spinner from "../../../../components/Spinner/Spinner.jsx";
 import { ServerContext } from "../../../../App.js";
 import { useSnackbar } from "notistack";
 import {
@@ -9,10 +9,7 @@ import {
 	INITIAL_STATE,
 } from "../../features/comment/commentInputReducer.js";
 import ACTION_TYPES from "../../actionTypes/comment/commentInputActionTypes.js";
-import {
-	addComment,
-	increaseCommentCount,
-} from "../../features/comment/commentSlice.js";
+import { addComment } from "../../features/comment/commentSlice.js";
 
 const CommentInput = ({ post }) => {
 	const sliceDispatch = useDispatch();
@@ -43,35 +40,43 @@ const CommentInput = ({ post }) => {
 				},
 			});
 
-			if (!res.ok) {
-				if (res.status === 403) {
-					enqueueSnackbar("Access Denied", { variant: "error" });
-				} else {
-					enqueueSnackbar("Server Error", { variant: "error" });
-				}
+			if (!res.ok && res.status === 403) {
+				dispatch({
+					type: ACTION_TYPES.SET_LOADING,
+					payload: false,
+				});
+				dispatch({
+					type: ACTION_TYPES.SET_IS_PROCESSING,
+					payload: false,
+				});
+				enqueueSnackbar("Access Denied", { variant: "error" });
 				return;
 			}
 
 			const { msg, savedComment } = await res.json();
 
 			if (msg === "Success") {
-				const response = await fetch(`${serverURL}/comment/get-comment`, {
-					method: "POST",
-					body: JSON.stringify({
-						commentId: savedComment._id,
-					}),
-					headers: {
-						"Content-Type": "application/json",
-						Authorization: `Bearer ${token}`,
-					},
-				});
-
-				if (!res.ok) {
-					if (res.status === 403) {
-						enqueueSnackbar("Access Denied", { variant: "error" });
-					} else {
-						enqueueSnackbar("Server Error", { variant: "error" });
+				const response = await fetch(
+					`${serverURL}/comment/get-comment?commentId=${savedComment._id}`,
+					{
+						method: "GET",
+						headers: {
+							"Content-Type": "application/json",
+							Authorization: `Bearer ${token}`,
+						},
 					}
+				);
+
+				if (!res.ok && res.status === 403) {
+					dispatch({
+						type: ACTION_TYPES.SET_LOADING,
+						payload: false,
+					});
+					dispatch({
+						type: ACTION_TYPES.SET_IS_PROCESSING,
+						payload: false,
+					});
+					enqueueSnackbar("Access Denied", { variant: "error" });
 					return;
 				}
 
@@ -84,19 +89,29 @@ const CommentInput = ({ post }) => {
 							newComment: comment,
 						})
 					);
+				} else if (msg === "Comment not found") {
+					enqueueSnackbar("Comment not found", {
+						variant: "error",
+					});
+				} else {
+					enqueueSnackbar("An error occurred", { variant: "error" });
 				}
 
 				dispatch({
 					type: ACTION_TYPES.SENT_COMMENT,
 				});
-				sliceDispatch(increaseCommentCount({ postId: post._id }));
 
 				enqueueSnackbar("Comment posted", { variant: "success" });
+			} else if (msg === "Fail to add new comment") {
+				enqueueSnackbar("Fail to add new comment", {
+					variant: "error",
+				});
+			} else {
+				enqueueSnackbar("An error occurred", { variant: "error" });
 			}
+
 			dispatch({ type: ACTION_TYPES.SET_LOADING, payload: false });
 		} catch (err) {
-			console.log(err);
-
 			enqueueSnackbar("Could not connect to the server", {
 				variant: "error",
 			});

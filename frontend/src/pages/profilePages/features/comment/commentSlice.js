@@ -1,7 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
-	commentsObj: {},
 	commentsArray: [],
 };
 
@@ -9,20 +8,6 @@ const commentSlice = createSlice({
 	name: "comment",
 	initialState,
 	reducers: {
-		setCommentsObj: (state, action) => {
-			const { commentsCount, postId } = action.payload;
-			state.commentsObj[postId] = commentsCount;
-		},
-		increaseCommentCount: (state, action) => {
-			const { postId } = action.payload;
-
-			state.commentsObj[postId] += 1;
-		},
-		decreaseCommentCount: (state, action) => {
-			const { postId } = action.payload;
-
-			state.commentsObj[postId] -= 1;
-		},
 		updateComment: (state, action) => {
 			const { postId, newCommentArray } = action.payload;
 
@@ -50,28 +35,53 @@ const commentSlice = createSlice({
 				{ postId: action.payload, comments: [] },
 			];
 		},
-		gotComment: (state, action) => {
-			// if the commentsObj is not in the array yet
+		pushComment: (state, action) => {
 			if (
-				state.commentsArray.filter(
-					(commentObj) => commentObj.postId === action.payload.postId
-				).length < 1
+				!state.commentsArray.some(
+					(comment) => comment.postId === action.payload.postId
+				)
 			) {
-				// pushing newCommentsArray into the array
-				state.commentsArray.push(action.payload);
+				state.commentsArray = [...state.commentsArray, action.payload];
 			}
+		},
+		loadComments: (state, action) => {
+			const postId = action.payload[0].postId;
+
+			const commentObj = state.commentsArray.find(
+				(comment) => comment.postId === action.payload[0].postId
+			);
+
+			if (commentObj) {
+				const updatedCommentObj = {
+					...commentObj,
+					comments: [...commentObj.comments, ...action.payload],
+				};
+
+				state.commentsArray = state.commentsArray.map((comment) =>
+					comment.postId === postId ? updatedCommentObj : comment
+				);
+			}
+		},
+		removeComment: (state, action) => {
+			// remove comment based on post id
+			state.commentsArray = state.commentsArray.filter(
+				(comment) => comment._id !== action.payload
+			);
+		},
+		resetCommentArray: (state) => {
+			state.commentsArray = [];
 		},
 	},
 });
 
 export const {
-	setCommentsObj,
-	increaseCommentCount,
-	decreaseCommentCount,
 	updateComment,
 	addComment,
 	noComment,
-	gotComment,
+	pushComment,
+	loadComments,
+	removeComment,
+	resetCommentArray,
 } = commentSlice.actions;
 
 export default commentSlice.reducer;

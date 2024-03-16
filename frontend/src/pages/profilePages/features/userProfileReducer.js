@@ -4,6 +4,12 @@ export const INITIAL_STATE = {
 	coverImagePath: "",
 	bio: "",
 	loading: false,
+	isUser: false,
+	isFriend: false,
+	loadFriendStatus: false,
+	friendStatus: "",
+	showRespondForm: false,
+	friendRequest: {},
 };
 
 export const userProfileReducer = (state, action) => {
@@ -45,6 +51,43 @@ export const userProfileReducer = (state, action) => {
 				profileImagePath: action.payload.profileImagePath,
 				coverImagePath: action.payload.coverImagePath,
 				bio: action.payload.bio,
+			};
+		}
+		case "SET_IS_USER": {
+			return {
+				...state,
+				isUser: action.payload,
+			};
+		}
+		case "SET_IS_FRIEND": {
+			return {
+				...state,
+				isFriend: action.payload,
+			};
+		}
+		case "SET_LOAD_FRIEND_STATUS": {
+			return {
+				...state,
+				loadFriendStatus: action.payload,
+			};
+		}
+		case "SET_FRIEND_STATUS": {
+			return {
+				...state,
+				friendStatus: action.payload,
+			};
+		}
+		case "SET_FRIEND_STATUS_AND_REQUEST": {
+			return {
+				...state,
+				friendStatus: action.payload.friendStatus,
+				friendRequest: action.payload.friendRequest,
+			};
+		}
+		case "TOGGLE_SHOW_RESPOND_FORM": {
+			return {
+				...state,
+				showRespondForm: !state.showRespondForm,
 			};
 		}
 		default: {

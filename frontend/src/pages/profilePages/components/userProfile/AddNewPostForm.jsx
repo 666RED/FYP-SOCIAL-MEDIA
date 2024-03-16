@@ -1,18 +1,21 @@
 import { React, useReducer, useContext } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import Spinner from "../../../../components/Spinner.jsx";
+import Spinner from "../../../../components/Spinner/Spinner.jsx";
 import UploadImage from "../../../../components/UploadImage.jsx";
 import Filter from "../../../../components/Filter.jsx";
 import FormHeader from "../../../../components/FormHeader.jsx";
+import RemoveImageText from "../../../../components/RemoveImageText.jsx";
 import { useSnackbar } from "notistack";
-import { setShowAddNewPostForm } from "../../features/userProfilePageSlice.js";
+import {
+	setShowAddNewPostForm,
+	addNewPost,
+} from "../../features/userPosts/userPostSlice.js";
 import {
 	addNewPostFormReducer,
 	INITIAL_STATE,
 } from "../../features/addNewPostFormReducer.js";
 import { ACTION_TYPES } from "../../actionTypes/addNewPostFormActionTypes.js";
 import { ServerContext } from "../../../../App.js";
-import { addNewPost } from "../../features/userPosts/userPostSlice.js";
 
 const AddNewPostForm = () => {
 	const { enqueueSnackbar } = useSnackbar();
@@ -45,16 +48,9 @@ const AddNewPostForm = () => {
 				},
 			});
 
-			if (!res.ok) {
-				if (res.status == 403) {
-					enqueueSnackbar("Access Denied", {
-						variant: "error",
-					});
-				} else {
-					enqueueSnackbar("Server Error", {
-						variant: "error",
-					});
-				}
+			if (!res.ok && res.status === 403) {
+				dispatch({ type: ACTION_TYPES.SET_LOADING, payload: false });
+				enqueueSnackbar("Access Denied", { variant: "error" });
 				return;
 			}
 
@@ -66,6 +62,16 @@ const AddNewPostForm = () => {
 				});
 				sliceDispatch(setShowAddNewPostForm(false));
 				sliceDispatch(addNewPost(returnPost));
+			} else if (msg === "Post not found") {
+				enqueueSnackbar("Post not found", {
+					variant: "error",
+				});
+			} else if (msg === "Fail to add new post") {
+				enqueueSnackbar("Fail to add new post", {
+					variant: "error",
+				});
+			} else {
+				enqueueSnackbar("An error occurred", { variant: "error" });
 			}
 
 			dispatch({ type: ACTION_TYPES.SET_LOADING, payload: false });
@@ -74,6 +80,15 @@ const AddNewPostForm = () => {
 				variant: "error",
 			});
 			dispatch({ type: ACTION_TYPES.SET_LOADING, payload: false });
+		}
+	};
+
+	const handleRemove = () => {
+		const ans = window.confirm("Remove image?");
+		if (ans) {
+			dispatch({
+				type: ACTION_TYPES.REMOVE_IMAGE,
+			});
 		}
 	};
 
@@ -107,19 +122,19 @@ const AddNewPostForm = () => {
 						required
 					/>
 					{/* IMAGE */}
-					<label>Image:</label>
+					<div className="flex justify-between items-center">
+						<label>Image:</label>
+						<RemoveImageText
+							handleRemove={handleRemove}
+							imagePath={state.imagePath}
+						/>
+					</div>
 					<UploadImage
 						imagePath={state.imagePath}
-						dispatch={{
-							setImage: (payload) =>
-								dispatch({ type: ACTION_TYPES.SET_IMAGE, payload }),
-							setImagePath: (payload) => {
-								dispatch({ type: ACTION_TYPES.SET_IMAGE_PATH, payload });
-							},
-							setHasChanged: (payload) => {
-								dispatch({ type: ACTION_TYPES.MADE_CHANGE, payload });
-							},
-						}}
+						dispatch={(payload) =>
+							dispatch({ type: ACTION_TYPES.UPLOAD_IMAGE, payload })
+						}
+						bigImage={false}
 					/>
 
 					{/* SUBMIT BUTTON */}

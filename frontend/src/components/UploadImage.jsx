@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { FaImages } from "react-icons/fa/index.js";
 
-const UploadImage = ({ imagePath, dispatch }) => {
+const UploadImage = ({ imagePath, dispatch, bigImage = true }) => {
 	const handleClick = () => {
 		const file = document.getElementById("img-file");
 		file.click();
@@ -12,25 +12,23 @@ const UploadImage = ({ imagePath, dispatch }) => {
 
 		if (file) {
 			const newImagePath = URL.createObjectURL(file);
-			dispatch.setImagePath(newImagePath);
-			dispatch.setImage(file);
-			dispatch.setHasChanged(true);
+
+			dispatch({ imagePath: newImagePath, image: file, hasChanged: true });
 		}
 	};
 
 	return (
 		<div
-			className={`border border-gray-600 rounded-xl flex items-center justify-center cursor-pointer my-2 hover:opacity-80 ${
-				imagePath === "" && "py-5"
+			className={`border-gray-600 rounded-xl flex items-center justify-center cursor-pointer my-2 hover:opacity-80 ${
+				imagePath === "" && "py-5 border"
 			}`}
 			onClick={handleClick}
-			id="upload-img-container"
 		>
 			{imagePath !== "" ? (
 				<img
 					src={imagePath}
 					alt="Post image"
-					className="rounded-xl h-full max-h-52"
+					className={`rounded-xl ${!bigImage && "max-h-52 md:max-h-56"}`}
 				/>
 			) : (
 				<div className="flex items-center">

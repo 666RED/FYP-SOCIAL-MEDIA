@@ -6,7 +6,6 @@ import { Provider } from "react-redux";
 import { store } from "./store/store.js";
 import { persistStore } from "redux-persist";
 import { PersistGate } from "redux-persist/integration/react";
-// use later
 import { SnackbarProvider } from "notistack";
 
 const root = ReactDOM.createRoot(document.getElementById("root"));

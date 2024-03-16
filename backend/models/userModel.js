@@ -40,6 +40,10 @@ const userSchema = mongoose.Schema(
 			max: 6,
 			default: "",
 		},
+		userFriendsMap: {
+			type: Map,
+			default: {},
+		},
 		userProfile: {
 			profileImagePath: {
 				type: String,
@@ -60,6 +64,11 @@ const userSchema = mongoose.Schema(
 				required: true,
 				default: "default",
 			},
+		},
+		groups: {
+			type: Map,
+			of: Boolean,
+			default: new Map(),
 		},
 	},
 	{

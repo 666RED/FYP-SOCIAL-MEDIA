@@ -6,16 +6,13 @@ import { MdDeleteForever, MdEdit } from "react-icons/md";
 import UserPostHeader from "../UserPostHeader.jsx";
 import OptionDiv from "../../../../components/OptionDiv.jsx";
 import EditCommentForm from "./EditCommentForm.jsx";
-import Spinner from "../../../../components/Spinner.jsx";
+import Spinner from "../../../../components/Spinner/Spinner.jsx";
 import {
 	commentReducer,
 	INITIAL_STATE,
 } from "../../features/comment/commentReducer.js";
 import ACTION_TYPES from "../../actionTypes/comment/commentActionTypes.js";
-import {
-	decreaseCommentCount,
-	updateComment,
-} from "../../features/comment/commentSlice.js";
+import { updateComment } from "../../features/comment/commentSlice.js";
 import { ServerContext } from "../../../../App.js";
 
 const Comment = ({ comment, post }) => {
@@ -26,6 +23,8 @@ const Comment = ({ comment, post }) => {
 	const { user, token } = useSelector((store) => store.auth);
 	const { commentsArray } = useSelector((store) => store.comment);
 	const [state, dispatch] = useReducer(commentReducer, INITIAL_STATE);
+
+	const previous = window.location.pathname;
 
 	const handleDelete = async () => {
 		try {
@@ -41,12 +40,12 @@ const Comment = ({ comment, post }) => {
 					},
 				});
 
-				if (!res.ok) {
-					if (res.status === 403) {
-						enqueueSnackbar("Access Denied", { variant: "error" });
-					} else {
-						enqueueSnackbar("Server Error", { variant: "error" });
-					}
+				if (!res.ok && res.status === 403) {
+					dispatch({
+						type: ACTION_TYPES.SET_LOADING,
+						payload: false,
+					});
+					enqueueSnackbar("Access Denied", { variant: "error" });
 					return;
 				}
 
@@ -54,7 +53,6 @@ const Comment = ({ comment, post }) => {
 
 				if (msg === "Success") {
 					enqueueSnackbar("Comment deleted", { variant: "success" });
-					sliceDispatch(decreaseCommentCount({ postId: post._id }));
 					dispatch({ type: ACTION_TYPES.TOGGLE_SHOW_OPTIONS });
 
 					// find the current commentObj
@@ -71,6 +69,12 @@ const Comment = ({ comment, post }) => {
 						})
 					);
 					// check if no comment (add on)
+				} else if (msg === "Fail to delete comment") {
+					enqueueSnackbar("Fail to delete comment", {
+						variant: "error",
+					});
+				} else {
+					enqueueSnackbar("An error occurred", { variant: "error" });
 				}
 			}
 			dispatch({ type: ACTION_TYPES.SET_LOADING, payload: false });
@@ -91,10 +95,12 @@ const Comment = ({ comment, post }) => {
 				userName={comment.userId.userName}
 				postTime={comment.commentTime}
 				isPost={false}
+				destination={`/profile/${comment.userId._id}`}
+				previous={previous}
 			/>
 
 			{/* THREE DOTS */}
-			{user._id === comment.userId._id && (
+			{(user._id === comment.userId._id || post.userId._id === user._id) && (
 				<div
 					className="absolute right-2 top-1 cursor-pointer"
 					onClick={() => dispatch({ type: ACTION_TYPES.TOGGLE_SHOW_OPTIONS })}
@@ -106,13 +112,18 @@ const Comment = ({ comment, post }) => {
 			{/* OPTIONS DIV */}
 			{state.showOptions && (
 				<div className="absolute right-2 top-5 border border-gray-600 bg-gray-200">
-					<OptionDiv
-						icon={<MdEdit />}
-						text="Edit"
-						func={() =>
-							dispatch({ type: ACTION_TYPES.TOGGLE_EDIT_COMMENT_FORM })
-						}
-					/>
+					{/* EDIT */}
+					{user._id === comment.userId._id && (
+						<OptionDiv
+							icon={<MdEdit />}
+							text="Edit"
+							func={() =>
+								dispatch({ type: ACTION_TYPES.TOGGLE_EDIT_COMMENT_FORM })
+							}
+						/>
+					)}
+
+					{/* DELETE */}
 					<OptionDiv
 						icon={<MdDeleteForever />}
 						text="Delete"

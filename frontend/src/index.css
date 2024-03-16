@@ -4,7 +4,7 @@
 
 @layer base {
 	h1 {
-		@apply text-3xl font-semibold;
+		@apply text-3xl;
 	}
 	h2 {
 		@apply text-2xl;
@@ -17,13 +17,19 @@
 		@apply outline-blue-500 p-3 rounded-xl border border-gray-600;
 	}
 	.btn-blue {
-		@apply bg-blue-600 text-white rounded-lg text-xl hover:opacity-80 transition py-2 px-3;
+		@apply bg-blue-600 text-white rounded-lg md:text-xl hover:opacity-80 transition py-2 px-3;
+	}
+	.btn-red {
+		@apply bg-red-600 text-white rounded-lg md:text-xl hover:opacity-80 transition py-2 px-3;
 	}
 	.btn-green {
-		@apply bg-green-600 text-white rounded-lg text-xl hover:opacity-80 transition py-2 px-3;
+		@apply bg-green-600 text-white rounded-lg md:text-xl hover:opacity-80 transition py-2 px-3;
 	}
 	.btn-gray {
-		@apply bg-gray-600 text-white rounded-lg text-xl hover:opacity-80 transition py-2 px-3;
+		@apply bg-gray-600 text-white rounded-lg md:text-xl hover:opacity-80 transition py-2 px-3;
+	}
+	.btn-yellow {
+		@apply bg-yellow-400 text-white rounded-lg md:text-xl hover:opacity-80 transition py-2 px-3;
 	}
 	.main-container {
 		@apply absolute top-0 bottom-0 left-0 right-0 flex justify-center items-center;
@@ -46,14 +52,31 @@
 	.scrollbar::-webkit-scrollbar {
 		width: 8px;
 	}
-
-	/* Handle */
 	.scrollbar::-webkit-scrollbar-thumb {
 		background: #888;
 	}
-
-	/* Handle on hover */
 	.scrollbar::-webkit-scrollbar-thumb:hover {
 		background: #555;
+	}
+	.page-design {
+		@apply px-3 py-2 bg-gray-200;
+	}
+	.component-layout {
+		@apply w-full md:w-7/12 mx-auto;
+	}
+	.page-layout-with-back-arrow {
+		@apply mx-3 mt-2;
+	}
+	.map-container {
+		@apply mt-3 h-96 w-full;
+	}
+	.profile-btn {
+		@apply text-sm sm:text-base flex items-center justify-center;
+	}
+	.profile-btn-icon {
+		@apply mr-3 text-xl;
+	}
+	.shadowDesign {
+		@apply shadow-[rgba(0,0,0,0.1)_0px_0px_5px_5px];
 	}
 }

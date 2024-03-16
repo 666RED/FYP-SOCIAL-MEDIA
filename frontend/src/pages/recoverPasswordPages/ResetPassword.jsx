@@ -1,7 +1,7 @@
 import { React, useContext, useReducer } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import BackArrow from "../../components/BackArrow.jsx";
-import Spinner from "../../components/Spinner.jsx";
+import FormBackArrowHeader from "../../components/BackArrow/FormBackArrowHeader.jsx";
+import Spinner from "../../components/Spinner/Spinner.jsx";
 import HorizontalRule from "../../components/HorizontalRule.jsx";
 import { useSnackbar } from "notistack";
 import {
@@ -29,33 +29,40 @@ const ResetPassword = () => {
 					variant: "error",
 				});
 			} else {
-				await fetch(`${serverURL}/recover-password/reset-password`, {
-					method: "POST",
-					headers: {
-						"Content-Type": "application/json",
-					},
-					body: JSON.stringify({
-						userId: userId,
-						newPassword: state.newPassword,
-					}),
-				})
-					.then((res) => res.json())
-					.then((data) => {
-						if (data.msg === "User not found") {
-							enqueueSnackbar("User not found", {
-								variant: "error",
-							});
-						} else if (data.msg === "Success") {
-							enqueueSnackbar("Password reset", {
-								variant: "success",
-							});
-							dispatch({
-								type: ACTION_TYPES.SET_VALID_PASSWORDS,
-								payload: false,
-							});
-							navigate("/");
-						}
+				const res = await fetch(
+					`${serverURL}/recover-password/reset-password`,
+					{
+						method: "POST",
+						headers: {
+							"Content-Type": "application/json",
+						},
+						body: JSON.stringify({
+							userId: userId,
+							newPassword: state.newPassword,
+						}),
+					}
+				);
+
+				const data = await res.json();
+
+				if (data.msg === "User not found") {
+					enqueueSnackbar("User not found", {
+						variant: "error",
 					});
+				} else if (data.msg === "Success") {
+					enqueueSnackbar("Password reset", {
+						variant: "success",
+					});
+					dispatch({
+						type: ACTION_TYPES.SET_VALID_PASSWORDS,
+						payload: false,
+					});
+					navigate("/");
+				} else {
+					enqueueSnackbar("An error occurred", {
+						variant: "error",
+					});
+				}
 			}
 			dispatch({ type: ACTION_TYPES.SET_LOADING, payload: false });
 		} catch (err) {
@@ -70,12 +77,10 @@ const ResetPassword = () => {
 		<div className="main-container">
 			{state.loading && <Spinner />}
 			<form className="form-container max-w-lg" onSubmit={handleSubmit}>
-				<div className="relative">
-					<div className="absolute left-0 top-1">
-						<BackArrow destination={`/recover-password/auth/${userId}`} />
-					</div>
-					<h2 className="text-center font-semibold">Reset Password</h2>
-				</div>
+				<FormBackArrowHeader
+					destination={`/recover-password/auth/${userId}`}
+					title="Reset Password"
+				/>
 				<HorizontalRule />
 				<p className="text-center">Enter new password and confirm password</p>
 				<input

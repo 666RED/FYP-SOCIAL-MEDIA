@@ -1,10 +1,10 @@
 import { React, useEffect, useContext, useState, useReducer } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import BackArrow from "../../components/BackArrow.jsx";
 import EditText from "./components/EditText.jsx";
-import Spinner from "../../components/Spinner.jsx";
+import Spinner from "../../components/Spinner/Spinner.jsx";
 import Error from "../../components/Error.jsx";
+import DirectBackArrowHeader from "../../components/BackArrow/DirectBackArrowHeader.jsx";
 import { useSnackbar } from "notistack";
 import {
 	editProfileReducer,
@@ -31,27 +31,20 @@ const EditProfile = () => {
 		const fetchData = async () => {
 			dispatch({ type: ACTION_TYPES.SET_LOADING, payload: true });
 			try {
-				const res = await fetch(`${serverURL}/profile`, {
-					method: "POST",
+				const res = await fetch(`${serverURL}/profile?userId=${user._id}`, {
+					method: "GET",
 					headers: {
 						"Content-Type": "application/json",
 						Authorization: `Bearer ${token}`,
 					},
-					body: JSON.stringify({
-						userId: user._id,
-					}),
 				});
 
-				if (!res.ok) {
-					if (res.status == 403) {
-						enqueueSnackbar("Access Denied", {
-							variant: "error",
-						});
-					} else {
-						enqueueSnackbar("Server Error", {
-							variant: "error",
-						});
-					}
+				if (!res.ok && res.status === 403) {
+					dispatch({
+						type: ACTION_TYPES.SET_LOADING,
+						payload: false,
+					});
+					enqueueSnackbar("Access Denied", { variant: "error" });
 					return;
 				}
 
@@ -63,21 +56,22 @@ const EditProfile = () => {
 					});
 				} else if (msg === "Success") {
 					const userProfile = userInfo.userProfile;
-					dispatch({
-						type: ACTION_TYPES.SET_PROFILE_IMAGE_PATH,
-						payload: filePath + userProfile.profileImagePath,
-					});
-					dispatch({
-						type: ACTION_TYPES.SET_COVER_IMAGE_PATH,
-						payload: filePath + userProfile.profileCoverImagePath,
-					});
 
-					dispatch({ type: ACTION_TYPES.SET_NAME, payload: userInfo.userName });
 					dispatch({
-						type: ACTION_TYPES.SET_BIO,
-						payload: userProfile.profileBio,
+						type: ACTION_TYPES.FIEST_RENDER,
+						payload: {
+							profileImagePath: filePath + userProfile.profileImagePath,
+							coverImagePath: filePath + userProfile.profileCoverImagePath,
+							name: userInfo.userName,
+							bio: userProfile.profileBio,
+						},
+					});
+				} else {
+					enqueueSnackbar("An error occurred", {
+						variant: "error",
 					});
 				}
+
 				dispatch({ type: ACTION_TYPES.SET_LOADING, payload: false });
 			} catch (err) {
 				enqueueSnackbar("Could not connect to server", {
@@ -104,6 +98,7 @@ const EditProfile = () => {
 				return;
 			}
 			dispatch({ type: ACTION_TYPES.SET_LOADING, payload: true });
+
 			const formdata = new FormData();
 			formdata.append("profileImage", profileImage);
 			formdata.append("coverImage", coverImage);
@@ -119,12 +114,12 @@ const EditProfile = () => {
 				body: formdata,
 			});
 
-			if (!res.ok) {
-				if (res.status === 403) {
-					enqueueSnackbar("Access denied", { variant: "error" });
-				} else {
-					enqueueSnackbar("Server error", { variant: "error" });
-				}
+			if (!res.ok && res.status === 403) {
+				dispatch({
+					type: ACTION_TYPES.SET_LOADING,
+					payload: false,
+				});
+				enqueueSnackbar("Access Denied", { variant: "error" });
 				return;
 			}
 
@@ -141,12 +136,15 @@ const EditProfile = () => {
 
 				// update auth state
 				authDispatch(setUser({ user: data.user, token: token }));
-				navigate("/profile");
+				navigate(`/profile/${user._id}`);
+			} else {
+				enqueueSnackbar("An error occurred", {
+					variant: "error",
+				});
 			}
+
 			dispatch({ type: ACTION_TYPES.SET_LOADING, payload: false });
 		} catch (err) {
-			console.log(err);
-
 			enqueueSnackbar("Could not connect to the server", {
 				variant: "error",
 			});
@@ -158,26 +156,27 @@ const EditProfile = () => {
 		const file = event.target.files[0];
 
 		if (file) {
-			const image = new Image();
-
-			image.onload = () => {
-				// Check if the image is square
-				// change dimension later
-				if (Math.abs(image.width - image.height) < 30) {
-					dispatch({
-						type: ACTION_TYPES.SET_PROFILE_IMAGE_PATH,
-						payload: URL.createObjectURL(file),
-					});
-					setProfileImage(file);
-					dispatch({ type: ACTION_TYPES.MADE_CHANGES });
-				} else {
-					enqueueSnackbar("Please choose a square image", {
-						variant: "warning",
-					});
-				}
+			const reader = new FileReader();
+			reader.onload = (e) => {
+				const img = new Image();
+				img.onload = () => {
+					const ratio = img.width / img.height;
+					if (ratio <= 12 / 9) {
+						dispatch({
+							type: ACTION_TYPES.SET_PROFILE_IMAGE_PATH,
+							payload: URL.createObjectURL(file),
+						});
+						setProfileImage(file);
+						dispatch({ type: ACTION_TYPES.MADE_CHANGES });
+					} else {
+						enqueueSnackbar("The image ratio is not within 12/9", {
+							variant: "warning",
+						});
+					}
+				};
+				img.src = e.target.result;
 			};
-
-			image.src = URL.createObjectURL(file);
+			reader.readAsDataURL(file);
 		}
 	};
 
@@ -195,9 +194,12 @@ const EditProfile = () => {
 	};
 
 	return user && token ? (
-		<form className="mx-3 mt-2" onSubmit={handleSave}>
+		<form className="page-layout-with-back-arrow" onSubmit={handleSave}>
 			{state.loading && <Spinner />}
-			<BackArrow destination="/profile" discardChanges={state.makeChanges} />
+			<DirectBackArrowHeader
+				destination={`/profile/${user._id}`}
+				title="Edit Profile"
+			/>
 			<div className="mt-2">
 				{/* PROFILE PICTURE */}
 				<div className="flex items-center justify-between mb-3">
@@ -214,8 +216,7 @@ const EditProfile = () => {
 				<img
 					src={state.profileImagePath}
 					alt="Profile image"
-					className="rounded-full
-              w-1/4 lg:w-1/6 mx-auto block border border-blue-400"
+					className="rounded-full border border-blue-400 object-cover mx-auto h-40 w-40 md:h-56 md:w-56"
 				/>
 				<hr className="my-5 border border-gray-300" />
 				{/* COVER IMAGE */}

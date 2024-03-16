@@ -32,11 +32,11 @@ export const userPostReducer = (state, action) => {
 			};
 		}
 		case "FIRST_RENDER": {
-			const { likesMap, postLikes, userId } = action.payload.post;
+			const { likesMap, postLikes } = action.payload.post;
 
 			return {
 				...state,
-				isLiked: likesMap.hasOwnProperty(userId._id),
+				isLiked: likesMap.hasOwnProperty(action.payload.userId),
 				likesCount: postLikes,
 				postImagePath: action.payload.postImagePath,
 			};

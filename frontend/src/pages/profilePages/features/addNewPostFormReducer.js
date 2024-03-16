@@ -20,22 +20,21 @@ export const addNewPostFormReducer = (state, action) => {
 				text: action.payload,
 			};
 		}
-		case "SET_IMAGE_PATH": {
+		case "UPLOAD_IMAGE": {
+			const { imagePath, image, hasChanged } = action.payload;
 			return {
 				...state,
-				imagePath: action.payload,
+				imagePath: imagePath,
+				image: image,
+				madeChange: hasChanged,
 			};
 		}
-		case "SET_IMAGE": {
+		case "REMOVE_IMAGE": {
 			return {
 				...state,
-				image: action.payload,
-			};
-		}
-		case "MADE_CHANGE": {
-			return {
-				...state,
-				madeChange: action.payload,
+				imagePath: "",
+				image: {},
+				madeChange: true,
 			};
 		}
 		default: {

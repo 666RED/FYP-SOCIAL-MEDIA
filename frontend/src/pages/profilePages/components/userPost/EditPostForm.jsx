@@ -4,7 +4,8 @@ import { useSnackbar } from "notistack";
 import Filter from "../../../../components/Filter.jsx";
 import FormHeader from "../../../../components/FormHeader.jsx";
 import UploadImage from "../../../../components/UploadImage.jsx";
-import Spinner from "../../../../components/Spinner.jsx";
+import Spinner from "../../../../components/Spinner/Spinner.jsx";
+import RemoveImageText from "../../../../components/RemoveImageText.jsx";
 import { ServerContext } from "../../../../App.js";
 import {
 	editPostFormReducer,
@@ -23,7 +24,7 @@ const EditPostForm = ({
 	const serverURL = useContext(ServerContext);
 	const postImgPath = `${serverURL}/public/images/post/`;
 	const [state, dispatch] = useReducer(editPostFormReducer, INITIAL_STATE);
-	const { user, token } = useSelector((store) => store.auth);
+	const { token } = useSelector((store) => store.auth);
 
 	// First render
 	useEffect(() => {
@@ -56,16 +57,9 @@ const EditPostForm = ({
 				},
 			});
 
-			if (!res.ok) {
-				if (res.status == 403) {
-					enqueueSnackbar("Access Denied", {
-						variant: "error",
-					});
-				} else {
-					enqueueSnackbar("Server Error", {
-						variant: "error",
-					});
-				}
+			if (!res.ok && res.status === 403) {
+				dispatch({ type: ACTION_TYPES.SET_LOADING, payload: false });
+				enqueueSnackbar("Access Denied", { variant: "error" });
 				return;
 			}
 
@@ -78,11 +72,16 @@ const EditPostForm = ({
 				});
 				toggleShowEditPostForm();
 				toggleShowOptionDiv();
+			} else if (msg === "Fail to update post") {
+				enqueueSnackbar("Fail to edit post", {
+					variant: "error",
+				});
+			} else {
+				enqueueSnackbar("An error occurred", { variant: "error" });
 			}
+
 			dispatch({ type: ACTION_TYPES.SET_LOADING, payload: false });
 		} catch (err) {
-			console.log(err);
-
 			enqueueSnackbar("Could not connect to the server", {
 				variant: "error",
 			});
@@ -105,6 +104,7 @@ const EditPostForm = ({
 			<Filter />
 			<div className="center-container">
 				<form className="form" onSubmit={handleSubmit}>
+					{/* HEADER */}
 					<FormHeader
 						title="Edit Post"
 						discardChanges={
@@ -136,14 +136,11 @@ const EditPostForm = ({
 					{/* IMAGE */}
 					<div className="flex items-center justify-between">
 						<label>Image:</label>
-						{state.postImagePath !== "" && (
-							<p
-								className="text-red-600 cursor-pointer hover:opacity-80"
-								onClick={handleRemove}
-							>
-								Remove
-							</p>
-						)}
+						{/* REMOVE IMAGE TEXT */}
+						<RemoveImageText
+							imagePath={state.postImagePath}
+							handleRemove={handleRemove}
+						/>
 					</div>
 					<UploadImage
 						imagePath={
@@ -154,19 +151,10 @@ const EditPostForm = ({
 								? state.postImagePath // new image path
 								: `${postImgPath}${state.postImagePath}` // original image path
 						}
-						dispatch={{
-							setImage: (payload) =>
-								dispatch({ type: ACTION_TYPES.SET_IMAGE, payload }),
-							setImagePath: (payload) => {
-								dispatch({ type: ACTION_TYPES.SET_POST_IMAGE_PATH, payload });
-							},
-							setHasChanged: (payload) => {
-								dispatch({
-									type: ACTION_TYPES.SET_HAS_IMAGE_PATH_CHANGED,
-									payload,
-								});
-							},
-						}}
+						dispatch={(payload) =>
+							dispatch({ type: ACTION_TYPES.UPLOAD_IMAGE, payload })
+						}
+						bigImage={false}
 					/>
 					{/* SUBMIT BUTTON */}
 					<button className="btn-green block w-1/2 mx-auto mt-5">EDIT</button>

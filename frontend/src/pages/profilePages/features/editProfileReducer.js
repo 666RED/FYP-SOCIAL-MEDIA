@@ -11,6 +11,16 @@ export const INITIAL_STATE = {
 
 export const editProfileReducer = (state, action) => {
 	switch (action.type) {
+		case "FIEST_RENDER": {
+			const { profileImagePath, coverImagePath, name, bio } = action.payload;
+			return {
+				...state,
+				profileImagePath,
+				coverImagePath,
+				name,
+				bio,
+			};
+		}
 		case "SET_PROFILE_IMAGE_PATH": {
 			return {
 				...state,

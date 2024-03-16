@@ -1,48 +1,46 @@
 import { React, useContext, useEffect, useReducer } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { useParams } from "react-router-dom";
 import { useSnackbar } from "notistack";
 import { BsThreeDots } from "react-icons/bs/index.js";
 import { HiThumbUp } from "react-icons/hi/index.js";
 import { FaCommentDots } from "react-icons/fa/index.js";
-import { MdDeleteForever, MdEdit } from "react-icons/md";
+import { MdDeleteForever, MdEdit, MdReportProblem } from "react-icons/md";
 
 import Comments from "../comment/Comments.jsx";
 import EditPostForm from "./EditPostForm.jsx";
 import OptionDiv from "../../../../components/OptionDiv.jsx";
 import UserPostHeader from "../UserPostHeader.jsx";
+import Spinner from "../../../../components/Spinner/Spinner.jsx";
 import {
 	userPostReducer,
 	INITIAL_STATE,
 } from "../../features/userPosts/userPostReducer.js";
 import ACTION_TYPES from "../../actionTypes/userPosts/userPostActionTypes.js";
-import { setCommentsObj } from "../../features/comment/commentSlice.js";
 import { ServerContext } from "../../../../App.js";
 import { removePost } from "../../features/userPosts/userPostSlice.js";
-import Spinner from "../../../../components/Spinner.jsx";
 
-const Post = ({ post }) => {
+const UserPost = ({ post }) => {
+	const { userId } = useParams();
+
 	const sliceDispatch = useDispatch();
-	const { commentsObj } = useSelector((store) => store.comment);
 	const serverURL = useContext(ServerContext);
-	const { token } = useSelector((store) => store.auth);
+	const { user, token } = useSelector((store) => store.auth);
 	const [state, dispatch] = useReducer(userPostReducer, INITIAL_STATE);
 	const { enqueueSnackbar } = useSnackbar();
 
 	const profileImgPath = `${serverURL}/public/images/profile/`;
 	const postImgPath = `${serverURL}/public/images/post/`;
 
-	useEffect(() => {
-		sliceDispatch(
-			setCommentsObj({
-				commentsCount: post.postComments,
-				postId: post._id,
-			})
-		);
+	const previous = window.location.pathname;
 
+	// first render
+	useEffect(() => {
 		dispatch({
 			type: ACTION_TYPES.FIRST_RENDER,
 			payload: {
 				post,
+				userId: user._id,
 			},
 		});
 	}, []);
@@ -59,23 +57,29 @@ const Post = ({ post }) => {
 					},
 					body: JSON.stringify({
 						postId: post._id,
+						userId: user._id,
 					}),
 				});
 
-				if (!res.ok) {
-					if (res.status === 403) {
-						enqueueSnackbar("Access Denied", { variant: "error" });
-					} else {
-						enqueueSnackbar("Server Error", { variant: "error" });
-					}
+				if (!res.ok && res.status === 403) {
+					dispatch({ type: ACTION_TYPES.SET_PROCESSING, payload: false });
+					enqueueSnackbar("Access Denied", { variant: "error" });
 					return;
 				}
 
 				const { msg, updatedPost } = await res.json();
 
-				dispatch({
-					type: ACTION_TYPES.LIKE_POST,
-				});
+				if (msg === "Success") {
+					dispatch({
+						type: ACTION_TYPES.LIKE_POST,
+					});
+				} else if (msg === "Post not found") {
+					enqueueSnackbar("Post not found", { variant: "error" });
+				} else if (msg === "Fail to update post") {
+					enqueueSnackbar("Fail to like the post", { variant: "error" });
+				} else {
+					enqueueSnackbar("An error occurred", { variant: "error" });
+				}
 			} else {
 				const res = await fetch(`${serverURL}/post/down-likes`, {
 					method: "PATCH",
@@ -85,23 +89,33 @@ const Post = ({ post }) => {
 					},
 					body: JSON.stringify({
 						postId: post._id,
+						userId: user._id,
 					}),
 				});
 
-				if (!res.ok) {
-					if (res.status === 403) {
-						enqueueSnackbar("Access Denied", { variant: "error" });
-					} else {
-						enqueueSnackbar("Server Error", { variant: "error" });
-					}
+				if (!res.ok && res.status === 403) {
+					dispatch({ type: ACTION_TYPES.SET_PROCESSING, payload: false });
+					enqueueSnackbar("Access Denied", { variant: "error" });
 					return;
 				}
 
 				const { msg, updatedPost } = await res.json();
 
-				dispatch({
-					type: ACTION_TYPES.DISLIKE_POST,
-				});
+				if (msg === "Success") {
+					dispatch({
+						type: ACTION_TYPES.DISLIKE_POST,
+					});
+				} else if (msg === "Post not found") {
+					enqueueSnackbar("Post not found", {
+						variant: "error",
+					});
+				} else if (msg === "Fail to update post") {
+					enqueueSnackbar("Fail to remove the like", {
+						variant: "error",
+					});
+				} else {
+					enqueueSnackbar("An error occurred", { variant: "error" });
+				}
 			}
 			dispatch({ type: ACTION_TYPES.SET_PROCESSING, payload: false });
 		} catch (err) {
@@ -125,12 +139,12 @@ const Post = ({ post }) => {
 					},
 				});
 
-				if (!res.ok) {
-					if (res.status === 403) {
-						enqueueSnackbar("Access Denied", { variant: "error" });
-					} else {
-						enqueueSnackbar("Server Error", { variant: "error" });
-					}
+				if (!res.ok && res.status === 403) {
+					dispatch({
+						type: ACTION_TYPES.SET_LOADING,
+						payload: false,
+					});
+					enqueueSnackbar("Access Denied", { variant: "error" });
 					return;
 				}
 
@@ -140,13 +154,28 @@ const Post = ({ post }) => {
 					enqueueSnackbar("Post deleted", { variant: "success" });
 					sliceDispatch(removePost(post._id));
 					dispatch({ type: ACTION_TYPES.TOGGLE_SHOW_OPTION_DIV });
+				} else if (
+					msg === "Fail to delete comments" ||
+					msg === "Fail to delete post"
+				) {
+					enqueueSnackbar("Fail to delete post", { variant: "error" });
+				} else {
+					enqueueSnackbar("An error occurred", { variant: "error" });
 				}
+
 				dispatch({ type: ACTION_TYPES.SET_LOADING, payload: false });
 			}
 			dispatch({ type: ACTION_TYPES.SET_LOADING, payload: false });
 		} catch (err) {
-			console.log(err);
+			enqueueSnackbar("Could not connect to the server", {
+				variant: "error",
+			});
 		}
+	};
+
+	// later change
+	const handleReport = () => {
+		console.log("report");
 	};
 
 	return (
@@ -156,19 +185,31 @@ const Post = ({ post }) => {
 			{state.showOptionDiv && (
 				<div className="absolute right-3 top-10 border border-gray-600 bg-gray-200">
 					{/* EDIT */}
-					<OptionDiv
-						icon={<MdEdit />}
-						text="Edit"
-						func={() =>
-							dispatch({ type: ACTION_TYPES.TOGGLE_SHOW_EDIT_POST_FORM })
-						}
-					/>
+					{userId === user._id && (
+						<OptionDiv
+							icon={<MdEdit />}
+							text="Edit"
+							func={() =>
+								dispatch({ type: ACTION_TYPES.TOGGLE_SHOW_EDIT_POST_FORM })
+							}
+						/>
+					)}
 					{/* DELETE */}
-					<OptionDiv
-						icon={<MdDeleteForever />}
-						text="Delete"
-						func={handleDelete}
-					/>
+					{userId === user._id && (
+						<OptionDiv
+							icon={<MdDeleteForever />}
+							text="Delete"
+							func={handleDelete}
+						/>
+					)}
+					{/* REPORT */}
+					{userId !== user._id && (
+						<OptionDiv
+							func={handleReport}
+							icon={<MdReportProblem />}
+							text="Report"
+						/>
+					)}
 				</div>
 			)}
 			{/* EDIT POST FORM */}
@@ -189,6 +230,8 @@ const Post = ({ post }) => {
 				imgPath={profileImgPath + post.userId.userProfile.profileImagePath}
 				userName={post.userId.userName}
 				postTime={post.postTime}
+				destination={`/profile/${post.userId._id}`}
+				previous={previous}
 			/>
 			<BsThreeDots
 				className="absolute cursor-pointer top-6 right-3"
@@ -197,6 +240,7 @@ const Post = ({ post }) => {
 
 			{/* POST DESCRIPTION */}
 			<p className="my-3">{post.postDescription}</p>
+
 			{/* POST IMAGE */}
 			{post.postImagePath !== "" && (
 				<img
@@ -205,6 +249,7 @@ const Post = ({ post }) => {
 				/>
 			)}
 
+			{/* LIKE AND COMMENT DIV */}
 			<div className="grid grid-cols-11 mt-3">
 				{/* LIKE */}
 				<div
@@ -231,12 +276,13 @@ const Post = ({ post }) => {
 						<FaCommentDots />
 					</div>
 					<h6 className="justify-self-center text-sm sm:text-base">Comments</h6>
-					<p className="justify-self-center">{commentsObj[post._id]}</p>
+					<p className="justify-self-center">{post.postComments}</p>
 				</div>
 			</div>
+			{/* COMMENTS SECTION */}
 			{state.showComment && <Comments post={post} />}
 		</div>
 	);
 };
 
-export default Post;
+export default UserPost;

@@ -1,71 +1,98 @@
 import { React, useEffect, useContext, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import Post from "./UserPost.jsx";
-import Loader from "../../../../components/Loader.jsx";
+import { useParams } from "react-router-dom";
+import UserPost from "./UserPost.jsx";
+import Loader from "../../../../components/Spinner/Loader.jsx";
 import { ServerContext } from "../../../../App.js";
 import { enqueueSnackbar } from "notistack";
-import { setPost } from "../../features/userPosts/userPostSlice.js";
+import {
+	setPost,
+	resetState,
+	setHasPost,
+	setIsLoadingPost,
+} from "../../features/userPosts/userPostSlice.js";
 
 const UserPosts = () => {
+	const { userId } = useParams();
 	const sliceDispatch = useDispatch();
 	const serverURL = useContext(ServerContext);
 	const { user, token } = useSelector((store) => store.auth);
-	const { posts } = useSelector((store) => store.post);
-	const [loading, setLoading] = useState(false);
-	const [hasPost, setHasPost] = useState(false);
+	const { posts, hasPost, isLoadingPost } = useSelector((store) => store.post);
 
 	useEffect(() => {
 		const getPost = async () => {
 			try {
-				setLoading(true);
+				sliceDispatch(setIsLoadingPost(true));
 
-				const res = await fetch(`${serverURL}/post/get-posts`, {
-					method: "POST",
-					headers: {
-						"Content-Type": "application/json",
-						Authorization: `Bearer ${token}`,
-					},
-					body: JSON.stringify({
-						userId: user._id,
-					}),
-				});
+				// determine if it is user or visitor
+				let currentUserId;
+				if (userId === user._id) {
+					currentUserId = user._id;
+				} else {
+					currentUserId = userId;
+				}
 
-				if (!res.ok) {
-					if (res.status === 403) {
-						enqueueSnackbar("Access Denied", { variant: "error" });
-					} else {
-						enqueueSnackbar("Server Error", { variant: "error" });
+				const res = await fetch(
+					`${serverURL}/post/get-posts?userId=${currentUserId}`,
+					{
+						method: "GET",
+						headers: {
+							"Content-Type": "application/json",
+							Authorization: `Bearer ${token}`,
+						},
 					}
+				);
+
+				if (!res.ok && res.status === 403) {
+					sliceDispatch(setIsLoadingPost(false));
+					enqueueSnackbar("Access Denied", { variant: "error" });
 					return;
 				}
 
 				const { msg, posts } = await res.json();
 
 				if (msg === "No post") {
-					setHasPost(false);
+					sliceDispatch(setHasPost(false));
+				} else if (msg === "Fail to retrieve posts") {
+					enqueueSnackbar("Fail to retrieve posts", {
+						variant: "error",
+					});
 				} else if (msg === "Success") {
 					sliceDispatch(setPost(posts));
-					setHasPost(true);
+					sliceDispatch(setHasPost(true));
+
+					if (posts.length < 10) {
+						sliceDispatch(setHasPost(false));
+					} else {
+						sliceDispatch(setHasPost(true));
+					}
+				} else {
+					enqueueSnackbar("An error occurred", { variant: "error" });
 				}
-				setLoading(false);
+
+				sliceDispatch(setIsLoadingPost(false));
 			} catch (err) {
 				enqueueSnackbar("Could not connect to the server", {
 					variant: "error",
 				});
-				setLoading(false);
+				sliceDispatch(setIsLoadingPost(false));
 			}
 		};
 		getPost();
-	}, []);
+
+		return () => {
+			sliceDispatch(resetState());
+		};
+	}, [userId]);
 
 	return (
 		<div>
-			{loading ? (
+			{isLoadingPost ? (
 				<Loader />
 			) : (
 				<div className="bg-gray-200 w-full py-1 px-3">
 					{hasPost || posts.length > 0 ? (
-						posts.map((post) => <Post key={post._id} post={post} />)
+						posts.map((post) => <UserPost key={post._id} post={post} />)
 					) : (
 						<h2 className="text-center my-2">No post</h2>
 					)}
