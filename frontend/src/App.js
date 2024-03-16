@@ -22,8 +22,8 @@ import SingleGroupPage from "./pages/groupPages/pages/singleGroupPage/SingleGrou
 export const ServerContext = createContext();
 
 function App() {
-	const server = "https://fyp-fsktm-connect.onrender.com";
-	// const server = "http://localhost:3001";
+	// const server = "https://fyp-fsktm-connect.onrender.com";
+	const server = "http://localhost:3001";
 
 	return (
 		<ServerContext.Provider value={server}>

@@ -27,7 +27,7 @@ import {
 import { createNewGroup } from "./controllers/group.js";
 
 // change here before publish
-const isPublish = true;
+const isPublish = false;
 
 const app = express();
 dotenv.config();
