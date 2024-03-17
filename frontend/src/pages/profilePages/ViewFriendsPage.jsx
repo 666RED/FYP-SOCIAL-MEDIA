@@ -101,7 +101,6 @@ const ViewFriendsPage = () => {
 				{/* SEARCH BAR */}
 				<div className="mt-3">
 					<SearchBar
-						// later change
 						func={handleOnChange}
 						text={searchText}
 						placeholderText="Search user"

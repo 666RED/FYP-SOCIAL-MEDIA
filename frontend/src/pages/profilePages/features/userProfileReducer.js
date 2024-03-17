@@ -6,7 +6,7 @@ export const INITIAL_STATE = {
 	loading: false,
 	isUser: false,
 	isFriend: false,
-	loadFriendStatus: false,
+	loadFriendStatus: true,
 	friendStatus: "",
 	showRespondForm: false,
 	friendRequest: {},

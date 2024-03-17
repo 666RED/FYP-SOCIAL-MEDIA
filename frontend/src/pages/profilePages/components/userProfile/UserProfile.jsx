@@ -566,7 +566,6 @@ const UserProfile = () => {
 							className="btn-gray profile-btn my-2"
 							onClick={() => navigate(`/profile/view-friends/${userId}`)}
 						>
-							<FaUserFriends className="profile-btn-icon" />
 							View Friends
 						</button>
 					</div>

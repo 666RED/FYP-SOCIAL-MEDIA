@@ -10,6 +10,7 @@ import {
 	setIsLoadingGroups,
 	appendGroups,
 	setHasGroups,
+	setOriginalGroupsArr,
 } from "../../../../../features/groupSlice.js";
 import { ServerContext } from "../../../../../App.js";
 
@@ -26,6 +27,9 @@ const YourGroups = () => {
 
 	// retrieve your groups
 	useEffect(() => {
+		const abortController = new AbortController();
+		const signal = abortController.signal;
+
 		const getYourGroups = async () => {
 			try {
 				sliceDispatch(setIsLoadingGroups(true));
@@ -39,6 +43,7 @@ const YourGroups = () => {
 							"Content-Type": "application/json",
 							Authorization: `Bearer ${token}`,
 						},
+						signal,
 					}
 				);
 
@@ -52,33 +57,37 @@ const YourGroups = () => {
 
 				if (msg === "Success") {
 					sliceDispatch(setGroupsArr(userGroupsArr));
+					sliceDispatch(setOriginalGroupsArr(userGroupsArr));
 				} else if (msg === "User not found") {
 					enqueueSnackbar("User not found", {
 						variant: "error",
 					});
 				} else if (msg === "No group") {
 					sliceDispatch(setGroupsArr([]));
-				} else if (msg === "Group not found") {
-					enqueueSnackbar("Group not found", { variant: "error" });
+				} else if (msg === "Fail to find groups") {
+					enqueueSnackbar("Fail to find groups", { variant: "error" });
 				} else {
 					enqueueSnackbar("An error occurred", { variant: "error" });
 				}
 
 				sliceDispatch(setIsLoadingGroups(false));
 			} catch (err) {
-				enqueueSnackbar("Could not connect to the server", {
-					variant: "error",
-				});
+				if (err.name === "AbortError") {
+					console.log("Request aborted");
+				} else {
+					enqueueSnackbar("Could not connect to the server", {
+						variant: "error",
+					});
+				}
 				sliceDispatch(setIsLoadingGroups(false));
 			}
 		};
 
 		getYourGroups();
-	}, []);
 
-	// reset state
-	useEffect(() => {
+		// reset state and abort request
 		return () => {
+			abortController.abort();
 			sliceDispatch(resetState());
 		};
 	}, []);
@@ -133,7 +142,6 @@ const YourGroups = () => {
 		}
 	};
 
-	// change later
 	const handleLoadMoreSearch = async () => {
 		try {
 			setLoadMore(true);
@@ -156,11 +164,11 @@ const YourGroups = () => {
 				return;
 			}
 
-			const { msg, userGroupsArr } = await res.json();
+			const { msg, returnUserGroupsArr } = await res.json();
 
 			if (msg === "Success") {
-				sliceDispatch(appendGroups(userGroupsArr));
-				if (userGroupsArr.length < 10) {
+				sliceDispatch(appendGroups(returnUserGroupsArr));
+				if (returnUserGroupsArr.length < 10) {
 					sliceDispatch(setHasGroups(false));
 				}
 			} else if (msg === "User not found") {

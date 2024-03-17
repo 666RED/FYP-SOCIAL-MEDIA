@@ -21,7 +21,6 @@ const BackArrow = ({ discardChanges = false }) => {
 						handleGoBack();
 						return;
 					}
-					// maybe change later
 					const answer = window.confirm("Discard changes?");
 					if (answer) {
 						handleGoBack();

@@ -7,7 +7,6 @@ import FriendStatusButton from "../../../../components/FriendStatusButton.jsx";
 import Spinner from "../../../../components/Spinner/Spinner.jsx";
 import { ServerContext } from "../../../../App.js";
 
-// later check why error
 const RandomFriend = ({ randomFriend }) => {
 	const navigate = useNavigate();
 	const { enqueueSnackbar } = useSnackbar();

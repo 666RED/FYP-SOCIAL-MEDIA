@@ -133,7 +133,6 @@ const Comments = ({ post }) => {
 			enqueueSnackbar("Could not connect to the server", {
 				variant: "error",
 			});
-			console.log(err);
 
 			setLoadMore(false);
 		}

@@ -2,7 +2,6 @@ import { React, useState, useEffect, useContext } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { useSnackbar } from "notistack";
 import { useNavigate } from "react-router-dom";
-import Spinner from "../../../../components/Spinner/Spinner.jsx";
 import SideBar from "../../../../components/Sidebar/SideBar.jsx";
 import Error from "../../../../components/Error.jsx";
 import Header from "../../../../components/Header.jsx";
@@ -17,6 +16,7 @@ import {
 	setGroupsArr,
 	setHasGroups,
 	setIsLoadingGroups,
+	setRandomGroupsArr,
 } from "../../../../features/groupSlice.js";
 import { ServerContext } from "../../../../App.js";
 let currentRequest;
@@ -28,8 +28,9 @@ const GroupPage = () => {
 	const sliceDispatch = useDispatch();
 	const { user, token } = useSelector((store) => store.auth);
 	const { searchText } = useSelector((store) => store.search);
-	const { originalGroupsArr } = useSelector((store) => store.group);
-	const [loading, setLoading] = useState(false);
+	const { originalGroupsArr, originalRandomGroupsArr } = useSelector(
+		(store) => store.group
+	);
 	const [extendSideBar, setExtendSideBar] = useState(false);
 	const [currentNav, setCurrentNav] = useState("Your groups");
 
@@ -42,10 +43,12 @@ const GroupPage = () => {
 
 	const handleShowYourGroups = async () => {
 		setCurrentNav("Your groups");
+		sliceDispatch(resetSearchText());
 	};
 
 	const handleShowDiscover = async () => {
 		setCurrentNav("Discover groups");
+		sliceDispatch(resetSearchText());
 	};
 
 	const searchYourGroups = async (payload) => {
@@ -67,7 +70,7 @@ const GroupPage = () => {
 			const res = await fetch(
 				`${serverURL}/group/get-user-groups-search?userId=${
 					user._id
-				}&groupsArr=${JSON.stringify(groupsArr)}&searchText=${searchText}`,
+				}&searchText=${payload}&groupsArr=${JSON.stringify([])}`,
 				{
 					method: "GET",
 					headers: {
@@ -84,16 +87,16 @@ const GroupPage = () => {
 				return;
 			}
 
-			const { msg, groupsArr } = await res.json();
+			const { msg, returnUserGroupsArr } = await res.json();
 
 			if (msg === "Success") {
-				if (groupsArr.length < 10) {
+				if (returnUserGroupsArr.length < 10) {
 					sliceDispatch(setHasGroups(false));
 				} else {
 					sliceDispatch(setHasGroups(true));
 				}
 
-				sliceDispatch(setGroupsArr(groupsArr));
+				sliceDispatch(setGroupsArr(returnUserGroupsArr));
 			} else if (msg === "No group") {
 				sliceDispatch(setHasGroups(false));
 				sliceDispatch(setGroupsArr([]));
@@ -118,13 +121,78 @@ const GroupPage = () => {
 		}
 	};
 
-	const searchDiscorverGroups = async () => {
-		console.log("search discover groups");
+	const searchDiscorverGroups = async (payload) => {
+		try {
+			const abortController = new AbortController();
+			const { signal } = abortController;
+
+			// Cancel the previous request if it exists
+			if (currentRequest) {
+				currentRequest.abort();
+			}
+
+			// Store the current request to be able to cancel it later
+			currentRequest = abortController;
+
+			sliceDispatch(setIsLoadingGroups(true));
+			sliceDispatch(setSearchText(payload));
+
+			const res = await fetch(
+				`${serverURL}/group/get-discover-groups-search?userId=${
+					user._id
+				}&searchText=${payload}&randomGroupsArr=${JSON.stringify([])}`,
+				{
+					method: "GET",
+					headers: {
+						"Content-Type": "application/json",
+						Authorization: `Bearer ${token}`,
+					},
+					signal,
+				}
+			);
+
+			if (!res.ok && res.status === 403) {
+				sliceDispatch(setIsLoadingGroups(false));
+				enqueueSnackbar("Access Denied", { variant: "error" });
+				return;
+			}
+
+			const { msg, returnRandomGroupsArr } = await res.json();
+
+			if (msg === "Success") {
+				if (returnRandomGroupsArr.length < 10) {
+					sliceDispatch(setHasGroups(false));
+				} else {
+					sliceDispatch(setHasGroups(true));
+				}
+
+				sliceDispatch(setRandomGroupsArr(returnRandomGroupsArr));
+			} else if (msg === "No group") {
+				sliceDispatch(setHasGroups(false));
+				sliceDispatch(setRandomGroupsArr([]));
+			} else if (msg === "Stop searching") {
+				sliceDispatch(setRandomGroupsArr(originalRandomGroupsArr));
+				sliceDispatch(setHasGroups(true));
+			} else if (msg === "User not found") {
+				enqueueSnackbar("User not found", { variant: "error" });
+			} else {
+				enqueueSnackbar("An error occurred", { variant: "error" });
+			}
+
+			sliceDispatch(setIsLoadingGroups(false));
+		} catch (err) {
+			if (err.name === "AbortError") {
+				console.log("Request was aborted");
+			} else {
+				enqueueSnackbar("Could not connect to the server", {
+					variant: "error",
+				});
+			}
+		}
 	};
 
 	return user && token ? (
 		<div className="py-2">
-			{loading && <Spinner />}
 			{/* SIDEBAR */}
 			{extendSideBar && (
 				<SideBar selectedSection="Group" setExtendSideBar={setExtendSideBar} />
@@ -143,16 +211,18 @@ const GroupPage = () => {
 						className={`hover:bg-gray-200 cursor-pointer text-center py-1 mr-2 flex-1 rounded-xl ${
 							currentNav === "Your groups" && "bg-gray-200 font-semibold"
 						}`}
-						onClick={currentNav === "Your gruops" ? null : handleShowYourGroups}
+						onClick={currentNav === "Your groups" ? null : handleShowYourGroups}
 					>
 						Your groups
 					</p>
 					{/* DISCOVER NEW GROUP NAV */}
 					<p
 						className={`hover:bg-gray-200 cursor-pointer text-center py-1 flex-1 rounded-xl ${
-							currentNav === "Discover" && "bg-gray-200 font-semibold"
+							currentNav === "Discover groups" && "bg-gray-200 font-semibold"
 						}`}
-						onClick={currentNav === "Discover" ? null : handleShowDiscover}
+						onClick={
+							currentNav === "Discover groups" ? null : handleShowDiscover
+						}
 					>
 						Discover groups
 					</p>
@@ -172,7 +242,7 @@ const GroupPage = () => {
 				{/* SEARCH BAR */}
 				<SearchBar
 					func={
-						currentNav === "Your grousp"
+						currentNav === "Your groups"
 							? searchYourGroups
 							: searchDiscorverGroups
 					}

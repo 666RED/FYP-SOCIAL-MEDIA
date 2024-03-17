@@ -71,7 +71,6 @@ const FriendsList = () => {
 	}, []);
 
 	return (
-		// change later the overflow feature
 		<div className="mt-3 max-h-96 overflow-y-auto">
 			<p className="text-lg">
 				{numberOfFriends} {numberOfFriends > 1 ? "friends" : "friend"}

@@ -82,7 +82,6 @@ const CampusCondition = ({ condition, inViewMostUseful = false }) => {
 					enqueueSnackbar("Fail to load user info", { variant: "error" });
 				}
 			} catch (err) {
-				console.log(err);
 				enqueueSnackbar("Could not connect to the server", {
 					variant: "error",
 				});

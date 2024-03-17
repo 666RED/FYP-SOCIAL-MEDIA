@@ -4,6 +4,7 @@ const initialState = {
 	groupsArr: [],
 	originalGroupsArr: [],
 	randomGroupsArr: [],
+	originalRandomGroupsArr: [],
 	isLoadingGroups: false,
 	hasGroups: true,
 };
@@ -25,6 +26,7 @@ const groupSlice = createSlice({
 			state.groupsArr = [];
 			state.originalGroupsArr = [];
 			state.randomGroupsArr = [];
+			state.originalRandomGroupsArr = [];
 			state.isLoadingGroups = false;
 			state.hasGroups = true;
 		},
@@ -37,6 +39,12 @@ const groupSlice = createSlice({
 		appendGroups: (state, action) => {
 			state.groupsArr = [...state.groupsArr, ...action.payload];
 		},
+		appendRandomGroups: (state, action) => {
+			state.randomGroupsArr = [...state.randomGroupsArr, ...action.payload];
+		},
+		setOriginalRandomGroupsArr: (state, action) => {
+			state.originalRandomGroupsArr = action.payload;
+		},
 	},
 });
 
@@ -48,6 +56,8 @@ export const {
 	setIsLoadingGroups,
 	setHasGroups,
 	appendGroups,
+	appendRandomGroups,
+	setOriginalRandomGroupsArr,
 } = groupSlice.actions;
 
 export default groupSlice.reducer;

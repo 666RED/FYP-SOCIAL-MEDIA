@@ -59,7 +59,6 @@ const ExploreFriendPage = () => {
 			sliceDispatch(setSearchText(payload));
 
 			const res = await fetch(
-				// change later
 				`${serverURL}/friend/get-searched-random-friends?userId=${user._id}&searchText=${payload}`,
 				{
 					method: "GET",
@@ -224,7 +223,6 @@ const ExploreFriendPage = () => {
 			<DirectBackArrowHeader destination="/friend" title="Explore friend" />
 			{/* SEARCHBAR */}
 			<div className="mt-3 mb-5">
-				{/* change later */}
 				<SearchBar
 					func={handleOnChange}
 					placeholderText="Search user"
