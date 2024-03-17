@@ -73,6 +73,8 @@ export const createNewGroup = async (req, res) => {
 export const getUserGroups = async (req, res) => {
 	try {
 		const { userId } = req.query;
+		const limit = 10;
+		const groupsArr = JSON.parse(req.query.groupsArr) || [];
 
 		const user = await User.findById(userId);
 
@@ -86,15 +88,87 @@ export const getUserGroups = async (req, res) => {
 			return res.status(200).json({ msg: "No group" });
 		}
 
+		const excludedGroups = groupsArr.map((group) => group._id);
+
+		let userGroupsIds = new Array();
+
+		// get haven't picked group ids
+		for (const [groupId] of userGroups) {
+			if (!excludedGroups.includes(groupId)) {
+				userGroupsIds.push(groupId);
+			}
+		}
+
+		const paginatedGroupsIds = userGroupsIds.slice(0, limit);
+
 		let userGroupsArr = new Array();
 
-		for (const [groupId] of userGroups) {
-			const group = await Group.findById(groupId);
-			userGroupsArr.push(group);
-		}
+		// pagination for 10 groups
+		userGroupsArr = await Promise.all(
+			paginatedGroupsIds.map(async (groupId) => {
+				const group = await Group.findById(groupId);
+				if (!group) {
+					return res.status(404).json({ msg: "Group not found" });
+				}
+				return group;
+			})
+		);
 
 		res.status(200).json({ msg: "Success", userGroupsArr });
 	} catch (err) {
+		console.log(err);
+
+		res.status(500).json({ error: err.message });
+	}
+};
+
+export const getUserGroupsSearch = async (req, res) => {
+	try {
+		const { userId, searchText } = req.query;
+		const limit = 10;
+		const groupsArr = JSON.parse(req.query.groupsArr) || [];
+
+		if (searchText === "") {
+			return res.status(200).json({ msg: "Stop searching" });
+		}
+
+		const user = await User.findById(userId);
+
+		if (!user) {
+			return res.status(404).json({ msg: "User not found" });
+		}
+
+		const userGroups = user.groups;
+
+		if (Object.keys(userGroups).length === 0) {
+			return res.status(200).json({ msg: "No group" });
+		}
+
+		const excludedGroups = groupsArr.map((group) => group._id);
+
+		let userGroupsIds = new Array();
+
+		// get haven't picked group ids
+		for (const [groupId] of userGroups) {
+			if (!excludedGroups.includes(groupId)) {
+				userGroupsIds.push(groupId);
+			}
+		}
+
+		const userGroupsArr = await Group.aggregate([
+			{
+				$match: {
+					_id: { $in: userGroupsIds },
+					groupName: { $regex: searchText, $options: "i" }, // Case-insensitive search
+				},
+			},
+			{ $limit: limit },
+		]);
+
+		res.status(200).json({ msg: "Success", userGroupsArr });
+	} catch (err) {
+		console.log(err);
+
 		res.status(500).json({ error: err.message });
 	}
 };

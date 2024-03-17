@@ -56,6 +56,8 @@ const CommentInput = ({ post }) => {
 			const { msg, savedComment } = await res.json();
 
 			if (msg === "Success") {
+				console.log(savedComment);
+
 				const response = await fetch(
 					`${serverURL}/comment/get-comment?commentId=${savedComment._id}`,
 					{

@@ -78,7 +78,10 @@ const Comments = ({ post }) => {
 		};
 
 		fetchComments();
+	}, []);
 
+	// reset state
+	useEffect(() => {
 		return () => {
 			sliceDispatch(removeComment(post._id));
 		};

@@ -91,17 +91,23 @@ export const deleteComment = async (req, res) => {
 };
 
 export const getComment = async (req, res) => {
-	const { commentId } = req.body;
-	const comment = await Comment.findById(commentId).populate({
-		path: "userId",
-		select: "userName userProfile.profileImagePath",
-	});
+	try {
+		const { commentId } = req.query;
+		const comment = await Comment.findById(commentId).populate({
+			path: "userId",
+			select: "userName userProfile.profileImagePath",
+		});
 
-	if (!comment) {
-		res.status(404).json({ msg: "Comment not found" });
+		if (!comment) {
+			res.status(404).json({ msg: "Comment not found" });
+		}
+
+		res.status(200).json({ msg: "Success", comment });
+	} catch (err) {
+		console.log(err);
+
+		res.status(500).json({ error: err.message });
 	}
-
-	res.status(200).json({ msg: "Success", comment });
 };
 
 export const editComment = async (req, res) => {

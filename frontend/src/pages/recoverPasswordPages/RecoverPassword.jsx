@@ -66,7 +66,11 @@ const RecoverPassword = () => {
 	return (
 		<div className="main-container">
 			{state.loading && <Spinner />}
-			<form className="form-container" onSubmit={handleSubmit}>
+			<form
+				className="form-container"
+				onSubmit={handleSubmit}
+				autoComplete="on"
+			>
 				<FormBackArrowHeader destination="/" title="Recover Password" />
 				<HorizontalRule />
 				<p className="text-base">

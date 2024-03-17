@@ -1,5 +1,6 @@
-import { React, useState, useEffect } from "react";
+import { React, useState, useEffect, useContext } from "react";
 import { useSelector, useDispatch } from "react-redux";
+import { useSnackbar } from "notistack";
 import { useNavigate } from "react-router-dom";
 import Spinner from "../../../../components/Spinner/Spinner.jsx";
 import SideBar from "../../../../components/Sidebar/SideBar.jsx";
@@ -8,13 +9,26 @@ import Header from "../../../../components/Header.jsx";
 import YourGroups from "./component/YourGroups.jsx";
 import DiscoverGroups from "./component/DiscoverGroups.jsx";
 import SearchBar from "../../../../components/SearchBar.jsx";
-import { resetSearchText } from "../../../../features/searchSlice.js";
+import {
+	resetSearchText,
+	setSearchText,
+} from "../../../../features/searchSlice.js";
+import {
+	setGroupsArr,
+	setHasGroups,
+	setIsLoadingGroups,
+} from "../../../../features/groupSlice.js";
+import { ServerContext } from "../../../../App.js";
+let currentRequest;
 
 const GroupPage = () => {
+	const serverURL = useContext(ServerContext);
+	const { enqueueSnackbar } = useSnackbar();
 	const navigate = useNavigate();
 	const sliceDispatch = useDispatch();
 	const { user, token } = useSelector((store) => store.auth);
 	const { searchText } = useSelector((store) => store.search);
+	const { originalGroupsArr } = useSelector((store) => store.group);
 	const [loading, setLoading] = useState(false);
 	const [extendSideBar, setExtendSideBar] = useState(false);
 	const [currentNav, setCurrentNav] = useState("Your groups");
@@ -31,11 +45,77 @@ const GroupPage = () => {
 	};
 
 	const handleShowDiscover = async () => {
-		setCurrentNav("Discover");
+		setCurrentNav("Discover groups");
 	};
 
-	const searchYourGroups = async () => {
-		console.log("search your groups");
+	const searchYourGroups = async (payload) => {
+		try {
+			const abortController = new AbortController();
+			const { signal } = abortController;
+
+			// Cancel the previous request if it exists
+			if (currentRequest) {
+				currentRequest.abort();
+			}
+
+			// Store the current request to be able to cancel it later
+			currentRequest = abortController;
+
+			sliceDispatch(setIsLoadingGroups(true));
+			sliceDispatch(setSearchText(payload));
+
+			const res = await fetch(
+				`${serverURL}/group/get-user-groups-search?userId=${
+					user._id
+				}&groupsArr=${JSON.stringify(groupsArr)}&searchText=${searchText}`,
+				{
+					method: "GET",
+					headers: {
+						"Content-Type": "application/json",
+						Authorization: `Bearer ${token}`,
+					},
+					signal,
+				}
+			);
+
+			if (!res.ok && res.status === 403) {
+				sliceDispatch(setIsLoadingGroups(false));
+				enqueueSnackbar("Access Denied", { variant: "error" });
+				return;
+			}
+
+			const { msg, groupsArr } = await res.json();
+
+			if (msg === "Success") {
+				if (groupsArr.length < 10) {
+					sliceDispatch(setHasGroups(false));
+				} else {
+					sliceDispatch(setHasGroups(true));
+				}
+
+				sliceDispatch(setGroupsArr(groupsArr));
+			} else if (msg === "No group") {
+				sliceDispatch(setHasGroups(false));
+				sliceDispatch(setGroupsArr([]));
+			} else if (msg === "Stop searching") {
+				sliceDispatch(setGroupsArr(originalGroupsArr));
+				sliceDispatch(setHasGroups(true));
+			} else if (msg === "User not found") {
+				enqueueSnackbar("User not found", { variant: "error" });
+			} else {
+				enqueueSnackbar("An error occurred", { variant: "error" });
+			}
+
+			sliceDispatch(setIsLoadingGroups(false));
+		} catch (err) {
+			if (err.name === "AbortError") {
+				console.log("Request was aborted");
+			} else {
+				enqueueSnackbar("Could not connect to the server", {
+					variant: "error",
+				});
+			}
+		}
 	};
 
 	const searchDiscorverGroups = async () => {
