@@ -55,7 +55,6 @@ const userSchema = mongoose.Schema(
 			},
 			profileBio: {
 				type: String,
-				// maybe will be changed later
 				max: 200,
 				default: "",
 			},

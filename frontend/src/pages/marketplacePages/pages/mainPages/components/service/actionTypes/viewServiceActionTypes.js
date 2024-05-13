@@ -1,0 +1,6 @@
+const ACTION_TYPES = {
+	SET_LOADING: "SET_LOADING",
+	FIRST_RENDER: "FIRST_RENDER",
+};
+
+export default ACTION_TYPES;

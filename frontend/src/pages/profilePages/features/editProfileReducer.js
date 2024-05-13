@@ -25,24 +25,28 @@ export const editProfileReducer = (state, action) => {
 			return {
 				...state,
 				profileImagePath: action.payload,
+				makeChanges: true,
 			};
 		}
 		case "SET_COVER_IMAGE_PATH": {
 			return {
 				...state,
 				coverImagePath: action.payload,
+				makeChanges: true,
 			};
 		}
 		case "SET_NAME": {
 			return {
 				...state,
 				name: action.payload,
+				makeChanges: true,
 			};
 		}
 		case "SET_BIO": {
 			return {
 				...state,
 				bio: action.payload,
+				makeChanges: true,
 			};
 		}
 		case "SET_LOADING": {

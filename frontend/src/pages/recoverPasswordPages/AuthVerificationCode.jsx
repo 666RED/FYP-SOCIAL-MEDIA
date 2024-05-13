@@ -111,7 +111,9 @@ const AuthVerificationCode = () => {
 				console.log("An error occurred");
 			}
 		} catch (err) {
-			console.log(err);
+			enqueueSnackbar("Could not connect to the server", {
+				variant: "error",
+			});
 		}
 	};
 

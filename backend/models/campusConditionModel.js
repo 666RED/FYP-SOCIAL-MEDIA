@@ -51,6 +51,10 @@ const campusConditionSchema = mongoose.Schema(
 				type: String,
 			},
 		},
+		removed: {
+			type: Boolean,
+			default: false,
+		},
 	},
 	{ timestamps: true }
 );

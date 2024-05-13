@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import { FriendRequest } from "../models/friendRequestModel.js";
 import { User } from "../models/userModel.js";
 
@@ -178,25 +179,29 @@ export const rejectFriendRequest = async (req, res) => {
 
 export const getFriendRequests = async (req, res) => {
 	try {
-		const { receiverId } = req.query;
+		const { receiverId, requestsArr } = req.query;
+		const requestsArray = JSON.parse(requestsArr);
+		const limit = 10;
 
 		const receivedFriendRequests = await FriendRequest.find({
 			receiverId: receiverId,
 			status: "pending",
+			_id: {
+				$nin: requestsArray.map(
+					(request) => new mongoose.Types.ObjectId(request._id)
+				),
+			},
 		})
 			.populate({
 				path: "requestorId",
 				model: "User",
 				select: "userName userProfile userGender",
 			})
+			.limit(limit)
 			.exec();
 
 		if (!receivedFriendRequests) {
 			return res.status(404).json({ msg: "Friend requests not found" });
-		}
-
-		if (receivedFriendRequests.length === 0) {
-			return res.status(200).json({ msg: "No friend reqeust" });
 		}
 
 		res
@@ -235,25 +240,30 @@ export const getFriendRequestsAmount = async (req, res) => {
 
 export const getPendingFriendRequests = async (req, res) => {
 	try {
-		const { requestorId } = req.query;
+		const limit = 10;
+		const { requestorId, pendings } = req.query;
+		const pendingsArray = JSON.parse(pendings);
 
 		const pendingFriendRequests = await FriendRequest.find({
 			requestorId: requestorId,
 			status: "pending",
+			_id: {
+				$nin: pendingsArray.map(
+					(pending) => new mongoose.Types.ObjectId(pending._id)
+				),
+			},
 		})
 			.populate({
 				path: "receiverId",
 				model: "User",
 				select: "userName userProfile userGender",
 			})
+			.sort({ createdAt: -1 })
+			.limit(limit)
 			.exec();
 
 		if (!pendingFriendRequests) {
 			return res.status(404).json({ msg: "Friend requests not found" });
-		}
-
-		if (pendingFriendRequests.length === 0) {
-			return res.status(200).json({ msg: "No pending friend reqeust" });
 		}
 
 		res

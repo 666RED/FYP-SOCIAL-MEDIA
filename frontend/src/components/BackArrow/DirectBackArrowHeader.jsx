@@ -2,7 +2,11 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import { FaArrowLeft } from "react-icons/fa";
 
-const DirectBackArrowHeader = ({ destination, title }) => {
+const DirectBackArrowHeader = ({
+	destination,
+	title,
+	discardChanges = false,
+}) => {
 	const navigate = useNavigate();
 
 	return (
@@ -11,7 +15,14 @@ const DirectBackArrowHeader = ({ destination, title }) => {
 				<FaArrowLeft
 					className="text-lg cursor-pointer hover:opacity-80"
 					onClick={() => {
-						navigate(destination);
+						if (!discardChanges) {
+							navigate(destination);
+						} else {
+							const ans = window.confirm("Discard changes?");
+							if (ans) {
+								navigate(destination);
+							}
+						}
 					}}
 				/>
 			</div>

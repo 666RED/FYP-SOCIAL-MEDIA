@@ -5,7 +5,7 @@ const groupSchema = mongoose.Schema(
 		groupName: {
 			type: String,
 			required: true,
-			min: 3, // maybe change later
+			min: 3,
 			max: 50,
 		},
 		groupImagePath: {

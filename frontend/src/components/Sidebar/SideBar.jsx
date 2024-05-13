@@ -1,4 +1,4 @@
-import React from "react";
+import { React } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router";
 import { MdCancel } from "react-icons/md/index.js";
@@ -6,7 +6,7 @@ import SidebarListElement from "./SidebarListElement.jsx";
 import { logout } from "../../features/authSlice.js";
 import Filter from "../Filter.jsx";
 
-const SideBar = ({ selectedSection, setExtendSideBar }) => {
+const SideBar = ({ selectedSection, setExtendSideBar, extendSideBar }) => {
 	const dispatch = useDispatch();
 	const navigate = useNavigate();
 	const { user } = useSelector((store) => store.auth);
@@ -21,11 +21,15 @@ const SideBar = ({ selectedSection, setExtendSideBar }) => {
 		{ page: "Setting", destination: "/setting" },
 	];
 
-	// later add transition
 	return (
 		<div>
-			<Filter />
-			<div className="w-44 sm:w-52 bg-gray-700 fixed top-0 left-0 bottom-0 p-2 transofrm z-30">
+			{extendSideBar && <Filter />}
+			<div
+				className={`${
+					extendSideBar ? "w-44 sm:w-52 p-2" : "w-0"
+				} bg-gray-700 fixed top-0 left-0 bottom-0 transform z-30 sidebar-transition overflow-hidden`}
+			>
+				{/* LOGO & CLOSE BUTTON */}
 				<div className="flex items-center justify-between">
 					<p>Logo</p>
 					<MdCancel
@@ -33,7 +37,8 @@ const SideBar = ({ selectedSection, setExtendSideBar }) => {
 						onClick={() => setExtendSideBar(false)}
 					/>
 				</div>
-				<ul className="mt-4 text-white grid sidebar-list">
+				{/* LIST ELEMENTS */}
+				<ul className={`mt-4 text-white grid sidebar-list sidebar-transition`}>
 					{sidebarListElements.map(({ page, destination }, id) => {
 						return (
 							<SidebarListElement
@@ -45,6 +50,7 @@ const SideBar = ({ selectedSection, setExtendSideBar }) => {
 						);
 					})}
 				</ul>
+				{/* LOG OUT */}
 				<p
 					className="absolute bottom-0 w-11/12 hover:bg-gray-500 px-1 py-3 rounded-md cursor-pointer text-white"
 					onClick={() => {

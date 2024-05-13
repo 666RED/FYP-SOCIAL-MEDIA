@@ -14,7 +14,7 @@ import {
 } from "../../../../../features/groupSlice.js";
 import { ServerContext } from "../../../../../App.js";
 
-const YourGroups = () => {
+const YourGroups = ({ setLoading }) => {
 	const sliceDispatch = useDispatch();
 	const serverURL = useContext(ServerContext);
 	const { user, token } = useSelector((store) => store.auth);
@@ -32,6 +32,7 @@ const YourGroups = () => {
 
 		const getYourGroups = async () => {
 			try {
+				setLoading(true);
 				sliceDispatch(setIsLoadingGroups(true));
 				const res = await fetch(
 					`${serverURL}/group/get-user-groups?userId=${
@@ -48,6 +49,7 @@ const YourGroups = () => {
 				);
 
 				if (!res.ok && res.status === 403) {
+					setLoading(false);
 					sliceDispatch(setIsLoadingGroups(false));
 					enqueueSnackbar("Access Denied", { variant: "error" });
 					return;
@@ -70,16 +72,19 @@ const YourGroups = () => {
 					enqueueSnackbar("An error occurred", { variant: "error" });
 				}
 
+				setLoading(false);
 				sliceDispatch(setIsLoadingGroups(false));
 			} catch (err) {
 				if (err.name === "AbortError") {
 					console.log("Request aborted");
+					sliceDispatch(setIsLoadingGroups(true));
 				} else {
 					enqueueSnackbar("Could not connect to the server", {
 						variant: "error",
 					});
+					setLoading(false);
+					sliceDispatch(setIsLoadingGroups(false));
 				}
-				sliceDispatch(setIsLoadingGroups(false));
 			}
 		};
 
@@ -120,13 +125,15 @@ const YourGroups = () => {
 				sliceDispatch(appendGroups(userGroupsArr));
 				if (userGroupsArr.length < 10) {
 					sliceDispatch(setHasGroups(false));
+				} else {
+					sliceDispatch(setHasGroups(true));
 				}
 			} else if (msg === "User not found") {
 				enqueueSnackbar("User not found", {
 					variant: "error",
 				});
 			} else if (msg === "No group") {
-				sliceDispatch(setGroupsArr([]));
+				sliceDispatch(setHasGroups(false));
 			} else if (msg === "Group not found") {
 				enqueueSnackbar("Group not found", { variant: "error" });
 			} else {

@@ -1,4 +1,4 @@
-import { React, useEffect, useContext } from "react";
+import { React, useEffect, useContext, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { useParams } from "react-router-dom";
 import { useSnackbar } from "notistack";
@@ -9,6 +9,7 @@ import Error from "../../components/Error.jsx";
 import {
 	resetState,
 	setFriendsArr,
+	setHasFriends,
 	setIsLoadingFriend,
 } from "../../features/friendSlice.js";
 import { ServerContext } from "../../App.js";
@@ -23,6 +24,7 @@ const ViewFriendsPage = () => {
 	const { user, token } = useSelector((store) => store.auth);
 	const serverURL = useContext(ServerContext);
 	const { enqueueSnackbar } = useSnackbar();
+	const [loading, setLoading] = useState(false);
 
 	// reset state
 	useEffect(() => {
@@ -41,7 +43,7 @@ const ViewFriendsPage = () => {
 			currentRequest.abort();
 		}
 
-		// Store the current request to be able to cancel it later
+		// Store the current request to be able to cancel it
 		currentRequest = abortController;
 
 		sliceDispatch(setIsLoadingFriend(true));
@@ -49,7 +51,9 @@ const ViewFriendsPage = () => {
 
 		try {
 			const res = await fetch(
-				`${serverURL}/friend/get-searched-friends?userId=${userId}&searchText=${payload}`,
+				`${serverURL}/friend/get-searched-friends?userId=${userId}&searchText=${payload.trim()}&friends=${JSON.stringify(
+					[]
+				)}`,
 				{
 					method: "GET",
 					headers: {
@@ -66,10 +70,15 @@ const ViewFriendsPage = () => {
 				return;
 			}
 
-			const { msg, friendsArray } = await res.json();
+			const { msg, returnFriendsArr } = await res.json();
 
 			if (msg === "Success") {
-				sliceDispatch(setFriendsArr(friendsArray));
+				sliceDispatch(setFriendsArr(returnFriendsArr));
+				if (returnFriendsArr.length < 10) {
+					sliceDispatch(setHasFriends(false));
+				} else {
+					sliceDispatch(setHasFriends(true));
+				}
 			} else if (msg === "Stop searching") {
 				sliceDispatch(setFriendsArr(originalFriendsArr));
 			} else if (msg === "User not found") {
@@ -104,10 +113,11 @@ const ViewFriendsPage = () => {
 						func={handleOnChange}
 						text={searchText}
 						placeholderText="Search user"
+						isDisabled={loading}
 					/>
 				</div>
 				{/* FRIENDS LIST */}
-				<FriendsList />
+				<FriendsList setLoading={setLoading} />
 			</div>
 		</div>
 	) : (

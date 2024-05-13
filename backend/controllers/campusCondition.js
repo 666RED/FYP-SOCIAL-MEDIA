@@ -44,8 +44,6 @@ export const addNewCampusCondition = async (req, res) => {
 
 		res.status(201).json({ msg: "Success", savedCampusCondition });
 	} catch (err) {
-		console.log(err);
-
 		res.status(500).json({ error: err.message });
 	}
 };
@@ -53,8 +51,10 @@ export const addNewCampusCondition = async (req, res) => {
 export const getCampusConditions = async (req, res) => {
 	try {
 		const limit = 10;
-		const count = parseInt(req.query.count) || 0;
 		const currentTime = new Date(req.query.currentTime) || new Date();
+		const conditions = req.query.conditions;
+
+		const conditionsArray = JSON.parse(conditions);
 
 		const campusConditions = await CampusCondition.aggregate([
 			{
@@ -72,14 +72,16 @@ export const getCampusConditions = async (req, res) => {
 			{
 				$match: {
 					createdAt: { $lt: currentTime },
-					duration: { $lt: 24 }, // Filter conditions with duration less than 24 hours
+					removed: false,
+					_id: {
+						$nin: conditionsArray.map(
+							(condition) => new mongoose.Types.ObjectId(condition._id)
+						),
+					},
 				},
 			},
 			{
 				$sort: { createdAt: -1 },
-			},
-			{
-				$skip: count,
 			},
 			{
 				$limit: limit,
@@ -95,8 +97,6 @@ export const getCampusConditions = async (req, res) => {
 			returnConditions: campusConditions,
 		});
 	} catch (err) {
-		console.log(err);
-
 		res.status(500).json({ error: err.message });
 	}
 };
@@ -153,8 +153,6 @@ export const handleUp = async (req, res) => {
 
 		res.status(200).json({ msg: "Success" });
 	} catch (err) {
-		console.log(err);
-
 		res.status(500).json({ error: err.message });
 	}
 };
@@ -225,8 +223,6 @@ export const handleDown = async (req, res) => {
 
 		res.status(200).json({ msg: "Success" });
 	} catch (err) {
-		console.log(err);
-
 		res.status(500).json({ error: err.message });
 	}
 };
@@ -258,8 +254,6 @@ export const cancelDown = async (req, res) => {
 
 		res.status(200).json({ msg: "Success" });
 	} catch (err) {
-		console.log(err);
-
 		res.status(500).json({ error: err.message });
 	}
 };
@@ -332,6 +326,7 @@ export const editCondition = async (req, res) => {
 			{
 				$match: {
 					_id: updatedCondition._id,
+					removed: false,
 				},
 			},
 			{
@@ -352,8 +347,6 @@ export const editCondition = async (req, res) => {
 
 		res.status(200).json({ msg: "Success", returnCondition });
 	} catch (err) {
-		console.log(err);
-
 		res.status(500).json({ error: err.message });
 	}
 };
@@ -372,8 +365,11 @@ export const deleteCondition = async (req, res) => {
 			fs.unlinkSync(conditionImagePath);
 		}
 
-		const deletedCondition = await CampusCondition.findByIdAndDelete(
-			condition._id
+		const deletedCondition = await CampusCondition.findByIdAndUpdate(
+			condition._id,
+			{
+				$set: { removed: true },
+			}
 		);
 
 		if (!deletedCondition) {
@@ -382,8 +378,6 @@ export const deleteCondition = async (req, res) => {
 
 		res.status(200).json({ msg: "Success", deletedCondition });
 	} catch (err) {
-		console.log(err);
-
 		res.status(500).json({ error: err.message });
 	}
 };
@@ -418,6 +412,7 @@ export const updateConditionResolved = async (req, res) => {
 			{
 				$match: {
 					_id: updatedCondition._id,
+					removed: false,
 				},
 			},
 			{
@@ -438,8 +433,6 @@ export const updateConditionResolved = async (req, res) => {
 
 		res.status(200).json({ msg: "Success", returnCondition });
 	} catch (err) {
-		console.log(err);
-
 		res.status(500).json({ error: err.message });
 	}
 };
@@ -464,7 +457,7 @@ export const getMostUsefulConditions = async (req, res) => {
 			},
 			{
 				$match: {
-					duration: { $lt: 24 }, // Filter conditions with duration less than 24 hours
+					removed: false,
 				},
 			},
 			{
@@ -493,6 +486,7 @@ export const getMostUsefulCondition = async (req, res) => {
 			{
 				$match: {
 					_id: new mongoose.Types.ObjectId(conditionId),
+					removed: false,
 				},
 			},
 			{

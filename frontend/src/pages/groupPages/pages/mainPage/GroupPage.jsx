@@ -33,6 +33,7 @@ const GroupPage = () => {
 	);
 	const [extendSideBar, setExtendSideBar] = useState(false);
 	const [currentNav, setCurrentNav] = useState("Your groups");
+	const [loading, setLoading] = useState(false);
 
 	// reset searchText state
 	useEffect(() => {
@@ -41,12 +42,12 @@ const GroupPage = () => {
 		};
 	}, []);
 
-	const handleShowYourGroups = async () => {
+	const handleShowYourGroups = () => {
 		setCurrentNav("Your groups");
 		sliceDispatch(resetSearchText());
 	};
 
-	const handleShowDiscover = async () => {
+	const handleShowDiscover = () => {
 		setCurrentNav("Discover groups");
 		sliceDispatch(resetSearchText());
 	};
@@ -61,7 +62,7 @@ const GroupPage = () => {
 				currentRequest.abort();
 			}
 
-			// Store the current request to be able to cancel it later
+			// Store the current request to be able to cancel it
 			currentRequest = abortController;
 
 			sliceDispatch(setIsLoadingGroups(true));
@@ -70,7 +71,7 @@ const GroupPage = () => {
 			const res = await fetch(
 				`${serverURL}/group/get-user-groups-search?userId=${
 					user._id
-				}&searchText=${payload}&groupsArr=${JSON.stringify([])}`,
+				}&searchText=${payload.trim()}&groupsArr=${JSON.stringify([])}`,
 				{
 					method: "GET",
 					headers: {
@@ -102,7 +103,9 @@ const GroupPage = () => {
 				sliceDispatch(setGroupsArr([]));
 			} else if (msg === "Stop searching") {
 				sliceDispatch(setGroupsArr(originalGroupsArr));
-				sliceDispatch(setHasGroups(true));
+				if (originalGroupsArr.length >= 10) {
+					sliceDispatch(setHasGroups(true));
+				}
 			} else if (msg === "User not found") {
 				enqueueSnackbar("User not found", { variant: "error" });
 			} else {
@@ -131,7 +134,7 @@ const GroupPage = () => {
 				currentRequest.abort();
 			}
 
-			// Store the current request to be able to cancel it later
+			// Store the current request to be able to cancel it
 			currentRequest = abortController;
 
 			sliceDispatch(setIsLoadingGroups(true));
@@ -140,7 +143,7 @@ const GroupPage = () => {
 			const res = await fetch(
 				`${serverURL}/group/get-discover-groups-search?userId=${
 					user._id
-				}&searchText=${payload}&randomGroupsArr=${JSON.stringify([])}`,
+				}&searchText=${payload.trim()}&randomGroupsArr=${JSON.stringify([])}`,
 				{
 					method: "GET",
 					headers: {
@@ -172,7 +175,9 @@ const GroupPage = () => {
 				sliceDispatch(setRandomGroupsArr([]));
 			} else if (msg === "Stop searching") {
 				sliceDispatch(setRandomGroupsArr(originalRandomGroupsArr));
-				sliceDispatch(setHasGroups(true));
+				if (originalRandomGroupsArr.length >= 10) {
+					sliceDispatch(setHasGroups(true));
+				}
 			} else if (msg === "User not found") {
 				enqueueSnackbar("User not found", { variant: "error" });
 			} else {
@@ -194,9 +199,11 @@ const GroupPage = () => {
 	return user && token ? (
 		<div className="py-2">
 			{/* SIDEBAR */}
-			{extendSideBar && (
-				<SideBar selectedSection="Group" setExtendSideBar={setExtendSideBar} />
-			)}
+			<SideBar
+				selectedSection="Group"
+				setExtendSideBar={setExtendSideBar}
+				extendSideBar={extendSideBar}
+			/>
 			{/* HEADER */}
 			<Header
 				extendSideBar={extendSideBar}
@@ -208,7 +215,7 @@ const GroupPage = () => {
 				<div className="flex col-span-7 md:col-span-5">
 					{/* YOUR GROUP NAV */}
 					<p
-						className={`hover:bg-gray-200 cursor-pointer text-center py-1 mr-2 flex-1 rounded-xl ${
+						className={`hover:bg-gray-200 cursor-pointer text-center py-1 mr-2 flex-1 rounded-xl text-[13px] min-[361px]:text-base ${
 							currentNav === "Your groups" && "bg-gray-200 font-semibold"
 						}`}
 						onClick={currentNav === "Your groups" ? null : handleShowYourGroups}
@@ -217,7 +224,7 @@ const GroupPage = () => {
 					</p>
 					{/* DISCOVER NEW GROUP NAV */}
 					<p
-						className={`hover:bg-gray-200 cursor-pointer text-center py-1 flex-1 rounded-xl ${
+						className={`hover:bg-gray-200 cursor-pointer text-center py-1 flex-1 rounded-xl text-[13px] min-[361px]:text-base ${
 							currentNav === "Discover groups" && "bg-gray-200 font-semibold"
 						}`}
 						onClick={
@@ -229,7 +236,7 @@ const GroupPage = () => {
 				</div>
 				{/* CREATE NEW GROUP BUTTON */}
 				<button
-					className="btn-green col-start-9 col-span-4 md:col-start-11 md:col-span-2"
+					className="btn-green col-start-9 col-span-4 md:col-start-11 md:col-span-2 text-[13px] min-[361px]:text-base"
 					onClick={() => navigate("/group/create-new-group")}
 				>
 					Create New
@@ -248,9 +255,14 @@ const GroupPage = () => {
 					}
 					placeholderText="Search group"
 					text={searchText}
+					isDisabled={loading}
 				/>
 				{/* YOUR GROUPS */}
-				{currentNav === "Your groups" ? <YourGroups /> : <DiscoverGroups />}
+				{currentNav === "Your groups" ? (
+					<YourGroups setLoading={setLoading} />
+				) : (
+					<DiscoverGroups setLoading={setLoading} />
+				)}
 			</div>
 		</div>
 	) : (

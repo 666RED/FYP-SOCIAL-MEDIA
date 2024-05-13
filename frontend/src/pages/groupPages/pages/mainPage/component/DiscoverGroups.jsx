@@ -14,7 +14,7 @@ import {
 } from "../../../../../features/groupSlice.js";
 import { ServerContext } from "../../../../../App.js";
 
-const DiscoverGroups = () => {
+const DiscoverGroups = ({ setLoading }) => {
 	const sliceDispatch = useDispatch();
 	const serverURL = useContext(ServerContext);
 	const { user, token } = useSelector((store) => store.auth);
@@ -31,6 +31,7 @@ const DiscoverGroups = () => {
 		const signal = abortController.signal;
 		const getDiscoverGroups = async () => {
 			try {
+				setLoading(true);
 				sliceDispatch(setIsLoadingGroups(true));
 				const res = await fetch(
 					`${serverURL}/group/get-discover-groups?userId=${
@@ -47,6 +48,7 @@ const DiscoverGroups = () => {
 				);
 
 				if (!res.ok && res.status === 403) {
+					setLoading(false);
 					sliceDispatch(setIsLoadingGroups(false));
 					enqueueSnackbar("Access Denied", { variant: "error" });
 					return;
@@ -71,16 +73,20 @@ const DiscoverGroups = () => {
 					enqueueSnackbar("An error occurred", { variant: "error" });
 				}
 
+				setLoading(false);
 				sliceDispatch(setIsLoadingGroups(false));
 			} catch (err) {
 				if (err.name === "AbortError") {
 					console.log("Request aborted");
+					setLoading(false);
+					sliceDispatch(setIsLoadingGroups(true));
 				} else {
 					enqueueSnackbar("Could not connect to the server", {
 						variant: "error",
 					});
+					setLoading(false);
+					sliceDispatch(setIsLoadingGroups(false));
 				}
-				sliceDispatch(setIsLoadingGroups(false));
 			}
 		};
 
@@ -121,13 +127,15 @@ const DiscoverGroups = () => {
 				sliceDispatch(appendRandomGroups(returnRandomGroupsArr));
 				if (returnRandomGroupsArr.length < 10) {
 					sliceDispatch(setHasGroups(false));
+				} else {
+					sliceDispatch(setHasGroups(true));
 				}
 			} else if (msg === "User not found") {
 				enqueueSnackbar("User not found", {
 					variant: "error",
 				});
 			} else if (msg === "No group") {
-				sliceDispatch(setRandomGroupsArr([]));
+				sliceDispatch(setHasGroups(false));
 			} else if (msg === "Group not found") {
 				enqueueSnackbar("Group not found", { variant: "error" });
 			} else {

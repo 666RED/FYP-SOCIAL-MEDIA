@@ -6,7 +6,13 @@ const initialState = {
 	randomGroupsArr: [],
 	originalRandomGroupsArr: [],
 	isLoadingGroups: false,
+	isLoadingPosts: false,
 	hasGroups: true,
+	hasPosts: true,
+	hasJoinGroupRequest: false,
+	joinGroupRequestsArr: [],
+	isLoadingJoinGroupRequests: false,
+	isMember: false,
 };
 
 const groupSlice = createSlice({
@@ -29,6 +35,11 @@ const groupSlice = createSlice({
 			state.originalRandomGroupsArr = [];
 			state.isLoadingGroups = false;
 			state.hasGroups = true;
+			state.hasPosts = true;
+			state.hasJoinGroupRequest = false;
+			state.isLoadingPosts = false;
+			state.joinGroupRequestsArr = [];
+			state.isLoadingJoinGroupRequests = false;
 		},
 		setIsLoadingGroups: (state, action) => {
 			state.isLoadingGroups = action.payload;
@@ -45,6 +56,35 @@ const groupSlice = createSlice({
 		setOriginalRandomGroupsArr: (state, action) => {
 			state.originalRandomGroupsArr = action.payload;
 		},
+		setHasPosts: (state, action) => {
+			state.hasPosts = action.payload;
+		},
+		setIsLoadingPosts: (state, action) => {
+			state.isLoadingPosts = action.payload;
+		},
+		setJoinGroupRequestsArr: (state, action) => {
+			state.joinGroupRequestsArr = action.payload;
+		},
+		removeJoinGroupRequest: (state, action) => {
+			state.joinGroupRequestsArr = state.joinGroupRequestsArr.filter(
+				(joinGroupRequest) => joinGroupRequest._id !== action.payload
+			);
+		},
+		setHasJoinGroupRequest: (state, action) => {
+			state.hasJoinGroupRequest = action.payload;
+		},
+		setIsLoadingJoinGroupRequests: (state, action) => {
+			state.isLoadingJoinGroupRequests = action.payload;
+		},
+		appendJoinGroupRequests: (state, action) => {
+			state.joinGroupRequestsArr = [
+				...state.joinGroupRequestsArr,
+				...action.payload,
+			];
+		},
+		setIsMember: (state, action) => {
+			state.isMember = action.payload;
+		},
 	},
 });
 
@@ -58,6 +98,14 @@ export const {
 	appendGroups,
 	appendRandomGroups,
 	setOriginalRandomGroupsArr,
+	setHasPosts,
+	setIsLoadingPosts,
+	setJoinGroupRequestsArr,
+	removeJoinGroupRequest,
+	setHasJoinGroupRequest,
+	setIsLoadingJoinGroupRequests,
+	appendJoinGroupRequests,
+	setIsMember,
 } = groupSlice.actions;
 
 export default groupSlice.reducer;

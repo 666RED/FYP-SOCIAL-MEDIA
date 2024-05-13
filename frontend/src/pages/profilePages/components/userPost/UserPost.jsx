@@ -17,8 +17,8 @@ import {
 	INITIAL_STATE,
 } from "../../features/userPosts/userPostReducer.js";
 import ACTION_TYPES from "../../actionTypes/userPosts/userPostActionTypes.js";
-import { ServerContext } from "../../../../App.js";
 import { removePost } from "../../features/userPosts/userPostSlice.js";
+import { ServerContext } from "../../../../App.js";
 
 const UserPost = ({ post }) => {
 	const { userId } = useParams();
@@ -67,7 +67,7 @@ const UserPost = ({ post }) => {
 					return;
 				}
 
-				const { msg, updatedPost } = await res.json();
+				const { msg } = await res.json();
 
 				if (msg === "Success") {
 					dispatch({
@@ -99,7 +99,7 @@ const UserPost = ({ post }) => {
 					return;
 				}
 
-				const { msg, updatedPost } = await res.json();
+				const { msg } = await res.json();
 
 				if (msg === "Success") {
 					dispatch({
@@ -119,6 +119,7 @@ const UserPost = ({ post }) => {
 			}
 			dispatch({ type: ACTION_TYPES.SET_PROCESSING, payload: false });
 		} catch (err) {
+			dispatch({ type: ACTION_TYPES.SET_PROCESSING, payload: false });
 			enqueueSnackbar("Could not connect to the server", {
 				variant: "error",
 			});
@@ -170,6 +171,7 @@ const UserPost = ({ post }) => {
 			enqueueSnackbar("Could not connect to the server", {
 				variant: "error",
 			});
+			dispatch({ type: ACTION_TYPES.SET_LOADING, payload: false });
 		}
 	};
 

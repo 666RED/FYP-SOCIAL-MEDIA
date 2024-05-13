@@ -12,35 +12,46 @@ import {
 	setIsLoadingFriend,
 } from "../../../../features/friendSlice.js";
 import { ServerContext } from "../../../../App.js";
+let currentRequest;
 
-const RandomFriendsList = () => {
+const RandomFriendsList = ({ setLoading }) => {
 	const sliceDispatch = useDispatch();
 	const serverURL = useContext(ServerContext);
 	const { enqueueSnackbar } = useSnackbar();
 	const { user, token } = useSelector((store) => store.auth);
-	const { randomFriendsArr, searchText, isLoadingFriend } = useSelector(
+	const { randomFriendsArr, isLoadingFriend } = useSelector(
 		(store) => store.friend
 	);
+	const { searchText } = useSelector((store) => store.search);
+	const [emptyText, toggleEmptyText] = useState(false);
 
 	// get 15 random users
 	useEffect(() => {
 		const getRandomFriends = async () => {
-			sliceDispatch(setIsLoadingFriend(true));
 			try {
+				const abortController = new AbortController();
+				const { signal } = abortController;
+				currentRequest = abortController;
+
+				setLoading(true);
+				sliceDispatch(setIsLoadingFriend(true));
+
 				const res = await fetch(
 					`${serverURL}/friend/get-random-friends?userId=${
 						user._id
-					}&randomFriendsArr=${JSON.stringify(randomFriendsArr)}`,
+					}&randomFriendsArr=${JSON.stringify([])}`,
 					{
 						method: "GET",
 						headers: {
 							"Content-Type": "application/json",
 							Authorization: `Bearer ${token}`,
 						},
+						signal,
 					}
 				);
 
 				if (!res.ok && res.status === 403) {
+					setLoading(false);
 					sliceDispatch(setIsLoadingFriend(false));
 					enqueueSnackbar("Access Denied", { variant: "error" });
 					return;
@@ -59,6 +70,8 @@ const RandomFriendsList = () => {
 
 					if (randomFriends.length < 15) {
 						sliceDispatch(setHasRandomFriends(false));
+					} else {
+						sliceDispatch(setHasRandomFriends(true));
 					}
 				} else if (msg === "User not found") {
 					enqueueSnackbar("User not found", { variant: "error" });
@@ -70,27 +83,46 @@ const RandomFriendsList = () => {
 					enqueueSnackbar("An error occurred", { variant: "error" });
 				}
 
+				setLoading(false);
 				sliceDispatch(setIsLoadingFriend(false));
 			} catch (err) {
-				enqueueSnackbar("Could not connect to the server", {
-					variant: "error",
-				});
-				sliceDispatch(setIsLoadingFriend(false));
+				if (err.name === "AbortError") {
+					console.log("Request was aborted");
+				} else {
+					enqueueSnackbar("Could not connect to the server", {
+						variant: "error",
+					});
+					setLoading(false);
+					sliceDispatch(setIsLoadingFriend(false));
+				}
 			}
 		};
 
 		getRandomFriends();
+	}, [emptyText]);
+
+	// cancel request
+	useEffect(() => {
+		return () => {
+			if (currentRequest) {
+				currentRequest.abort();
+			}
+		};
 	}, []);
 
 	return (
 		<div className="px-2 mt-3 grid grid-cols-12 md:gap-x-2">
 			{isLoadingFriend ? (
-				<div className="mt-4">
+				<div className="mt-4 col-span-12">
 					<Loader />
 				</div>
 			) : randomFriendsArr.length > 0 ? (
 				randomFriendsArr.map((randomFriend) => (
-					<RandomFriend key={randomFriend._id} randomFriend={randomFriend} />
+					<RandomFriend
+						key={randomFriend._id}
+						randomFriend={randomFriend}
+						toggleEmptyText={toggleEmptyText}
+					/>
 				))
 			) : searchText === "" ? (
 				<h2 className="col-span-12">No friend</h2>

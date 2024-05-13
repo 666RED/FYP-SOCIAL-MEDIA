@@ -6,13 +6,13 @@ import FormHeader from "../../../../components/FormHeader.jsx";
 import UploadImage from "../../../../components/UploadImage.jsx";
 import Spinner from "../../../../components/Spinner/Spinner.jsx";
 import RemoveImageText from "../../../../components/RemoveImageText.jsx";
-import { ServerContext } from "../../../../App.js";
 import {
 	editPostFormReducer,
 	INITIAL_STATE,
 } from "../../features/userPosts/editPostFormReducer.js";
 import ACTION_TYPES from "../../actionTypes/userPosts/editPostFormActionTypes.js";
 import { updatePost } from "../../features/userPosts/userPostSlice.js";
+import { ServerContext } from "../../../../App.js";
 
 const EditPostForm = ({
 	toggleShowEditPostForm,
@@ -115,7 +115,6 @@ const EditPostForm = ({
 					{/* TEXT */}
 					<label htmlFor="text-description">Text description:</label>
 					<textarea
-						type="text"
 						id="text-description"
 						value={state.postDescription}
 						onChange={(e) => {

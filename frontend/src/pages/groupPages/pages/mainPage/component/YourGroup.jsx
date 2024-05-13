@@ -10,7 +10,6 @@ const YourGroup = ({ group }) => {
 	);
 	const navigate = useNavigate();
 
-	// maybe change later for destination
 	const handleNavigate = () => {
 		navigate(`/group/${group._id}`);
 	};

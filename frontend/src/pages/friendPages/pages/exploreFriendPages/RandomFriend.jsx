@@ -1,20 +1,24 @@
 import { React, useContext, useState } from "react";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { useSnackbar } from "notistack";
 import { FaMale, FaFemale } from "react-icons/fa";
-import FriendStatusButton from "../../../../components/FriendStatusButton.jsx";
 import Spinner from "../../../../components/Spinner/Spinner.jsx";
+import {
+	removeRandomFriend,
+	removeOriginalRandomFriend,
+	setHasRandomFriends,
+} from "../../../../features/friendSlice.js";
 import { ServerContext } from "../../../../App.js";
+import { setSearchText } from "../../../../features/searchSlice.js";
 
-const RandomFriend = ({ randomFriend }) => {
+const RandomFriend = ({ randomFriend, toggleEmptyText }) => {
 	const navigate = useNavigate();
 	const { enqueueSnackbar } = useSnackbar();
 	const serverURL = useContext(ServerContext);
 	const { user, token } = useSelector((store) => store.auth);
 	const [loading, setLoading] = useState(false);
-	const [friendStatus, setFriendStatus] = useState("Not friend");
-	const [friendRequestId, setFriendRequestId] = useState("");
+	const sliceDispatch = useDispatch();
 
 	const filePath = `${serverURL}/public/images/profile/`;
 
@@ -53,8 +57,10 @@ const RandomFriend = ({ randomFriend }) => {
 
 			if (response.msg === "Success") {
 				enqueueSnackbar("Friend request sent", { variant: "success" });
-				setFriendStatus("Pending");
-				setFriendRequestId(response.savedFriendRequest._id);
+				sliceDispatch(removeRandomFriend(randomFriend._id));
+				sliceDispatch(removeOriginalRandomFriend(randomFriend._id));
+				sliceDispatch(setSearchText(""));
+				toggleEmptyText((prev) => !prev);
 			} else if (response.msg === "Friend request not created") {
 				enqueueSnackbar("Fail to send friend request", { variant: "error" });
 			} else {
@@ -62,58 +68,6 @@ const RandomFriend = ({ randomFriend }) => {
 			}
 
 			setLoading(false);
-		} catch (err) {
-			enqueueSnackbar("Could not connect to the server", {
-				variant: "error",
-			});
-			setLoading(false);
-		}
-	};
-
-	const handleCancelRequest = async () => {
-		try {
-			const ans = window.confirm("Cancel friend request?");
-			if (ans) {
-				setLoading(true);
-
-				const res = await fetch(
-					`${serverURL}/friend-request/cancel-friend-request`,
-					{
-						method: "DELETE",
-						body: JSON.stringify({
-							friendRequestId,
-						}),
-						headers: {
-							"Content-Type": "application/json",
-							Authorization: `Bearer ${token}`,
-						},
-					}
-				);
-
-				if (!res.ok && res.status === 403) {
-					setLoading(false);
-					enqueueSnackbar("Access Denied", { variant: "error" });
-					return;
-				}
-
-				const response = await res.json();
-				if (response.msg === "Success") {
-					setFriendRequestId("");
-					setFriendStatus("Not friend");
-					enqueueSnackbar("Friend request cancelled", {
-						variant: "success",
-					});
-				} else if (response.msg === "Friend request not found") {
-					enqueueSnackbar("Fail to cancel friend reqeust", {
-						variant: "error",
-					});
-				} else {
-					enqueueSnackbar("An error occurred", {
-						variant: "error",
-					});
-				}
-				setLoading(false);
-			}
 		} catch (err) {
 			enqueueSnackbar("Could not connect to the server", {
 				variant: "error",
@@ -156,17 +110,14 @@ const RandomFriend = ({ randomFriend }) => {
 			</div>
 
 			{/* FRIEND STATUS BUTTON */}
+
 			<div className="col-span-4 md:w-full">
-				<FriendStatusButton
-					friendStatus={friendStatus}
-					functions={{
-						handleAddFriend,
-						handleCancelRequest,
-						toggleShowRespondForm: null,
-						handleRemoveFriend: null,
-					}}
-					needsIcon={false}
-				/>
+				<button
+					className="btn-blue text-sm sm:text-base w-full"
+					onClick={handleAddFriend}
+				>
+					Add Friend
+				</button>
 			</div>
 		</div>
 	);

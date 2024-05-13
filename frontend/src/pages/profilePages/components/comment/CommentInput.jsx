@@ -1,15 +1,15 @@
 import { React, useContext, useReducer } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { useSnackbar } from "notistack";
 import { MdSend } from "react-icons/md";
 import Spinner from "../../../../components/Spinner/Spinner.jsx";
-import { ServerContext } from "../../../../App.js";
-import { useSnackbar } from "notistack";
 import {
 	commentInputReducer,
 	INITIAL_STATE,
 } from "../../features/comment/commentInputReducer.js";
 import ACTION_TYPES from "../../actionTypes/comment/commentInputActionTypes.js";
 import { addComment } from "../../features/comment/commentSlice.js";
+import { ServerContext } from "../../../../App.js";
 
 const CommentInput = ({ post }) => {
 	const sliceDispatch = useDispatch();
@@ -17,7 +17,6 @@ const CommentInput = ({ post }) => {
 	const { user, token } = useSelector((store) => store.auth);
 	const { enqueueSnackbar } = useSnackbar();
 	const [state, dispatch] = useReducer(commentInputReducer, INITIAL_STATE);
-	const { commentsArray } = useSelector((store) => store.comment);
 
 	const handleSend = async (e) => {
 		e.preventDefault();
@@ -56,8 +55,6 @@ const CommentInput = ({ post }) => {
 			const { msg, savedComment } = await res.json();
 
 			if (msg === "Success") {
-				console.log(savedComment);
-
 				const response = await fetch(
 					`${serverURL}/comment/get-comment?commentId=${savedComment._id}`,
 					{
@@ -85,12 +82,7 @@ const CommentInput = ({ post }) => {
 				const { msg, comment } = await response.json();
 
 				if (msg === "Success") {
-					sliceDispatch(
-						addComment({
-							postId: post._id,
-							newComment: comment,
-						})
-					);
+					sliceDispatch(addComment(comment));
 				} else if (msg === "Comment not found") {
 					enqueueSnackbar("Comment not found", {
 						variant: "error",

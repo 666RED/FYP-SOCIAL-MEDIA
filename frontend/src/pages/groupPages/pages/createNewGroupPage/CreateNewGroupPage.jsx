@@ -1,5 +1,5 @@
 import { React, useContext, useReducer, useEffect } from "react";
-import { useSelector, useDispatch } from "react-redux";
+import { useSelector } from "react-redux";
 import { useSnackbar } from "notistack";
 import { useNavigate } from "react-router-dom";
 import Spinner from "../../../../components/Spinner/Spinner.jsx";
@@ -16,7 +16,6 @@ import ACTION_TYPES from "./actionTypes/createNewGroupPageActionTypes.js";
 import { ServerContext } from "../../../../App.js";
 
 const CreateNewGroupPage = () => {
-	const sliceDispatch = useDispatch();
 	const [state, dispatch] = useReducer(
 		createNewGroupPageReducer,
 		INITIAL_STATE
@@ -133,68 +132,76 @@ const CreateNewGroupPage = () => {
 		>
 			{state.loading && <Spinner />}
 			{/* HEADER */}
-			<DirectBackArrowHeader destination="/group" title="Create new group" />
-			{/* NAME */}
-			<h3 className="mt-3">Name:</h3>
-			<input
-				id="name"
-				type="text"
-				required
-				className="w-full my-1"
-				minLength={3}
-				maxLength={50}
-				value={state.name}
-				onChange={(e) =>
-					dispatch({ type: ACTION_TYPES.SET_NAME, payload: e.target.value })
-				}
+			<DirectBackArrowHeader
+				destination="/group"
+				title="Create new group"
+				discardChanges={state.madeChanges}
 			/>
-			{/* GROUP IMAGE */}
-			<div className="flex justify-between items-center mt-3">
-				<h3>Image:</h3>
-				<RemoveImageText
-					handleRemove={handleRemoveImage}
+			{/* MAIN CONTENT CONTAINER */}
+			<div className="md:w-2/3 mx-auto">
+				{/* NAME */}
+				<h3 className="mt-3">Name:</h3>
+				<input
+					id="name"
+					type="text"
+					required
+					className="w-full my-1"
+					minLength={3}
+					maxLength={50}
+					value={state.name}
+					onChange={(e) =>
+						dispatch({ type: ACTION_TYPES.SET_NAME, payload: e.target.value })
+					}
+				/>
+				{/* GROUP IMAGE */}
+				<div className="flex justify-between items-center mt-3">
+					<h3>Image:</h3>
+					<RemoveImageText
+						handleRemove={handleRemoveImage}
+						imagePath={state.groupImagePath}
+					/>
+				</div>
+				<UploadCircleImage
+					dispatch={(payload) =>
+						dispatch({ type: ACTION_TYPES.UPLOAD_IMAGE, payload })
+					}
 					imagePath={state.groupImagePath}
 				/>
-			</div>
-			<UploadCircleImage
-				dispatch={(payload) =>
-					dispatch({ type: ACTION_TYPES.UPLOAD_IMAGE, payload })
-				}
-				imagePath={state.groupImagePath}
-			/>
-			{/* GROUP COVER IMAGE */}
-			<div className="flex justify-between items-center mt-3">
-				<h3>Group Cover Image:</h3>
-				<RemoveImageText
-					handleRemove={handleRemoveCoverImage}
+				{/* GROUP COVER IMAGE */}
+				<div className="flex justify-between items-center mt-3">
+					<h3>Group Cover Image:</h3>
+					<RemoveImageText
+						handleRemove={handleRemoveCoverImage}
+						imagePath={state.groupCoverImagePath}
+					/>
+				</div>
+				<UploadImage
+					dispatch={(payload) =>
+						dispatch({ type: ACTION_TYPES.UPLOAD_COVER_IMAGE, payload })
+					}
 					imagePath={state.groupCoverImagePath}
 				/>
+				{/* BIO */}
+				<h3>Bio</h3>
+				<textarea
+					required
+					id="bio"
+					className="w-full my-1 resize-none"
+					maxLength={200}
+					rows="4"
+					value={state.bio}
+					onChange={(e) => {
+						dispatch({
+							type: ACTION_TYPES.SET_BIO,
+							payload: e.target.value,
+						});
+					}}
+				/>
+				{/* CREATE BUTTON */}
+				<button className="btn-green mt-8 block mx-auto w-1/2 md:w-1/4 mb-5">
+					CREATE
+				</button>
 			</div>
-			<UploadImage
-				dispatch={(payload) =>
-					dispatch({ type: ACTION_TYPES.UPLOAD_COVER_IMAGE, payload })
-				}
-				imagePath={state.groupCoverImagePath}
-			/>
-			{/* BIO */}
-			<h3>Bio</h3>
-			<textarea
-				required
-				id="bio"
-				className="w-full my-1 resize-none"
-				maxLength={200}
-				rows="4"
-				value={state.bio}
-				onChange={(e) => {
-					dispatch({
-						type: ACTION_TYPES.SET_BIO,
-						payload: e.target.value,
-					});
-				}}
-			/>
-			<button className="btn-green mt-8 block mx-auto w-1/2 md:w-1/4 mb-5">
-				CREATE
-			</button>
 		</form>
 	) : (
 		<Error />

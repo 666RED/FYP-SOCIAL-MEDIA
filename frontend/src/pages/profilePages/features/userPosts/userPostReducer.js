@@ -53,12 +53,6 @@ export const userPostReducer = (state, action) => {
 				showComment: !state.showComment,
 			};
 		}
-		case "SET_PROFILE_IMAGE_PATH": {
-			return {
-				...state,
-				profileImagePath: action.payload,
-			};
-		}
 		case "TOGGLE_SHOW_OPTION_DIV": {
 			return {
 				...state,

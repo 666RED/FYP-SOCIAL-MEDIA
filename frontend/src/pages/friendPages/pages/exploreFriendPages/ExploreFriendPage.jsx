@@ -33,6 +33,7 @@ const ExploreFriendPage = () => {
 	const { searchText } = useSelector((store) => store.search);
 	const { user, token } = useSelector((store) => store.auth);
 	const [loadMore, setLoadMore] = useState(false);
+	const [loading, setLoading] = useState(false);
 
 	// reset state
 	useEffect(() => {
@@ -52,14 +53,17 @@ const ExploreFriendPage = () => {
 				currentRequest.abort();
 			}
 
-			// Store the current request to be able to cancel it later
+			// Store the current request to be able to cancel it
 			currentRequest = abortController;
 
+			sliceDispatch(setHasRandomFriends(false));
 			sliceDispatch(setIsLoadingFriend(true));
 			sliceDispatch(setSearchText(payload));
 
 			const res = await fetch(
-				`${serverURL}/friend/get-searched-random-friends?userId=${user._id}&searchText=${payload}`,
+				`${serverURL}/friend/get-searched-random-friends?userId=${
+					user._id
+				}&searchText=${payload.trim()}`,
 				{
 					method: "GET",
 					headers: {
@@ -88,7 +92,9 @@ const ExploreFriendPage = () => {
 				sliceDispatch(setRandomFriendsArr(randomFriends));
 			} else if (msg === "Stop searching") {
 				sliceDispatch(setRandomFriendsArr(originalRandomFriendsArr));
-				sliceDispatch(setHasRandomFriends(true));
+				if (originalRandomFriendsArr.length >= 15) {
+					sliceDispatch(setHasRandomFriends(true));
+				}
 			} else if (msg === "User not found") {
 				enqueueSnackbar("User not found", { variant: "error" });
 			} else {
@@ -222,24 +228,27 @@ const ExploreFriendPage = () => {
 			{/* HEADER */}
 			<DirectBackArrowHeader destination="/friend" title="Explore friend" />
 			{/* SEARCHBAR */}
-			<div className="mt-3 mb-5">
+			<div className="mt-3">
 				<SearchBar
 					func={handleOnChange}
 					placeholderText="Search user"
 					text={searchText}
+					isDisabled={loading}
 				/>
 			</div>
-			{/* FRIENDS LIST */}
-			<RandomFriendsList />
-			{/* LOAD MORE BUTTON */}
-			<LoadMoreButton
-				handleLoadMore={
-					searchText === "" ? handleLoadMore : handleLoadMoreSearch
-				}
-				hasComponent={hasRandomFriends}
-				isLoadingComponent={isLoadingFriend}
-				loadMore={loadMore}
-			/>
+			<div className="max-h-[39rem] min-[500px]:max-h-[31rem] overflow-y-auto pb-2">
+				{/* FRIENDS LIST */}
+				<RandomFriendsList setLoading={setLoading} />
+				{/* LOAD MORE BUTTON */}
+				<LoadMoreButton
+					handleLoadMore={
+						searchText === "" ? handleLoadMore : handleLoadMoreSearch
+					}
+					hasComponent={hasRandomFriends}
+					isLoadingComponent={isLoadingFriend}
+					loadMore={loadMore}
+				/>
+			</div>
 		</div>
 	) : (
 		<Error />

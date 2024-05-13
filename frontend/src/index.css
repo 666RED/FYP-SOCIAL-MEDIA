@@ -70,13 +70,18 @@
 	.map-container {
 		@apply mt-3 h-96 w-full;
 	}
-	.profile-btn {
-		@apply text-sm sm:text-base flex items-center justify-center;
-	}
 	.profile-btn-icon {
 		@apply mr-3 text-xl;
 	}
 	.shadowDesign {
 		@apply shadow-[rgba(0,0,0,0.1)_0px_0px_5px_5px];
+	}
+	.marketplace-card > p {
+		@apply my-1;
+	}
+	.sidebar-transition {
+		transition: all;
+		transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+		transition-duration: 500ms;
 	}
 }

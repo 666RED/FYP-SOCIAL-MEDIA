@@ -141,12 +141,14 @@ const FriendRequest = ({ friendRequest }) => {
 
 			{/* BUTTONS ROW */}
 			<div className="col-span-8 md:flex md:w-full">
+				{/* ACCEPT BUTTON */}
 				<button
 					className="btn-green mr-3 min-w-24 md:flex-1"
 					onClick={handleAccept}
 				>
 					Accept
 				</button>
+				{/* REJECT BUTTON */}
 				<button className="btn-red min-w-24 md:flex-1" onClick={handleReject}>
 					Reject
 				</button>

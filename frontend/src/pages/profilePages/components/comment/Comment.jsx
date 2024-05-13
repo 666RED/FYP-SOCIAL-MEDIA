@@ -1,4 +1,4 @@
-import { React, useContext, useReducer, useState } from "react";
+import { React, useContext, useReducer } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useSnackbar } from "notistack";
 import { BsThreeDots } from "react-icons/bs/index.js";
@@ -12,7 +12,7 @@ import {
 	INITIAL_STATE,
 } from "../../features/comment/commentReducer.js";
 import ACTION_TYPES from "../../actionTypes/comment/commentActionTypes.js";
-import { updateComment } from "../../features/comment/commentSlice.js";
+import { deleteComment } from "../../features/comment/commentSlice.js";
 import { ServerContext } from "../../../../App.js";
 
 const Comment = ({ comment, post }) => {
@@ -21,7 +21,6 @@ const Comment = ({ comment, post }) => {
 	const serverURL = useContext(ServerContext);
 	const profileImgPath = `${serverURL}/public/images/profile/`;
 	const { user, token } = useSelector((store) => store.auth);
-	const { commentsArray } = useSelector((store) => store.comment);
 	const [state, dispatch] = useReducer(commentReducer, INITIAL_STATE);
 
 	const previous = window.location.pathname;
@@ -49,26 +48,12 @@ const Comment = ({ comment, post }) => {
 					return;
 				}
 
-				const { msg } = await res.json();
+				const { msg, deletedCommentId } = await res.json();
 
 				if (msg === "Success") {
 					enqueueSnackbar("Comment deleted", { variant: "success" });
 					dispatch({ type: ACTION_TYPES.TOGGLE_SHOW_OPTIONS });
-
-					// find the current commentObj
-					const comments = commentsArray.filter(
-						(commentObj) => commentObj.postId === post._id
-					)[0].comments;
-
-					sliceDispatch(
-						updateComment({
-							postId: post._id,
-							newCommentArray: comments.filter(
-								(inStateComment) => inStateComment._id != comment._id
-							),
-						})
-					);
-					// check if no comment (add on)
+					sliceDispatch(deleteComment(deletedCommentId));
 				} else if (msg === "Fail to delete comment") {
 					enqueueSnackbar("Fail to delete comment", {
 						variant: "error",

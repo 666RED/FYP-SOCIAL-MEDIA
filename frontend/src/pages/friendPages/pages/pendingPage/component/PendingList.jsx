@@ -3,34 +3,48 @@ import { useSelector, useDispatch } from "react-redux";
 import { useSnackbar } from "notistack";
 import Loader from "../../../../../components/Spinner/Loader.jsx";
 import Pending from "../component/Pending.jsx";
-import { setPendingsArr } from "../../../../../features/friendSlice.js";
+import {
+	setHasPendings,
+	setIsLoadingPendings,
+	setPendingsArr,
+} from "../../../../../features/friendSlice.js";
 import { ServerContext } from "../../../../../App.js";
+let currentRequest;
 
 const PendingList = () => {
 	const sliceDispatch = useDispatch();
 	const serverURL = useContext(ServerContext);
 	const { user, token } = useSelector((store) => store.auth);
-	const { pendingsArr } = useSelector((store) => store.friend);
+	const { pendingsArr, isLoadingPendings } = useSelector(
+		(store) => store.friend
+	);
 	const { enqueueSnackbar } = useSnackbar();
-	const [loading, setLoading] = useState(false);
 
+	// get pendings
 	useEffect(() => {
 		const retrievePendings = async () => {
 			try {
-				setLoading(true);
+				const abortController = new AbortController();
+				const { signal } = abortController;
+				currentRequest = abortController;
+
+				sliceDispatch(setIsLoadingPendings(true));
 				const res = await fetch(
-					`${serverURL}/friend-request/get-pending-friend-requests?requestorId=${user._id}`,
+					`${serverURL}/friend-request/get-pending-friend-requests?requestorId=${
+						user._id
+					}&pendings=${JSON.stringify([])}`,
 					{
 						method: "GET",
 						headers: {
 							"Content-Type": "application/json",
 							Authorization: `Bearer ${token}`,
 						},
+						signal,
 					}
 				);
 
 				if (!res.ok && res.status === 403) {
-					setLoading(false);
+					sliceDispatch(setIsLoadingPendings(false));
 					enqueueSnackbar("Access Denied", { variant: "error" });
 					return;
 				}
@@ -39,30 +53,48 @@ const PendingList = () => {
 
 				if (msg === "Success") {
 					sliceDispatch(setPendingsArr(returnFriendRequests));
+					if (returnFriendRequests.length < 10) {
+						sliceDispatch(setHasPendings(false));
+					} else {
+						sliceDispatch(setHasPendings(true));
+					}
 				} else if (msg === "Friend requests not found") {
 					enqueueSnackbar("Friend requests not found", { variant: "error" });
-				} else if (msg === "No pending friend reqeust") {
-					sliceDispatch(setPendingsArr([]));
 				} else {
 					enqueueSnackbar("An error occurred", { variant: "error" });
 				}
 
-				setLoading(false);
+				sliceDispatch(setIsLoadingPendings(false));
 			} catch (err) {
-				enqueueSnackbar("Could not connect to the server", {
-					variant: "error",
-				});
-				setLoading(false);
+				if (err.name === "AbortError") {
+					console.log("Request was aborted");
+				} else {
+					enqueueSnackbar("Could not connect to the server", {
+						variant: "error",
+					});
+					sliceDispatch(setIsLoadingPendings(false));
+				}
 			}
 		};
 
 		retrievePendings();
 	}, []);
 
+	// reset state
+	useEffect(() => {
+		return () => {
+			if (currentRequest) {
+				currentRequest.abort();
+			}
+		};
+	}, []);
+
 	return (
 		<div className="my-5 grid grid-cols-12 gap-x-5">
-			{loading ? (
-				<Loader />
+			{isLoadingPendings ? (
+				<div className="col-span-12 mt-4">
+					<Loader />
+				</div>
 			) : pendingsArr.length > 0 ? (
 				pendingsArr.map((pending) => (
 					<Pending key={pending._id} pending={pending} />

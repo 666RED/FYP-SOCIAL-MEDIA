@@ -17,9 +17,11 @@ const Homepage = () => {
 
 	return user && token ? (
 		<div className="mx-3 mt-2">
-			{extendSideBar && (
-				<SideBar selectedSection="Home" setExtendSideBar={setExtendSideBar} />
-			)}
+			<SideBar
+				selectedSection="Home"
+				setExtendSideBar={setExtendSideBar}
+				extendSideBar={extendSideBar}
+			/>
 			{/* HEADER */}
 			<div className="grid grid-cols-12 grid-rows-1 ">
 				<div className="col-start-1 col-span-3 flex items-center">

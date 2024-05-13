@@ -89,31 +89,20 @@ export const upLikes = async (req, res) => {
 	try {
 		const { postId, userId } = req.body;
 
-		const post = await Post.findById(postId);
-
-		if (!post) {
-			return res.status(404).json({ msg: "Post not found" });
-		}
-
-		post.likesMap.set(userId, true);
-
 		const updatedPost = await Post.findOneAndUpdate(
 			{ _id: postId },
 			{
-				$inc: { postLikes: 1 }, // Increment postLikes by 1
-				$set: { likesMap: post.likesMap }, // Set isLiked to true
-			},
-			{ new: true } // Return the updated document
+				$inc: { postLikes: 1 },
+				$set: { [`likesMap.${userId}`]: true },
+			}
 		);
 
 		if (!updatedPost) {
 			return res.status(400).json({ msg: "Fail to update post" });
 		}
 
-		res.status(200).json({ msg: "Success", updatedPost });
+		res.status(200).json({ msg: "Success" });
 	} catch (err) {
-		console.log(err);
-
 		res.status(500).json({ error: err.message });
 	}
 };
@@ -122,28 +111,19 @@ export const downLikes = async (req, res) => {
 	try {
 		const { postId, userId } = req.body;
 
-		const post = await Post.findById(postId);
-
-		if (!post) {
-			return res.status(404).json({ msg: "Post not found" });
-		}
-
-		post.likesMap.delete(userId);
-
 		const updatedPost = await Post.findOneAndUpdate(
 			{ _id: postId },
 			{
-				$inc: { postLikes: -1 }, // Decrement postLikes by 1
-				$set: { likesMap: post.likesMap }, // Set isLiked to true
-			},
-			{ new: true } // Return the updated document
+				$inc: { postLikes: -1 },
+				$unset: { [`likesMap.${userId}`]: true },
+			}
 		);
 
 		if (!updatedPost) {
 			return res.status(400).json({ msg: "Fail to update post" });
 		}
 
-		res.status(200).json({ msg: "Success", updatedPost });
+		res.status(200).json({ msg: "Success" });
 	} catch (err) {
 		console.log(err);
 
@@ -197,6 +177,7 @@ export const editPost = async (req, res) => {
 				{ new: true }
 			).populate("userId", "userName userProfile");
 		}
+
 		if (!updatedPost) {
 			return res.status(400).json({ msg: "Fail to update post" });
 		}

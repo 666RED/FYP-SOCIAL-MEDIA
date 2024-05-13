@@ -98,6 +98,7 @@ const AddNewPostForm = () => {
 			<Filter />
 			<div className="z-40 fixed top-0 bottom-0 left-0 right-0 flex items-center justify-center">
 				<form onSubmit={handleSubmit} className="form relatvie">
+					{/* HEADER */}
 					<FormHeader
 						title="Add new post"
 						closeFunction={() => sliceDispatch(setShowAddNewPostForm(false))}
@@ -106,7 +107,6 @@ const AddNewPostForm = () => {
 					{/* TEXT */}
 					<label htmlFor="text-description">Text description:</label>
 					<textarea
-						type="text"
 						id="text-description"
 						value={state.text}
 						onChange={(e) => {

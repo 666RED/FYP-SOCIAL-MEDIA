@@ -1,8 +1,6 @@
 import { React } from "react";
-import { MdReply, MdPending } from "react-icons/md";
-import { IoMdPersonAdd, IoMdRemoveCircle } from "react-icons/io";
 
-const FriendStatusButton = ({ friendStatus, functions, needsIcon = true }) => {
+const FriendStatusButton = ({ friendStatus, functions }) => {
 	const {
 		handleAddFriend,
 		handleCancelRequest,
@@ -14,21 +12,19 @@ const FriendStatusButton = ({ friendStatus, functions, needsIcon = true }) => {
 		case "Not friend": {
 			return (
 				<button
-					className="btn-blue profile-btn w-full"
+					className="btn-blue text-sm sm:text-base w-full"
 					onClick={handleAddFriend}
 				>
-					{needsIcon && <IoMdPersonAdd className="profile-btn-icon" />} Add
-					Friend
+					Add Friend
 				</button>
 			);
 		}
 		case "Pending": {
 			return (
 				<button
-					className="btn-yellow profile-btn w-full"
+					className="btn-yellow text-sm sm:text-base w-full"
 					onClick={handleCancelRequest}
 				>
-					{needsIcon && <MdPending className="profile-btn-icon" />}
 					Pending
 				</button>
 			);
@@ -36,10 +32,9 @@ const FriendStatusButton = ({ friendStatus, functions, needsIcon = true }) => {
 		case "Confirm": {
 			return (
 				<button
-					className="btn-blue profile-btn w-full"
+					className="btn-blue text-sm sm:text-base w-full"
 					onClick={toggleShowRespondForm}
 				>
-					{needsIcon && <MdReply className="profile-btn-icon" />}
 					Respond
 				</button>
 			);
@@ -47,10 +42,9 @@ const FriendStatusButton = ({ friendStatus, functions, needsIcon = true }) => {
 		case "Friend": {
 			return (
 				<button
-					className="btn-red profile-btn w-full"
+					className="btn-red text-sm sm:text-base w-full"
 					onClick={handleRemoveFriend}
 				>
-					{needsIcon && <IoMdRemoveCircle className="profile-btn-icon" />}
 					Unfriend
 				</button>
 			);

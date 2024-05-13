@@ -2,13 +2,15 @@ import { React, useState, useContext } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { useSnackbar } from "notistack";
 import Header from "../../../../components/Header.jsx";
-import Loader from "../../../../components/Spinner/Loader.jsx";
 import SideBar from "../../../../components/Sidebar/SideBar.jsx";
 import Error from "../../../../components/Error.jsx";
 import MostUseful from "./components/MostUseful.jsx";
 import CampusConditions from "./components/CampusConditions.jsx";
 import LoadMoreButton from "../../../../components/LoadMoreButton.jsx";
-import { appendCampusConditions } from "../../features/campusConditionSlice.js";
+import {
+	appendCampusConditions,
+	setHasConditions,
+} from "../../features/campusConditionSlice.js";
 import { ServerContext } from "../../../../App.js";
 
 const CampusConditionPage = () => {
@@ -17,10 +19,10 @@ const CampusConditionPage = () => {
 	const sliceDispatch = useDispatch();
 	const { user, token } = useSelector((store) => store.auth);
 	const [extendSideBar, setExtendSideBar] = useState(false);
-	const [count, setCount] = useState(10);
 	const [loadMore, setLoadMore] = useState(false);
-	const [loading, setLoading] = useState(false);
-	const [hasCondition, setHasCondition] = useState(false);
+	const { hasConditions, isLoadingConditions, campusConditions } = useSelector(
+		(store) => store.campusCondition
+	);
 	const currentTime = new Date();
 	currentTime.setSeconds(currentTime.getSeconds() + 1); // make sure newly added condition can be retrieved from db
 	const updatedTime = currentTime.toUTCString();
@@ -29,7 +31,9 @@ const CampusConditionPage = () => {
 		try {
 			setLoadMore(true);
 			const res = await fetch(
-				`${serverURL}/campus-condition/get-campus-conditions?count=${count}&currentTime=${updatedTime}`,
+				`${serverURL}/campus-condition/get-campus-conditions?currentTime=${updatedTime}&conditions=${JSON.stringify(
+					campusConditions
+				)}`,
 				{
 					method: "GET",
 					headers: {
@@ -47,19 +51,17 @@ const CampusConditionPage = () => {
 
 			const { msg, returnConditions } = await res.json();
 
-			if (returnConditions.length < 10) {
-				setHasCondition(false);
-			} else {
-				setHasCondition(true);
-			}
-
 			if (msg === "Campus conditions not found") {
 				enqueueSnackbar("Campus conditions not found", {
 					variant: "error",
 				});
 			} else if (msg === "Success") {
 				sliceDispatch(appendCampusConditions(returnConditions));
-				setCount((prevCount) => prevCount + 10);
+				if (returnConditions.length < 10) {
+					sliceDispatch(setHasConditions(false));
+				} else {
+					sliceDispatch(setHasConditions(true));
+				}
 			} else {
 				enqueueSnackbar("An error occurred", {
 					variant: "error",
@@ -78,12 +80,11 @@ const CampusConditionPage = () => {
 	return user && token ? (
 		<div className="py-2">
 			{/* SIDEBAR */}
-			{extendSideBar && (
-				<SideBar
-					selectedSection="Campus Condition"
-					setExtendSideBar={setExtendSideBar}
-				/>
-			)}
+			<SideBar
+				selectedSection="Campus Condition"
+				setExtendSideBar={setExtendSideBar}
+				extendSideBar={extendSideBar}
+			/>
 			{/* HEADER */}
 			<Header
 				extendSideBar={extendSideBar}
@@ -98,19 +99,17 @@ const CampusConditionPage = () => {
 				<hr className="border-gray-400 my-3 border-2 lg:hidden" />
 				{/* CAMPUS CONDITIONS */}
 				<div className="lg:col-span-3 col-start-2">
-					<CampusConditions
-						currentTime={updatedTime}
-						loading={loading}
-						setLoading={setLoading}
-					/>
+					<CampusConditions currentTime={updatedTime} />
 				</div>
 				{/* LOAD MORE BUTTON*/}
-				<LoadMoreButton
-					handleLoadMore={handleLoadMore}
-					hasComponent={hasCondition}
-					isLoadingComponent={loading}
-					loadMore={loadMore}
-				/>
+				<div className="col-span-5">
+					<LoadMoreButton
+						handleLoadMore={handleLoadMore}
+						hasComponent={hasConditions}
+						isLoadingComponent={isLoadingConditions}
+						loadMore={loadMore}
+					/>
+				</div>
 			</div>
 		</div>
 	) : (

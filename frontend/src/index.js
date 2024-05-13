@@ -10,13 +10,11 @@ import { SnackbarProvider } from "notistack";
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
-	<React.StrictMode>
-		<Provider store={store}>
-			<PersistGate loading={null} persistor={persistStore(store)}>
-				<SnackbarProvider autoHideDuration={3000} maxSnack={2}>
-					<App />
-				</SnackbarProvider>
-			</PersistGate>
-		</Provider>
-	</React.StrictMode>
+	<Provider store={store}>
+		<PersistGate loading={null} persistor={persistStore(store)}>
+			<SnackbarProvider autoHideDuration={3000} maxSnack={2}>
+				<App />
+			</SnackbarProvider>
+		</PersistGate>
+	</Provider>
 );

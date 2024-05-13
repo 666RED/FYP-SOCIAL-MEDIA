@@ -8,11 +8,14 @@ import Header from "../../../../components/Header.jsx";
 import SideBar from "../../../../components/Sidebar/SideBar.jsx";
 import FriendsList from "./component/FriendsList.jsx";
 import Spinner from "../../../../components/Spinner/Spinner.jsx";
+import LoadMoreButton from "../../../../components/LoadMoreButton.jsx";
 import { ServerContext } from "../../../../App.js";
 import {
 	resetState,
 	setFriendsArr,
+	addFriendsArr,
 	setIsLoadingFriend,
+	setHasFriends,
 } from "../../../../features/friendSlice.js";
 import {
 	resetSearchText,
@@ -24,9 +27,13 @@ const FriendPage = () => {
 	const navigate = useNavigate();
 	const sliceDispatch = useDispatch();
 	const { user, token } = useSelector((store) => store.auth);
-	const { numberOfFriends, originalFriendsArr } = useSelector(
-		(store) => store.friend
-	);
+	const {
+		numberOfFriends,
+		originalFriendsArr,
+		hasFriends,
+		isLoadingFriend,
+		friendsArr,
+	} = useSelector((store) => store.friend);
 	const { searchText } = useSelector((store) => store.search);
 	const [extendSideBar, setExtendSideBar] = useState(false);
 	const [loading, setLoading] = useState(false);
@@ -34,6 +41,106 @@ const FriendPage = () => {
 	const [numPending, setNumPending] = useState(0);
 	const serverURL = useContext(ServerContext);
 	const { enqueueSnackbar } = useSnackbar();
+	const [listLoading, setListLoading] = useState(false);
+	const [loadMore, setLoadMore] = useState(false);
+
+	const handleLoadMore = async () => {
+		try {
+			setLoadMore(true);
+
+			const res = await fetch(
+				`${serverURL}/friend/get-friends?userId=${
+					user._id
+				}&friends=${JSON.stringify(friendsArr)}`,
+				{
+					method: "GET",
+					headers: {
+						"Content-Type": "application/json",
+						Authorization: `Bearer ${token}`,
+					},
+				}
+			);
+
+			if (!res.ok && res.status === 403) {
+				setLoadMore(false);
+				enqueueSnackbar("Access Denied", { variant: "error" });
+				return;
+			}
+
+			const { msg, returnFriendsArr } = await res.json();
+
+			if (msg === "Success") {
+				sliceDispatch(addFriendsArr(returnFriendsArr));
+				if (returnFriendsArr.length < 10) {
+					sliceDispatch(setHasFriends(false));
+				} else {
+					sliceDispatch(setHasFriends(true));
+				}
+			} else if (msg === "User not found") {
+				enqueueSnackbar("User not found", { variant: "error" });
+			} else if (msg === "No friend") {
+				sliceDispatch(setFriendsArr([]));
+			} else {
+				enqueueSnackbar("An error occurred", { variant: "error" });
+			}
+
+			setLoadMore(false);
+		} catch (err) {
+			enqueueSnackbar("Could not connect to the server", {
+				variant: "error",
+			});
+			setLoadMore(false);
+		}
+	};
+
+	const handleLoadMoreSearch = async () => {
+		try {
+			setLoadMore(true);
+
+			const res = await fetch(
+				`${serverURL}/friend/get-searched-friends?userId=${
+					user._id
+				}&searchText=${searchText.trim()}&friends=${JSON.stringify(
+					friendsArr
+				)}`,
+				{
+					method: "GET",
+					headers: {
+						"Content-Type": "application/json",
+						Authorization: `Bearer ${token}`,
+					},
+				}
+			);
+
+			if (!res.ok && res.status === 403) {
+				setLoadMore(false);
+				enqueueSnackbar("Access Denied", { variant: "error" });
+				return;
+			}
+
+			const { msg, returnFriendsArr } = await res.json();
+
+			if (msg === "Success") {
+				sliceDispatch(addFriendsArr(returnFriendsArr));
+				if (returnFriendsArr.length < 10) {
+					sliceDispatch(setHasFriends(false));
+				} else {
+					sliceDispatch(setHasFriends(true));
+				}
+			} else if (msg === "User not found") {
+				enqueueSnackbar("User not found", { variant: "error" });
+			} else {
+				enqueueSnackbar("An error occurred", { variant: "error" });
+			}
+
+			setLoadMore(false);
+		} catch (err) {
+			enqueueSnackbar("Could not connect to the server", {
+				variant: "error",
+			});
+			setLoadMore(false);
+		}
+	};
 
 	// reset state
 	useEffect(() => {
@@ -139,6 +246,7 @@ const FriendPage = () => {
 		};
 	}, []);
 
+	// search friend
 	const handleOnChange = async (payload) => {
 		const abortController = new AbortController();
 		const { signal } = abortController;
@@ -148,15 +256,18 @@ const FriendPage = () => {
 			currentRequest.abort();
 		}
 
-		// Store the current request to be able to cancel it later
+		// Store the current request to be able to cancel it
 		currentRequest = abortController;
 
+		sliceDispatch(setHasFriends(false));
 		sliceDispatch(setIsLoadingFriend(true));
 		sliceDispatch(setSearchText(payload));
 
 		try {
 			const res = await fetch(
-				`${serverURL}/friend/get-searched-friends?userId=${user._id}&searchText=${payload}`,
+				`${serverURL}/friend/get-searched-friends?userId=${
+					user._id
+				}&searchText=${payload.trim()}&friends=${JSON.stringify([])}`,
 				{
 					method: "GET",
 					headers: {
@@ -169,16 +280,27 @@ const FriendPage = () => {
 
 			if (!res.ok && res.status === 403) {
 				sliceDispatch(setIsLoadingFriend(false));
+				sliceDispatch(setHasFriends(false));
 				enqueueSnackbar("Access Denied", { variant: "error" });
 				return;
 			}
 
-			const { msg, friendsArray } = await res.json();
+			const { msg, returnFriendsArr } = await res.json();
 
 			if (msg === "Success") {
-				sliceDispatch(setFriendsArr(friendsArray));
+				sliceDispatch(setFriendsArr(returnFriendsArr));
+				if (returnFriendsArr.length < 10) {
+					sliceDispatch(setHasFriends(false));
+				} else {
+					sliceDispatch(setHasFriends(true));
+				}
 			} else if (msg === "Stop searching") {
 				sliceDispatch(setFriendsArr(originalFriendsArr));
+				if (originalFriendsArr.length < 10) {
+					sliceDispatch(setHasFriends(false));
+				} else {
+					sliceDispatch(setHasFriends(true));
+				}
 			} else if (msg === "User not found") {
 				enqueueSnackbar("User not found", { variant: "error" });
 			} else {
@@ -189,10 +311,12 @@ const FriendPage = () => {
 		} catch (err) {
 			if (err.name === "AbortError") {
 				console.log("Request was aborted");
+				sliceDispatch(setIsLoadingFriend(true));
 			} else {
 				enqueueSnackbar("Could not connect to the server", {
 					variant: "error",
 				});
+				sliceDispatch(setIsLoadingFriend(false));
 			}
 		}
 	};
@@ -201,9 +325,11 @@ const FriendPage = () => {
 		<div className="py-2">
 			{loading && <Spinner />}
 			{/* SIDEBAR */}
-			{extendSideBar && (
-				<SideBar selectedSection="Friend" setExtendSideBar={setExtendSideBar} />
-			)}
+			<SideBar
+				selectedSection="Friend"
+				setExtendSideBar={setExtendSideBar}
+				extendSideBar={extendSideBar}
+			/>
 			{/* HEADER */}
 			<Header
 				extendSideBar={extendSideBar}
@@ -245,7 +371,9 @@ const FriendPage = () => {
 					)}
 				</button>
 			</div>
+			{/* HORIZONTAL LINE */}
 			<hr className="border-4 border-gray-400 my-3" />
+			{/* MAIN CONTENT */}
 			<div className="px-2 flex justify-between w-full items-center">
 				{/* TITLE */}
 				<h2>Your Friends ({numberOfFriends})</h2>
@@ -254,10 +382,22 @@ const FriendPage = () => {
 					func={handleOnChange}
 					placeholderText="Search user"
 					text={searchText}
+					isDisabled={listLoading}
 				/>
 			</div>
-			{/* FRIENDS LIST */}
-			<FriendsList />
+			<div className="max-h-[33rem] min-[500px]:max-h-[26rem] overflow-y-auto pb-2">
+				{/* FRIENDS LIST */}
+				<FriendsList setListLoading={setListLoading} />
+				{/* LOAD MORE BUTTON */}
+				<LoadMoreButton
+					handleLoadMore={
+						searchText === "" ? handleLoadMore : handleLoadMoreSearch
+					}
+					hasComponent={hasFriends}
+					isLoadingComponent={isLoadingFriend}
+					loadMore={loadMore}
+				/>
+			</div>
 		</div>
 	) : (
 		<Error />

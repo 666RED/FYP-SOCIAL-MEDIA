@@ -33,6 +33,7 @@ const UserProfilePage = () => {
 	const [loadMore, setLoadMore] = useState(false);
 	const [count, setCount] = useState(10);
 
+	// reset state
 	useEffect(() => {
 		return () => {
 			sliceDispatch(resetState());
@@ -101,12 +102,11 @@ const UserProfilePage = () => {
 			{/* ADD NEW POST FORM */}
 			{showAddNewPostForm && <AddNewPostForm />}
 			{/* SIDEBAR */}
-			{extendSideBar && (
-				<SideBar
-					selectedSection="Profile"
-					setExtendSideBar={setExtendSideBar}
-				/>
-			)}
+			<SideBar
+				selectedSection="Profile"
+				setExtendSideBar={setExtendSideBar}
+				extendSideBar={extendSideBar}
+			/>
 			{/* HEADER */}
 			{userId === user._id ? (
 				<Header

@@ -4,21 +4,30 @@ import { useSnackbar } from "notistack";
 import Loader from "../../../../../components/Spinner/Loader.jsx";
 import CampusCondition from "../components/CampusCondition.jsx";
 import { ServerContext } from "../../../../../App.js";
-import { setCampusConditions } from "../../../features/campusConditionSlice.js";
+import {
+	setCampusConditions,
+	setHasConditions,
+	setIsLoadingConditions,
+} from "../../../features/campusConditionSlice.js";
 
-const CampusConditions = ({ currentTime, loading, setLoading }) => {
+const CampusConditions = ({ currentTime }) => {
 	const sliceDispatch = useDispatch();
 	const serverURL = useContext(ServerContext);
 	const { token } = useSelector((store) => store.auth);
-	const { campusConditions } = useSelector((store) => store.campusCondition);
+	const { campusConditions, isLoadingConditions } = useSelector(
+		(store) => store.campusCondition
+	);
 	const { enqueueSnackbar } = useSnackbar();
 
+	// get conditions
 	useEffect(() => {
 		const getConditions = async () => {
-			setLoading(true);
+			sliceDispatch(setIsLoadingConditions(true));
 			try {
 				const res = await fetch(
-					`${serverURL}/campus-condition/get-campus-conditions?currentTime=${currentTime}`,
+					`${serverURL}/campus-condition/get-campus-conditions?currentTime=${currentTime}&conditions=${JSON.stringify(
+						[]
+					)}`,
 					{
 						method: "GET",
 						headers: {
@@ -29,7 +38,7 @@ const CampusConditions = ({ currentTime, loading, setLoading }) => {
 				);
 
 				if (!res.ok && res.status === 403) {
-					setLoading(false);
+					sliceDispatch(setIsLoadingConditions(false));
 					enqueueSnackbar("Access Denied", { variant: "error" });
 					return;
 				}
@@ -42,18 +51,23 @@ const CampusConditions = ({ currentTime, loading, setLoading }) => {
 					});
 				} else if (msg === "Success") {
 					sliceDispatch(setCampusConditions(returnConditions));
+					if (returnConditions.length < 10) {
+						sliceDispatch(setHasConditions(false));
+					} else {
+						sliceDispatch(setHasConditions(true));
+					}
 				} else {
 					enqueueSnackbar("An error occurred", {
 						variant: "error",
 					});
 				}
 
-				setLoading(false);
+				sliceDispatch(setIsLoadingConditions(false));
 			} catch (err) {
 				enqueueSnackbar("Could not connect to the server", {
 					variant: "error",
 				});
-				setLoading(false);
+				sliceDispatch(setIsLoadingConditions(false));
 			}
 		};
 		getConditions();
@@ -61,7 +75,7 @@ const CampusConditions = ({ currentTime, loading, setLoading }) => {
 
 	return (
 		<div>
-			{loading ? (
+			{isLoadingConditions ? (
 				<Loader />
 			) : (
 				<div className="component-layout rounded-xl w-full">

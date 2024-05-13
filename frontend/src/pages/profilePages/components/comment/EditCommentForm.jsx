@@ -4,8 +4,8 @@ import { useSnackbar } from "notistack";
 import Filter from "../../../../components/Filter.jsx";
 import FormHeader from "../../../../components/FormHeader.jsx";
 import Spinner from "../../../../components/Spinner/Spinner.jsx";
-import { ServerContext } from "../../../../App.js";
 import { updateComment } from "../../features/comment/commentSlice.js";
+import { ServerContext } from "../../../../App.js";
 
 const EditCommentForm = ({
 	toggleEditCommentForm,
@@ -21,7 +21,6 @@ const EditCommentForm = ({
 	const { token } = useSelector((store) => store.auth);
 	const { enqueueSnackbar } = useSnackbar();
 	const sliceDispatch = useDispatch();
-	const { commentsArray } = useSelector((store) => store.comment);
 
 	const handleSubmit = async (e) => {
 		e.preventDefault();
@@ -52,20 +51,7 @@ const EditCommentForm = ({
 			const { msg, updatedComment } = await res.json();
 
 			if (msg === "Success") {
-				const orgComments = commentsArray.filter(
-					(commentObj) => commentObj.postId === comment.postId
-				)[0].comments;
-
-				sliceDispatch(
-					updateComment({
-						postId: comment.postId,
-						newCommentArray: orgComments.map((commentObj) =>
-							commentObj._id === updatedComment._id
-								? updatedComment
-								: commentObj
-						),
-					})
-				);
+				sliceDispatch(updateComment(updatedComment));
 				toggleEditCommentForm();
 				toggleShowOptions();
 				enqueueSnackbar("Comment edited", { variant: "success" });

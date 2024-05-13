@@ -1,10 +1,13 @@
 import { User } from "../models/userModel.js";
 import { FriendRequest } from "../models/friendRequestModel.js";
-import mongoose, { mongo } from "mongoose";
+import mongoose from "mongoose";
 
 export const getFriends = async (req, res) => {
 	try {
-		const { userId } = req.query;
+		const { userId, friends } = req.query;
+		const limit = 10;
+
+		const friendsArray = JSON.parse(friends);
 
 		const user = await User.findById(userId);
 
@@ -12,30 +15,56 @@ export const getFriends = async (req, res) => {
 			return res.status(404).json({ msg: "User not found" });
 		}
 
-		if (Object.keys(user.userFriendsMap).length === 0) {
+		if (user.userFriendsMap.size === 0) {
 			return res.status(200).json({ msg: "No friend" });
 		}
 
-		let friendsArr = [];
+		const excludedFriends = friendsArray.map((friend) => friend._id);
+
+		let returnFriendsArr = [];
 
 		for (let friendId of user.userFriendsMap.keys()) {
-			const friend = await User.findById(friendId);
-			friend.userPassword = undefined;
-			friend.verificationCode = undefined;
-			friendsArr.push(friend);
+			if (!excludedFriends.includes(friendId)) {
+				const friend = await User.findById(friendId);
+				returnFriendsArr.push(friend);
+				if (returnFriendsArr.length == limit) {
+					break;
+				}
+			}
 		}
 
-		res.status(200).json({ msg: "Success", friendsArr });
-	} catch (err) {
-		console.log(err);
+		returnFriendsArr = returnFriendsArr.map((friend) => {
+			const {
+				userEmailAddress,
+				userPhoneNumber,
+				groups,
+				createdAt,
+				updatedAt,
+				userPassword,
+				verificationCode,
+				__v,
+				...rest
+			} = friend._doc;
 
+			const { userProfileImagePath } = rest.userProfile;
+
+			return { ...rest, userProfileImagePath };
+		});
+
+		const numberOfFriends = user.userFriendsMap.size;
+
+		res.status(200).json({ msg: "Success", returnFriendsArr, numberOfFriends });
+	} catch (err) {
 		res.status(500).json({ error: err.message });
 	}
 };
 
 export const getSearchedFriends = async (req, res) => {
 	try {
-		const { userId, searchText } = req.query;
+		const { userId, searchText, friends } = req.query;
+		const limit = 10;
+
+		const friendsArray = JSON.parse(friends);
 
 		if (searchText === "") {
 			return res.status(200).json({ msg: "Stop searching" });
@@ -49,23 +78,41 @@ export const getSearchedFriends = async (req, res) => {
 
 		const friendsMap = user.userFriendsMap;
 
-		let friendsArray = new Array();
+		let returnFriendsArr = new Array();
+		const excludedFriends = friendsArray.map((friend) => friend._id);
 
 		for (let friendId of friendsMap.keys()) {
-			const friend = await User.findById(friendId);
-
-			friend.verificationCode = undefined;
-			friend.userPassword = undefined;
-
-			if (friend.userName.toLowerCase().includes(searchText.toLowerCase())) {
-				friendsArray.push(friend);
+			if (!excludedFriends.includes(friendId)) {
+				const friend = await User.findById(friendId);
+				if (friend.userName.toLowerCase().includes(searchText.toLowerCase())) {
+					returnFriendsArr.push(friend);
+				}
+				if (returnFriendsArr.length == limit) {
+					break;
+				}
 			}
 		}
 
-		res.status(200).json({ msg: "Success", friendsArray });
-	} catch (err) {
-		console.log(err);
+		returnFriendsArr = returnFriendsArr.map((friend) => {
+			const {
+				userEmailAddress,
+				userPhoneNumber,
+				groups,
+				createdAt,
+				updatedAt,
+				userPassword,
+				verificationCode,
+				__v,
+				...rest
+			} = friend._doc;
 
+			const { userProfileImagePath } = rest.userProfile;
+
+			return { ...rest, userProfileImagePath };
+		});
+
+		res.status(200).json({ msg: "Success", returnFriendsArr });
+	} catch (err) {
 		res.status(500).json({ error: err.message });
 	}
 };
@@ -186,8 +233,6 @@ export const directRemoveFriend = async (req, res) => {
 
 		res.status(200).json({ msg: "Success", friendsArr });
 	} catch (err) {
-		console.log(err);
-
 		res.status(500).json({ error: err.message });
 	}
 };

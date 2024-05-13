@@ -84,7 +84,9 @@ export const deleteComment = async (req, res) => {
 		}
 
 		await Post.findByIdAndUpdate(postId, { $inc: { postComments: -1 } });
-		res.status(200).json({ msg: "Success" });
+		res
+			.status(200)
+			.json({ msg: "Success", deletedCommentId: deletedComment._id });
 	} catch (err) {
 		res.status(500).json({ error: err.message });
 	}

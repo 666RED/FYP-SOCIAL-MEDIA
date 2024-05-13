@@ -5,7 +5,6 @@ export const INITIAL_STATE = {
 	bio: "",
 	loading: false,
 	isUser: false,
-	isFriend: false,
 	loadFriendStatus: true,
 	friendStatus: "",
 	showRespondForm: false,
@@ -57,12 +56,6 @@ export const userProfileReducer = (state, action) => {
 			return {
 				...state,
 				isUser: action.payload,
-			};
-		}
-		case "SET_IS_FRIEND": {
-			return {
-				...state,
-				isFriend: action.payload,
 			};
 		}
 		case "SET_LOAD_FRIEND_STATUS": {

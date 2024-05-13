@@ -1,8 +1,7 @@
-import { React, useEffect, useContext, useReducer, createContext } from "react";
+import { React, useEffect, useContext, useReducer } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { useSnackbar } from "notistack";
-import { FaUserFriends } from "react-icons/fa";
 import Spinner from "../../../../components/Spinner/Spinner.jsx";
 import Loader from "../../../../components/Spinner/Loader.jsx";
 import FriendStatusButton from "../../../../components/FriendStatusButton.jsx";
@@ -511,7 +510,7 @@ const UserProfile = () => {
 					alt="Profile cover photo"
 					className="rounded-xl mt-3 component-layout"
 				/>
-				<div className="component-layout my-3 shadow-xl rounded-xl py-3 bg-white grid grid-cols-12 items-center">
+				<div className="component-layout my-3 shadow-xl rounded-xl py-3 bg-white grid grid-cols-12 items-center pl-1">
 					<div className="flex flex-col items-center justify -center col-span-5">
 						{/* PROFILE IMAGE */}
 						<img
@@ -520,7 +519,7 @@ const UserProfile = () => {
 							className="rounded-full md:w-36 w-28 border border-blue-400"
 						/>
 						{/* USER NAME */}
-						<p className="my-3 md:text-xl text-lg font-semibold">
+						<p className="my-3 md:text-lg text-base font-semibold">
 							{state.name}
 						</p>
 					</div>
@@ -563,7 +562,7 @@ const UserProfile = () => {
 							))}
 						{/* VIEW FRIENDS BUTTON */}
 						<button
-							className="btn-gray profile-btn my-2"
+							className="btn-gray profile-btn my-2 text-sm sm:text-base "
 							onClick={() => navigate(`/profile/view-friends/${userId}`)}
 						>
 							View Friends
@@ -572,9 +571,11 @@ const UserProfile = () => {
 				</div>
 				<hr />
 				{/* PROFILE BIO */}
-				<p className="shadow-2xl bg-white p-2 rounded-xl text-black md:w-7/12 w-full mx-auto">
-					{state.bio}
-				</p>
+				{state.bio !== "" && (
+					<p className="shadow-2xl bg-white p-2 rounded-xl text-black md:w-7/12 w-full mx-auto">
+						{state.bio}
+					</p>
+				)}
 			</div>
 		</div>
 	);

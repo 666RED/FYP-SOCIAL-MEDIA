@@ -18,6 +18,11 @@ import userPostReducer from "../pages/profilePages/features/userPosts/userPostSl
 import campusConditionReducer from "../pages/campusConditionPages/features/campusConditionSlice.js";
 import friendReducer from "../features/friendSlice.js";
 import groupReducer from "../features/groupSlice.js";
+import groupMemberReducer from "../features/groupMemberSlice.js";
+import groupPostReducer from "../features/groupPostSlice.js";
+import productReducer from "../features/productSlice.js";
+import serviceReducer from "../features/serviceSlice.js";
+import eventReducer from "../features/eventSlice.js";
 
 import storage from "redux-persist/lib/storage";
 
@@ -35,6 +40,11 @@ const rootReducer = combineReducers({
 	friend: friendReducer,
 	search: searchReducer,
 	group: groupReducer,
+	groupMember: groupMemberReducer,
+	groupPost: groupPostReducer,
+	product: productReducer,
+	service: serviceReducer,
+	event: eventReducer,
 });
 
 export const store = configureStore({

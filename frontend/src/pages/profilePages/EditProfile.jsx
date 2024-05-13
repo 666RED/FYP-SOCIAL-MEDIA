@@ -1,11 +1,11 @@
 import { React, useEffect, useContext, useState, useReducer } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import EditText from "./components/EditText.jsx";
+import { useSnackbar } from "notistack";
+import EditText from "../../components/EditText.jsx";
 import Spinner from "../../components/Spinner/Spinner.jsx";
 import Error from "../../components/Error.jsx";
 import DirectBackArrowHeader from "../../components/BackArrow/DirectBackArrowHeader.jsx";
-import { useSnackbar } from "notistack";
 import {
 	editProfileReducer,
 	INITIAL_STATE,
@@ -27,6 +27,7 @@ const EditProfile = () => {
 	const { enqueueSnackbar } = useSnackbar();
 	const filePath = `${serverURL}/public/images/profile/`;
 
+	// fetch profile info
 	useEffect(() => {
 		const fetchData = async () => {
 			dispatch({ type: ACTION_TYPES.SET_LOADING, payload: true });
@@ -167,7 +168,6 @@ const EditProfile = () => {
 							payload: URL.createObjectURL(file),
 						});
 						setProfileImage(file);
-						dispatch({ type: ACTION_TYPES.MADE_CHANGES });
 					} else {
 						enqueueSnackbar("The image ratio is not within 12/9", {
 							variant: "warning",
@@ -188,7 +188,6 @@ const EditProfile = () => {
 				type: ACTION_TYPES.SET_COVER_IMAGE_PATH,
 				payload: URL.createObjectURL(file),
 			});
-			dispatch({ type: ACTION_TYPES.MADE_CHANGES });
 			setCoverImage(file);
 		}
 	};
@@ -196,9 +195,11 @@ const EditProfile = () => {
 	return user && token ? (
 		<form className="page-layout-with-back-arrow" onSubmit={handleSave}>
 			{state.loading && <Spinner />}
+			{/* HEADER */}
 			<DirectBackArrowHeader
 				destination={`/profile/${user._id}`}
 				title="Edit Profile"
+				discardChanges={state.makeChanges}
 			/>
 			<div className="mt-2">
 				{/* PROFILE PICTURE */}
@@ -237,8 +238,8 @@ const EditProfile = () => {
 					className="rounded-xl w-full md:w-2/3 block mx-auto"
 				/>
 				<hr className="my-5 border border-gray-300" />
-				{/* NAME */}
 				<div className="grid grid-cols-9">
+					{/* USER NAME */}
 					<div className="md:col-span-4 col-span-9">
 						<div className="flex items-center justify-between mb-3">
 							<h3>Name</h3>
@@ -269,7 +270,6 @@ const EditProfile = () => {
 									type: ACTION_TYPES.SET_NAME,
 									payload: e.target.value,
 								});
-								dispatch({ type: ACTION_TYPES.MADE_CHANGES });
 							}}
 						/>
 					</div>
@@ -303,7 +303,6 @@ const EditProfile = () => {
 									type: ACTION_TYPES.SET_BIO,
 									payload: e.target.value,
 								});
-								dispatch({ type: ACTION_TYPES.MADE_CHANGES });
 							}}
 						/>
 					</div>

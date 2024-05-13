@@ -34,13 +34,13 @@ export const createNewGroupPageReducer = (state, action) => {
 			};
 		}
 		case "UPLOAD_IMAGE": {
-			const { image, imagePath, hasChanged } = action.payload;
+			const { image, imagePath } = action.payload;
 			return {
 				...state,
 				groupImage: image,
 				groupImagePath: imagePath,
-				madeChanges: hasChanged,
-				hasGroupImageChanged: hasChanged,
+				madeChanges: true,
+				hasGroupImageChanged: true,
 			};
 		}
 		case "REMOVE_IMAGE": {

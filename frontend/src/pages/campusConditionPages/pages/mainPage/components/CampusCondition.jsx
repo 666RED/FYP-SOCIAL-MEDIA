@@ -24,6 +24,7 @@ import {
 	removeMostUsefulCondition,
 	updateCampusCondition,
 	updateMostUsefulCondition,
+	setHasConditions,
 } from "../../../features/campusConditionSlice.js";
 import { ServerContext } from "../../../../../App.js";
 
@@ -34,12 +35,14 @@ const CampusCondition = ({ condition, inViewMostUseful = false }) => {
 	const { user, token } = useSelector((store) => store.auth);
 	const { enqueueSnackbar } = useSnackbar();
 	const [state, dispatch] = useReducer(CampusConditionReducer, INITIAL_STATE);
+	const { campusConditions } = useSelector((store) => store.campusCondition);
 
 	const profileImgPath = `${serverURL}/public/images/profile/`;
 	const conditionImagePath = `${serverURL}/public/images/campus-condition/`;
 
 	const previous = window.location.pathname;
 
+	// get user info
 	useEffect(() => {
 		const getUserInfo = async () => {
 			try {
@@ -267,7 +270,7 @@ const CampusCondition = ({ condition, inViewMostUseful = false }) => {
 				const res = await fetch(
 					`${serverURL}/campus-condition/delete-condition`,
 					{
-						method: "DELETE",
+						method: "PATCH",
 						body: JSON.stringify({
 							condition,
 						}),
@@ -290,6 +293,9 @@ const CampusCondition = ({ condition, inViewMostUseful = false }) => {
 				const { msg, deletedCondition } = await res.json();
 
 				if (msg === "Success") {
+					if (campusConditions.length == 10) {
+						sliceDispatch(setHasConditions(true));
+					}
 					sliceDispatch(removeCampusCondition(deletedCondition));
 					sliceDispatch(removeMostUsefulCondition(deletedCondition));
 					enqueueSnackbar("Condition deleted", { variant: "success" });
@@ -494,6 +500,7 @@ const CampusCondition = ({ condition, inViewMostUseful = false }) => {
 			{state.conditionImagePath !== "" && (
 				<img
 					src={conditionImagePath + state.conditionImagePath}
+					alt="Condition image"
 					className="rounded-xl mx-auto w-full"
 				/>
 			)}

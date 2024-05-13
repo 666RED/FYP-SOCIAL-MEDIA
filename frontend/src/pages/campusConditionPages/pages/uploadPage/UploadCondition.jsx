@@ -31,6 +31,7 @@ const UploadCondition = () => {
 			navigator.geolocation.getCurrentPosition(
 				(position) => {
 					const { latitude, longitude } = position.coords;
+
 					sliceDispatch(
 						loadCurrentLocation({
 							location: {
@@ -134,56 +135,59 @@ const UploadCondition = () => {
 				destination="/campus-condition"
 				title="Upload Condition"
 			/>
-			{/* TITLE */}
-			<h3 className="mt-3">Title:</h3>
-			<input
-				id="title"
-				type="text"
-				required
-				className="w-full my-1"
-				maxLength={50}
-				value={state.title}
-				onChange={(e) =>
-					dispatch({ type: ACTION_TYPES.SET_TITLE, payload: e.target.value })
-				}
-			/>
-			{/* DESCRIPTION */}
-			<h3 className="mt-3">Description:</h3>
-			<textarea
-				id="description"
-				rows="5"
-				className="w-full my-1 resize-none"
-				required
-				maxLength={200}
-				value={state.description}
-				onChange={(e) =>
-					dispatch({
-						type: ACTION_TYPES.SET_DESCRIPTION,
-						payload: e.target.value,
-					})
-				}
-			></textarea>
-			{/* IMAGE */}
-			<div className="flex justify-between items-center mt-3">
-				<h3>Image:</h3>
-				<RemoveImageText
-					handleRemove={handleRemove}
+			{/* MAIN CONTENT CONTAINER */}
+			<div className="md:w-2/3 mx-auto">
+				{/* TITLE */}
+				<h3 className="mt-3">Title:</h3>
+				<input
+					id="title"
+					type="text"
+					required
+					className="w-full my-1"
+					maxLength={50}
+					value={state.title}
+					onChange={(e) =>
+						dispatch({ type: ACTION_TYPES.SET_TITLE, payload: e.target.value })
+					}
+				/>
+				{/* DESCRIPTION */}
+				<h3 className="mt-3">Description:</h3>
+				<textarea
+					id="description"
+					rows="5"
+					className="w-full my-1 resize-none"
+					required
+					maxLength={200}
+					value={state.description}
+					onChange={(e) =>
+						dispatch({
+							type: ACTION_TYPES.SET_DESCRIPTION,
+							payload: e.target.value,
+						})
+					}
+				></textarea>
+				{/* IMAGE */}
+				<div className="flex justify-between items-center mt-3">
+					<h3>Image:</h3>
+					<RemoveImageText
+						handleRemove={handleRemove}
+						imagePath={state.postImagePath}
+					/>
+				</div>
+				<UploadImage
+					dispatch={(payload) =>
+						dispatch({ type: ACTION_TYPES.UPLOAD_IMAGE, payload })
+					}
 					imagePath={state.postImagePath}
 				/>
+				{/* LOCATION */}
+				<h3 className="mt-3">Location:</h3>
+				{/*  MAP */}
+				<Places />
+				<button className="btn-green my-6 w-1/3 md:w-1/4 block mx-auto">
+					UPLOAD
+				</button>
 			</div>
-			<UploadImage
-				dispatch={(payload) =>
-					dispatch({ type: ACTION_TYPES.UPLOAD_IMAGE, payload })
-				}
-				imagePath={state.postImagePath}
-			/>
-			{/* LOCATION */}
-			<h3 className="mt-3">Location:</h3>
-			{/*  MAP */}
-			<Places />
-			<button className="btn-green my-6 w-1/3 md:w-1/4 block mx-auto">
-				UPLOAD
-			</button>
 		</form>
 	) : (
 		<Error />

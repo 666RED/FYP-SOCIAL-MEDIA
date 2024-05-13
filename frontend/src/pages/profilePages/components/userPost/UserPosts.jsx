@@ -1,16 +1,16 @@
-import { React, useEffect, useContext, useState } from "react";
+import { React, useEffect, useContext } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useParams } from "react-router-dom";
+import { enqueueSnackbar } from "notistack";
 import UserPost from "./UserPost.jsx";
 import Loader from "../../../../components/Spinner/Loader.jsx";
-import { ServerContext } from "../../../../App.js";
-import { enqueueSnackbar } from "notistack";
 import {
 	setPost,
 	resetState,
 	setHasPost,
 	setIsLoadingPost,
 } from "../../features/userPosts/userPostSlice.js";
+import { ServerContext } from "../../../../App.js";
 
 const UserPosts = () => {
 	const { userId } = useParams();
@@ -19,6 +19,7 @@ const UserPosts = () => {
 	const { user, token } = useSelector((store) => store.auth);
 	const { posts, hasPost, isLoadingPost } = useSelector((store) => store.post);
 
+	// get posts
 	useEffect(() => {
 		const getPost = async () => {
 			try {
@@ -59,7 +60,6 @@ const UserPosts = () => {
 					});
 				} else if (msg === "Success") {
 					sliceDispatch(setPost(posts));
-					sliceDispatch(setHasPost(true));
 
 					if (posts.length < 10) {
 						sliceDispatch(setHasPost(false));

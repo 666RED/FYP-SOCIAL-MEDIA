@@ -20,7 +20,7 @@ router.patch("/handle-up", verifyToken, handleUp);
 router.patch("/cancel-up", verifyToken, cancelUp);
 router.patch("/handle-down", verifyToken, handleDown);
 router.patch("/cancel-down", verifyToken, cancelDown);
-router.delete("/delete-condition", verifyToken, deleteCondition);
+router.patch("/delete-condition", verifyToken, deleteCondition);
 router.patch(
 	"/update-condition-resolved",
 	verifyToken,
