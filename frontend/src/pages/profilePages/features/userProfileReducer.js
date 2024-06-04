@@ -1,6 +1,7 @@
 export const INITIAL_STATE = {
 	name: "",
 	profileImagePath: "",
+	frameColor: "",
 	coverImagePath: "",
 	bio: "",
 	loading: false,
@@ -23,6 +24,12 @@ export const userProfileReducer = (state, action) => {
 			return {
 				...state,
 				profileImagePath: action.payload,
+			};
+		}
+		case "SET_FRAME_COLOR": {
+			return {
+				...state,
+				frameColor: action.payload,
 			};
 		}
 		case "SET_COVER_IMAGE_PATH": {
@@ -50,6 +57,7 @@ export const userProfileReducer = (state, action) => {
 				profileImagePath: action.payload.profileImagePath,
 				coverImagePath: action.payload.coverImagePath,
 				bio: action.payload.bio,
+				frameColor: action.payload.frameColor,
 			};
 		}
 		case "SET_IS_USER": {

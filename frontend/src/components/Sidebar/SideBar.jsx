@@ -26,19 +26,19 @@ const SideBar = ({ selectedSection, setExtendSideBar, extendSideBar }) => {
 			{extendSideBar && <Filter />}
 			<div
 				className={`${
-					extendSideBar ? "w-44 sm:w-52 p-2" : "w-0"
-				} bg-gray-700 fixed top-0 left-0 bottom-0 transform z-30 sidebar-transition overflow-hidden`}
+					extendSideBar ? "w-44 sm:w-52" : "w-0"
+				} bg-gray-700 fixed top-0 left-0 bottom-0 transform z-30 sidebar-transition overflow-hidden pt-1`}
 			>
 				{/* LOGO & CLOSE BUTTON */}
 				<div className="flex items-center justify-between">
-					<p>Logo</p>
+					<p className="indent-1">Logo</p>
 					<MdCancel
 						className="icon text-red-600 hover:text-red-500"
 						onClick={() => setExtendSideBar(false)}
 					/>
 				</div>
 				{/* LIST ELEMENTS */}
-				<ul className={`mt-4 text-white grid sidebar-list sidebar-transition`}>
+				<ul className="mt-4 text-white grid sidebar-list">
 					{sidebarListElements.map(({ page, destination }, id) => {
 						return (
 							<SidebarListElement
@@ -52,7 +52,7 @@ const SideBar = ({ selectedSection, setExtendSideBar, extendSideBar }) => {
 				</ul>
 				{/* LOG OUT */}
 				<p
-					className="absolute bottom-0 w-11/12 hover:bg-gray-500 px-1 py-3 rounded-md cursor-pointer text-white"
+					className="absolute bottom-0 w-full hover:bg-gray-500 px-1 py-3 rounded-md cursor-pointer text-white"
 					onClick={() => {
 						dispatch(logout());
 						navigate("/");

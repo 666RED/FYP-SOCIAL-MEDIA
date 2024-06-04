@@ -53,7 +53,11 @@ export const login = async (req, res) => {
 	try {
 		const { userEmailAddress, userPassword } = req.body;
 
-		const user = await User.findOne({ userEmailAddress: userEmailAddress });
+		const user = await User.findOne({
+			userEmailAddress: userEmailAddress,
+		}).select(
+			"-createdAt -updatedAt -__v -verificationCode -removed -groups -userFriendsMap"
+		);
 		if (!user) {
 			return res.status(400).json({ msg: "Not exist" });
 		}
@@ -67,10 +71,12 @@ export const login = async (req, res) => {
 		// improve the user experience by reducing the need for users to re-enter their credentials frequently
 		const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET);
 
-		user.userPassword = null;
+		user.userPassword = undefined;
 
 		res.status(200).json({ msg: "Success", token, user });
 	} catch (err) {
+		console.log(err);
+
 		res.status(500).json({ error: err.message });
 	}
 };

@@ -4,7 +4,7 @@ import { useParams } from "react-router-dom";
 import { useSnackbar } from "notistack";
 import DirectBackArrowHeader from "../../components/BackArrow/DirectBackArrowHeader.jsx";
 import SearchBar from "../../components/SearchBar.jsx";
-import FriendsList from "./FriendsList.jsx";
+import FriendsList from "./components/FriendsList.jsx";
 import Error from "../../components/Error.jsx";
 import {
 	resetState,

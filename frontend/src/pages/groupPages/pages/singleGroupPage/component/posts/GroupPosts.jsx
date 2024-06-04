@@ -1,6 +1,5 @@
 import { React, useEffect, useContext } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { useParams } from "react-router-dom";
 import { useSnackbar } from "notistack";
 import Loader from "../../../../../../components/Spinner/Loader.jsx";
 import GroupPost from "./GroupPost.jsx";
@@ -9,19 +8,15 @@ import {
 	resetGroupPostState,
 	setHasPost,
 	setIsLoadingPost,
-	updatePost,
 } from "../../../../../../features/groupPostSlice.js";
 import { ServerContext } from "../../../../../../App.js";
 
-const GroupPosts = ({ currentTime }) => {
+const GroupPosts = ({ currentTime, groupId, isAdmin = false }) => {
 	const { enqueueSnackbar } = useSnackbar();
-	const { groupId } = useParams();
 	const sliceDispatch = useDispatch();
 	const serverURL = useContext(ServerContext);
 	const { token } = useSelector((store) => store.auth);
-	const { groupPosts, hasPost, isLoadingPost } = useSelector(
-		(store) => store.groupPost
-	);
+	const { groupPosts, isLoadingPost } = useSelector((store) => store.groupPost);
 
 	// get group posts
 	useEffect(() => {
@@ -80,7 +75,7 @@ const GroupPosts = ({ currentTime }) => {
 	// reset group post state
 	useEffect(() => {
 		return () => {
-			resetGroupPostState();
+			sliceDispatch(resetGroupPostState());
 		};
 	}, []);
 
@@ -91,7 +86,9 @@ const GroupPosts = ({ currentTime }) => {
 			) : (
 				<div>
 					{groupPosts.length > 0 ? (
-						groupPosts.map((post) => <GroupPost key={post._id} post={post} />)
+						groupPosts.map((post) => (
+							<GroupPost key={post._id} post={post} isAdmin={isAdmin} />
+						))
 					) : (
 						<h2 className="text-center my-2">No post</h2>
 					)}

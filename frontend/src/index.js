@@ -12,7 +12,11 @@ const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
 	<Provider store={store}>
 		<PersistGate loading={null} persistor={persistStore(store)}>
-			<SnackbarProvider autoHideDuration={3000} maxSnack={2}>
+			<SnackbarProvider
+				autoHideDuration={3000}
+				maxSnack={2}
+				preventDuplicate={true}
+			>
 				<App />
 			</SnackbarProvider>
 		</PersistGate>

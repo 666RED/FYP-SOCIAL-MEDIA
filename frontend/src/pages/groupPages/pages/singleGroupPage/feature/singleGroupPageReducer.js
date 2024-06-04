@@ -2,7 +2,6 @@ export const INITIAL_STATE = {
 	loadMore: false,
 	count: 10,
 	showAddNewPostForm: false,
-	groupAdminId: "",
 	loading: false,
 };
 
@@ -24,18 +23,6 @@ export const singleGroupPageReducer = (state, action) => {
 			return {
 				...state,
 				showAddNewPostForm: !state.showAddNewPostForm,
-			};
-		}
-		case "SET_GROUP_ADMIN_ID": {
-			return {
-				...state,
-				groupAdminId: action.payload,
-			};
-		}
-		case "SET_GROUP_ADMIN_ID": {
-			return {
-				...state,
-				groupAdminId: action.payload,
 			};
 		}
 		case "INCREASE_COUNT": {

@@ -76,6 +76,7 @@ const Login = () => {
 			{loading && <Spinner />}
 			{displayRegForm && <RegisterForm setDisplayRegForm={setDisplayRegForm} />}
 			<div className="mt-5 w-1/2 mx-auto min-w-80 max-w-96 text-center">
+				{/* change to logo later */}
 				<h1 className="text-2xl">Logo</h1>
 				<form
 					onSubmit={handleSubmit}
@@ -83,6 +84,7 @@ const Login = () => {
 				>
 					<h1 className="text-center title mb-2">User Login</h1>
 					<HorizontalRule />
+					{/* EMAIL */}
 					<input
 						type="email"
 						id="email"
@@ -96,6 +98,7 @@ const Login = () => {
 						placeholder="Student / Staff Email Address"
 						required
 					/>
+					{/* PASSWORD */}
 					<div className="relative z-0">
 						<input
 							type={viewPassword ? "text" : "password"}
@@ -122,7 +125,9 @@ const Login = () => {
 							/>
 						)}
 					</div>
+					{/* LOGIN BUTTON */}
 					<button className="btn-blue block w-1/2 mx-auto mt-5">LOGIN</button>
+					{/* FORGOT PASSWORD */}
 					<p
 						className="text-center inline-block mx-auto mt-5 text-blue-600 cursor-pointer text-sm hover:opacity-80"
 						onClick={() => {
@@ -134,6 +139,7 @@ const Login = () => {
 					</p>
 				</form>
 				<h2 className="text-center my-4">OR</h2>
+				{/* REGISTER NEW ACCOUNT BUTTON */}
 				<button
 					className="btn-green block mx-auto mb-3"
 					onClick={() => setDisplayRegForm(true)}
@@ -141,6 +147,7 @@ const Login = () => {
 					Register New Account
 				</button>
 			</div>
+			{/* FOOTER */}
 			<footer className="bg-gray-700 py-1 fixed bottom-0 w-full">
 				<p className="text-white text-center m-0 text-xs">
 					Copyright &#169; 2024

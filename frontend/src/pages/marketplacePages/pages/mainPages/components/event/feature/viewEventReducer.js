@@ -14,7 +14,9 @@ export const INITIAL_STATE = {
 	eventEndTime: "",
 	userName: "",
 	userProfileImagePath: "",
+	frameColor: "",
 	userId: "",
+	showReportForm: false,
 };
 
 export const viewEventReducer = (state, action) => {
@@ -42,6 +44,7 @@ export const viewEventReducer = (state, action) => {
 				userName,
 				userProfileImagePath,
 				userId,
+				frameColor,
 			} = action.payload;
 
 			return {
@@ -61,6 +64,13 @@ export const viewEventReducer = (state, action) => {
 				userName,
 				userProfileImagePath,
 				userId,
+				frameColor,
+			};
+		}
+		case "TOGGLE_SHOW_REPORT_FORM": {
+			return {
+				...state,
+				showReportForm: !state.showReportForm,
 			};
 		}
 		default: {

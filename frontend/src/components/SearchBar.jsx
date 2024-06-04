@@ -1,7 +1,7 @@
 import React from "react";
 import { FaSearch } from "react-icons/fa/index.js";
 
-const SearchBar = ({ text, func, placeholderText, isDisabled }) => {
+const SearchBar = ({ text, func, placeholderText, isDisabled = false }) => {
 	const handleFocus = () => {
 		const searchInput = document.querySelector("#search-input");
 		searchInput.focus();

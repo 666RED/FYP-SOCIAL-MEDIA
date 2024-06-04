@@ -7,18 +7,21 @@ export const INITIAL_STATE = {
 	isNameEdit: false,
 	isBioEdit: false,
 	makeChanges: false,
+	frameColor: "",
 };
 
 export const editProfileReducer = (state, action) => {
 	switch (action.type) {
 		case "FIEST_RENDER": {
-			const { profileImagePath, coverImagePath, name, bio } = action.payload;
+			const { profileImagePath, coverImagePath, name, bio, frameColor } =
+				action.payload;
 			return {
 				...state,
 				profileImagePath,
 				coverImagePath,
 				name,
 				bio,
+				frameColor,
 			};
 		}
 		case "SET_PROFILE_IMAGE_PATH": {

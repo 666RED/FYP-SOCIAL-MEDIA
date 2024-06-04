@@ -5,6 +5,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import Spinner from "../../../../../components/Spinner/Spinner.jsx";
 import Loader from "../../../../../components/Spinner/Loader.jsx";
 import JoinGroupStatusButton from "./JoinGroupStatusButton.jsx";
+import ReportForm from "../../../../../components/post/ReportForm.jsx";
 import {
 	groupProfileReducer,
 	INITIAL_STATE,
@@ -232,7 +233,7 @@ const GroupProfile = () => {
 				});
 			} else if (msg === "Join group request not created") {
 				enqueueSnackbar("Fail to sent join group request", {
-					variant: "success",
+					variant: "error",
 				});
 			} else {
 				enqueueSnackbar("An error occurred", { variant: "error" });
@@ -284,10 +285,7 @@ const GroupProfile = () => {
 
 				if (msg === "Success") {
 					enqueueSnackbar("Left group", { variant: "success" });
-					dispatch({
-						type: ACTION_TYPES.SET_JOIN_GROUP_REQUEST_AND_STATUS,
-						payload: { joinGroupRequest: {}, joinGroupStatus: "Not join" },
-					});
+					navigate("/group");
 				} else if (msg === "Fail to remove member") {
 					enqueueSnackbar("Fail to leave group", { variant: "error" });
 				} else {
@@ -335,7 +333,7 @@ const GroupProfile = () => {
 					return;
 				}
 
-				const { msg, comments } = await res.json();
+				const { msg } = await res.json();
 
 				if (msg === "Success") {
 					dispatch({
@@ -366,6 +364,16 @@ const GroupProfile = () => {
 	return (
 		<div>
 			{state.loading && <Spinner />}
+			{/* REPORT FORM */}
+			{state.showReportForm && (
+				<ReportForm
+					id={groupId}
+					toggleShowReportForm={() =>
+						dispatch({ type: ACTION_TYPES.TOGGLE_SHOW_REPORT_FORM })
+					}
+					type="Group"
+				/>
+			)}
 			{/* GROUP COVER IMAGE */}
 			<img
 				src={state.groupCoverImagePath}
@@ -443,6 +451,18 @@ const GroupProfile = () => {
 					>
 						View Members
 					</button>
+					{/* FOR MEMBER */}
+					{/* REPORT GROUP BUTTON */}
+					{state.groupAdminId !== user._id && (
+						<button
+							className="btn-orange my-2 text-sm sm:text-base"
+							onClick={() =>
+								dispatch({ type: ACTION_TYPES.TOGGLE_SHOW_REPORT_FORM })
+							}
+						>
+							Report Group
+						</button>
+					)}
 				</div>
 			</div>
 			<hr />

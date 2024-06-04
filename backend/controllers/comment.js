@@ -1,6 +1,7 @@
 import { Post } from "../models/postModel.js";
 import { Comment } from "../models/commentModel.js";
 import { formatDateTime } from "../usefulFunction.js";
+import { User } from "../models/userModel.js";
 
 export const getComments = async (req, res) => {
 	try {
@@ -14,15 +15,11 @@ export const getComments = async (req, res) => {
 			currentTime = new Date(req.query.currentTime);
 		}
 
-		const comments = await Comment.find({
+		let comments = await Comment.find({
 			postId,
 			createdAt: { $lt: currentTime },
 		})
 			.sort({ createdAt: -1 })
-			.populate({
-				path: "userId",
-				select: "userName userProfile.profileImagePath",
-			})
 			.skip(count)
 			.limit(limit)
 			.exec();
@@ -37,10 +34,35 @@ export const getComments = async (req, res) => {
 			return;
 		}
 
+		comments = await Promise.all(
+			comments.map(async (comment) => {
+				const user = await User.findById(comment.userId);
+				let profileImagePath = "";
+				let userName = "";
+				let frameColor = "";
+
+				if (user) {
+					profileImagePath = user.userProfile.profileImagePath;
+					userName = user.userName;
+					frameColor = user.userProfile.profileFrameColor;
+				}
+
+				const temp = {
+					...comment._doc,
+					time: formatDateTime(comment.createdAt),
+					userName,
+					profileImagePath,
+					frameColor,
+				};
+
+				const { createdAt, updatedAt, __v, ...rest } = temp;
+
+				return rest;
+			})
+		);
+
 		res.status(200).json({ msg: "Success", comments });
 	} catch (err) {
-		console.log(err);
-
 		res.status(500).json({ error: err.message });
 	}
 };
@@ -49,23 +71,42 @@ export const addComment = async (req, res) => {
 	try {
 		const { postId, userId, comment } = req.body;
 
-		const commentTime = new Date();
-		const formattedCommentTime = formatDateTime(commentTime);
-
 		const newComment = new Comment({
 			postId,
 			userId,
 			commentDescription: comment,
-			commentTime: formattedCommentTime,
 		});
 
-		const savedComment = await newComment.save();
+		let savedComment = await newComment.save();
 
 		if (!savedComment) {
 			return res.status(400).json({ msg: "Fail to add new comment" });
 		}
 
 		await Post.findByIdAndUpdate(postId, { $inc: { postComments: 1 } });
+
+		const user = await User.findById(savedComment.userId);
+		let profileImagePath = "";
+		let userName = "";
+		let frameColor = "";
+
+		if (user) {
+			profileImagePath = user.userProfile.profileImagePath;
+			userName = user.userName;
+			frameColor = user.userProfile.profileFrameColor;
+		}
+
+		const temp = {
+			...savedComment._doc,
+			userName,
+			profileImagePath,
+			time: formatDateTime(savedComment.createdAt),
+			frameColor,
+		};
+
+		const { createdAt, updatedAt, __v, ...rest } = temp;
+
+		savedComment = rest;
 
 		res.status(200).json({ msg: "Success", savedComment });
 	} catch (err) {
@@ -92,40 +133,40 @@ export const deleteComment = async (req, res) => {
 	}
 };
 
-export const getComment = async (req, res) => {
-	try {
-		const { commentId } = req.query;
-		const comment = await Comment.findById(commentId).populate({
-			path: "userId",
-			select: "userName userProfile.profileImagePath",
-		});
-
-		if (!comment) {
-			res.status(404).json({ msg: "Comment not found" });
-		}
-
-		res.status(200).json({ msg: "Success", comment });
-	} catch (err) {
-		console.log(err);
-
-		res.status(500).json({ error: err.message });
-	}
-};
-
 export const editComment = async (req, res) => {
 	try {
 		const { commentId, newComment } = req.body;
 
-		const updatedComment = await Comment.findByIdAndUpdate(
+		let updatedComment = await Comment.findByIdAndUpdate(
 			commentId,
 			{
 				commentDescription: newComment,
 			},
 			{ new: true }
-		).populate({
-			path: "userId",
-			select: "userName userProfile.profileImagePath",
-		});
+		);
+
+		const user = await User.findById(updatedComment.userId);
+		let profileImagePath = "";
+		let userName = "";
+		let frameColor = "";
+
+		if (user) {
+			profileImagePath = user.userProfile.profileImagePath;
+			userName = user.userName;
+			frameColor = user.userProfile.profileFrameColor;
+		}
+
+		const temp = {
+			...updatedComment._doc,
+			userName,
+			profileImagePath,
+			time: formatDateTime(updatedComment.createdAt),
+			frameColor,
+		};
+
+		const { createdAt, updatedAt, __v, ...rest } = temp;
+
+		updatedComment = rest;
 
 		if (!updatedComment) {
 			res.status(404).json({ msg: "Fail to update comment" });

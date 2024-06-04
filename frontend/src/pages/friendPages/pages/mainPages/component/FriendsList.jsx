@@ -92,13 +92,10 @@ const FriendsList = ({ setListLoading }) => {
 		// cancel request
 		return () => {
 			if (currentRequest) {
-				console.log(currentRequest);
 				currentRequest.abort();
 			}
 		};
 	}, []);
-
-	console.log(friendsArr);
 
 	return (
 		<div className="px-2 mt-3 grid grid-cols-12 md:gap-x-2 overflow-y-auto">

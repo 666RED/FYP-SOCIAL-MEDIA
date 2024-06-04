@@ -5,6 +5,7 @@ export const INITIAL_STATE = {
 	showComment: false,
 	showOptionDiv: false,
 	showEditPostForm: false,
+	showReportForm: false,
 	loading: false,
 };
 
@@ -68,6 +69,12 @@ export const groupPostReducer = (state, action) => {
 			return {
 				...state,
 				showEditPostForm: !state.showEditPostForm,
+			};
+		}
+		case "TOGGLE_SHOW_REPORT_FORM": {
+			return {
+				...state,
+				showReportForm: !state.showReportForm,
 			};
 		}
 		default: {

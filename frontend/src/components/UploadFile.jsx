@@ -1,9 +1,16 @@
-import React from "react";
+import React, { useState } from "react";
 import { FaFile } from "react-icons/fa";
 import { useSnackbar } from "notistack";
+import Spinner from "./Spinner/Spinner.jsx";
 
-const UploadFile = ({ filePath, dispatch, editFile = false }) => {
+const UploadFile = ({
+	filePath = "",
+	dispatch,
+	editFile = false,
+	isRequired = false,
+}) => {
 	const { enqueueSnackbar } = useSnackbar();
+	const [loading, setLoading] = useState(false);
 
 	const handleClick = () => {
 		const file = document.getElementById("note-file");
@@ -11,19 +18,22 @@ const UploadFile = ({ filePath, dispatch, editFile = false }) => {
 	};
 
 	const handleFileChange = (event) => {
+		setLoading(true);
 		const file = event.target.files[0];
-		const maxSizeInBytes = 16 * 1024 * 1024; // 16MB
+		const maxSizeInBytes = 100 * 1024 * 1024; // 100MB
 
 		if (file) {
 			if (file.size > maxSizeInBytes) {
-				enqueueSnackbar("File size should not greater than 16MB", {
+				enqueueSnackbar("File size should not greater than 100MB", {
 					variant: "warning",
 				});
+				setLoading(false);
 				return;
 			}
 			const newFilePath = URL.createObjectURL(file);
 
 			dispatch({ filePath: newFilePath, file: file });
+			setLoading(false);
 		}
 	};
 
@@ -34,9 +44,10 @@ const UploadFile = ({ filePath, dispatch, editFile = false }) => {
 			}`}
 			onClick={handleClick}
 		>
+			{loading && <Spinner />}
 			{filePath !== "" ? (
-				<div className="flex items-center border border-gray-600 w-full p-2 rounded-xl">
-					<FaFile className="mr-2" />
+				<div className="flex items-center border border-gray-600 w-full p-2 rounded-xl overflow-x-auto">
+					<FaFile className="mr-2 flex-shrink-0" />
 					{editFile
 						? filePath.split("\\").pop()
 						: document.getElementById("note-file").value.split("\\").pop()}
@@ -52,8 +63,10 @@ const UploadFile = ({ filePath, dispatch, editFile = false }) => {
 				className="hidden"
 				type="file"
 				id="note-file"
-				accept=".pdf,.doc,.docx,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,.xls,.xlsx,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,.ppt,.pptx,application/vnd.ms-powerpoint,application/vnd.openxmlformats-officedocument.presentationml.presentation"
+				name="note-file"
+				accept=".pdf,.doc,.docx,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,.xls,.xlsx,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,.ppt,.pptx,application/vnd.ms-powerpoint,application/vnd.openxmlformats-officedocument.presentationml.presentation,.txt"
 				onChange={handleFileChange}
+				required={isRequired}
 			/>
 		</div>
 	);

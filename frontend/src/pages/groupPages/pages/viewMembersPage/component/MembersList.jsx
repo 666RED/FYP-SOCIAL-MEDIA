@@ -189,6 +189,7 @@ const MembersList = ({ setLoading }) => {
 				{isLoadingMembers ? (
 					<Loader />
 				) : membersArr.length !== 0 ? (
+					// MEMBER
 					<div>
 						{membersArr.map((member) => (
 							<Member key={member._id} member={member} />

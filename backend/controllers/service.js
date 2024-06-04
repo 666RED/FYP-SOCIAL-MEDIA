@@ -1,4 +1,4 @@
-import mongoose, { mongo } from "mongoose";
+import mongoose from "mongoose";
 import { Service } from "../models/serviceModel.js";
 import { User } from "../models/userModel.js";
 import path from "path";
@@ -186,17 +186,19 @@ export const getService = async (req, res) => {
 
 		let userName = "";
 		let userProfileImagePath = "";
+		let frameColor = "";
 
 		if (user) {
 			userName = user.userName;
 			userProfileImagePath = user.userProfile.profileImagePath;
+			frameColor = user.userProfile.profileFrameColor;
 		}
 
 		const { __v, ...rest } = service._doc;
 
 		res.status(200).json({
 			msg: "Success",
-			service: { ...rest, userName, userProfileImagePath },
+			service: { ...rest, userName, userProfileImagePath, frameColor },
 		});
 	} catch (err) {
 		res.status(500).json({ error: err.message });
@@ -339,20 +341,6 @@ export const removeService = async (req, res) => {
 	try {
 		const { serviceId } = req.body;
 
-		const originalService = await Service.findById(serviceId);
-
-		if (!originalService) {
-			return res.status(400).json({ msg: "Fail to remove service" });
-		}
-
-		// remove image
-		const servicePosterImagePath = path.join(
-			__dirname,
-			"public/images/service",
-			originalService.servicePosterImagePath
-		);
-		fs.unlinkSync(servicePosterImagePath);
-
 		const removedService = await Service.findByIdAndUpdate(serviceId, {
 			$set: { removed: true },
 		});
@@ -360,6 +348,14 @@ export const removeService = async (req, res) => {
 		if (!removedService) {
 			return res.status(400).json({ msg: "Fail to remove service" });
 		}
+
+		// remove image
+		const servicePosterImagePath = path.join(
+			__dirname,
+			"public/images/service",
+			removedService.servicePosterImagePath
+		);
+		fs.unlinkSync(servicePosterImagePath);
 
 		res.status(200).json({ msg: "Success" });
 	} catch (err) {
@@ -374,18 +370,9 @@ export const editService = async (req, res) => {
 		const image = req.file;
 
 		const originalService = await Service.findById(serviceId);
+		const originalServiceImagePath = originalService.servicePosterImagePath;
 
 		let updatedService;
-
-		// remove original image
-		if (image) {
-			const imagePath = path.join(
-				__dirname,
-				"public/images/service",
-				originalService.servicePosterImagePath
-			);
-			fs.unlinkSync(imagePath);
-		}
 
 		//update image
 		if (image) {
@@ -412,6 +399,16 @@ export const editService = async (req, res) => {
 
 		if (!updatedService) {
 			return res.status(400).json({ msg: "Fail to edit service" });
+		}
+
+		// remove original image
+		if (image) {
+			const imagePath = path.join(
+				__dirname,
+				"public/images/service",
+				originalServiceImagePath
+			);
+			fs.unlinkSync(imagePath);
 		}
 
 		res.status(200).json({ msg: "Success" });

@@ -10,6 +10,7 @@ const UserPostHeader = ({
 	conditionResolved = false,
 	destination = "",
 	previous = "",
+	frameColor,
 }) => {
 	const navigate = useNavigate();
 
@@ -29,7 +30,7 @@ const UserPostHeader = ({
 			<img
 				src={imgPath}
 				alt="Profile image"
-				className={`rounded-full mr-2 border border-blue-400  ${
+				className={`rounded-full mr-2 border-[2.5px] ${frameColor}  ${
 					isPost ? "md:w-14 w-12" : "md:w-12 w-8"
 				}`}
 			/>

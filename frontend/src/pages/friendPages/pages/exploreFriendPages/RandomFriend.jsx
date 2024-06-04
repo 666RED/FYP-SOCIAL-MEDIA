@@ -83,7 +83,7 @@ const RandomFriend = ({ randomFriend, toggleEmptyText }) => {
 			<img
 				src={`${filePath}${randomFriend.userProfile.profileImagePath}`}
 				alt="Random friend profile image"
-				className="col-span-2 md:max-w-24 border border-blue-400 rounded-full "
+				className={`col-span-2 md:max-w-24 border-[2.5px] md:border-4 ${randomFriend.userProfile.profileFrameColor} rounded-full`}
 			/>
 			{/* USER NAME AND FRIEND COUNT DIV */}
 			<div className="col-span-6 md:my-3 md:flex-1 flex-col ml-2">

@@ -8,7 +8,9 @@ export const INITIAL_STATE = {
 	productImagePath: "",
 	userName: "",
 	userProfileImagePath: "",
+	frameColor: "",
 	userId: "",
+	showReportForm: false,
 };
 
 export const viewProductReducer = (state, action) => {
@@ -31,6 +33,7 @@ export const viewProductReducer = (state, action) => {
 				userName,
 				userProfileImagePath,
 				userId,
+				frameColor,
 			} = action.payload;
 
 			return {
@@ -44,6 +47,13 @@ export const viewProductReducer = (state, action) => {
 				userName,
 				userProfileImagePath,
 				userId,
+				frameColor,
+			};
+		}
+		case "TOGGLE_SHOW_REPORT_FORM": {
+			return {
+				...state,
+				showReportForm: !state.showReportForm,
 			};
 		}
 		default: {

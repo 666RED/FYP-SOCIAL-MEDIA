@@ -25,10 +25,6 @@ const groupPostSchema = mongoose.Schema(
 			of: Boolean,
 			default: new Map(),
 		},
-		postTime: {
-			type: String,
-			required: true,
-		},
 		postDescription: {
 			type: String,
 			max: 2000,
@@ -40,6 +36,10 @@ const groupPostSchema = mongoose.Schema(
 		postFilePath: {
 			type: String,
 			default: "",
+		},
+		removed: {
+			type: Boolean,
+			default: false,
 		},
 	},
 	{

@@ -12,16 +12,17 @@ import Comments from "../comments/Comments.jsx";
 import EditPostForm from "../posts/EditPostForm.jsx";
 import OptionDiv from "../../../../../../components/OptionDiv.jsx";
 import UserPostHeader from "../../../../../profilePages/components/UserPostHeader.jsx";
+import ReportForm from "../../../../../../components/post/ReportForm.jsx";
 import Spinner from "../../../../../../components/Spinner/Spinner.jsx";
 import {
 	groupPostReducer,
 	INITIAL_STATE,
 } from "../../feature/groupPostReducer.js";
 import ACTION_TYPES from "../../actionTypes/groupPostActionTypes.js";
-import { ServerContext } from "../../../../../../App.js";
 import { removePost } from "../../../../../../features/groupPostSlice.js";
+import { ServerContext } from "../../../../../../App.js";
 
-const GroupPost = ({ post }) => {
+const GroupPost = ({ post, isAdmin = false }) => {
 	const { groupId } = useParams();
 
 	const sliceDispatch = useDispatch();
@@ -129,45 +130,45 @@ const GroupPost = ({ post }) => {
 			const answer = window.confirm("Delete post?");
 			if (answer) {
 				dispatch({ type: ACTION_TYPES.SET_LOADING, payload: true });
-			}
-			const res = await fetch(`${serverURL}/group-post/delete-post`, {
-				method: "DELETE",
-				body: JSON.stringify({
-					postId: post._id,
-					postImagePath: post.postImagePath,
-					postFilePath: post.postFilePath,
-				}),
-				headers: {
-					"Content-Type": "application/json",
-					Authorization: `Bearer ${token}`,
-				},
-			});
-
-			if (!res.ok && res.status === 403) {
-				dispatch({
-					type: ACTION_TYPES.SET_LOADING,
-					payload: false,
+				const res = await fetch(`${serverURL}/group-post/delete-post`, {
+					method: "DELETE",
+					body: JSON.stringify({
+						postId: post._id,
+						postImagePath: post.postImagePath,
+						postFilePath: post.postFilePath,
+					}),
+					headers: {
+						"Content-Type": "application/json",
+						Authorization: `Bearer ${token}`,
+					},
 				});
-				enqueueSnackbar("Access Denied", { variant: "error" });
-				return;
+
+				if (!res.ok && res.status === 403) {
+					dispatch({
+						type: ACTION_TYPES.SET_LOADING,
+						payload: false,
+					});
+					enqueueSnackbar("Access Denied", { variant: "error" });
+					return;
+				}
+
+				const { msg } = await res.json();
+
+				if (msg === "Success") {
+					enqueueSnackbar("Post deleted", { variant: "success" });
+					sliceDispatch(removePost(post._id));
+					dispatch({ type: ACTION_TYPES.TOGGLE_SHOW_OPTION_DIV });
+				} else if (
+					msg === "Fail to delete comments" ||
+					msg === "Fail to delete post"
+				) {
+					enqueueSnackbar("Fail to delete post", { variant: "error" });
+				} else {
+					enqueueSnackbar("An error occurred", { variant: "error" });
+				}
+
+				dispatch({ type: ACTION_TYPES.SET_LOADING, payload: false });
 			}
-
-			const { msg } = await res.json();
-
-			if (msg === "Success") {
-				enqueueSnackbar("Post deleted", { variant: "success" });
-				sliceDispatch(removePost(post._id));
-				dispatch({ type: ACTION_TYPES.TOGGLE_SHOW_OPTION_DIV });
-			} else if (
-				msg === "Fail to delete comments" ||
-				msg === "Fail to delete post"
-			) {
-				enqueueSnackbar("Fail to delete post", { variant: "error" });
-			} else {
-				enqueueSnackbar("An error occurred", { variant: "error" });
-			}
-
-			dispatch({ type: ACTION_TYPES.SET_LOADING, payload: false });
 		} catch (err) {
 			enqueueSnackbar("Could not connect to the server", {
 				variant: "error",
@@ -176,17 +177,33 @@ const GroupPost = ({ post }) => {
 		}
 	};
 
-	// later add
-	const handleReport = async () => {
-		console.log("report");
+	const handleReport = () => {
+		dispatch({ type: ACTION_TYPES.TOGGLE_SHOW_REPORT_FORM });
 	};
 
 	return (
-		<div className="relative my-3 bg-white rounded-xl shadow-2xl py-4 px-2 w-full mx-auto md:w-7/12">
+		<div
+			className={`relative my-3 bg-white rounded-xl shadow-2xl py-4 px-2 w-full mx-auto ${
+				!isAdmin ? "md:w-7/12" : "md:w-11/12"
+			}`}
+		>
 			{state.loading && <Spinner />}
+			{/* REPORT FORM */}
+			{state.showReportForm && (
+				<ReportForm
+					type="Group Post"
+					id={post._id}
+					toggleShowReportForm={() =>
+						dispatch({ type: ACTION_TYPES.TOGGLE_SHOW_REPORT_FORM })
+					}
+					toggleShowOptionDiv={() =>
+						dispatch({ type: ACTION_TYPES.TOGGLE_SHOW_OPTION_DIV })
+					}
+				/>
+			)}
 			{/* OPTION DIV */}
 			{state.showOptionDiv && (
-				<div className="absolute right-3 top-10 border border-gray-600 bg-gray-200">
+				<div className="option-div-container">
 					{/* EDIT */}
 					{post.userId === user._id && (
 						<OptionDiv
@@ -230,16 +247,22 @@ const GroupPost = ({ post }) => {
 			{/* HEADER */}
 			<UserPostHeader
 				imgPath={profileImgPath + post.profileImagePath}
-				postTime={post.postTime}
+				postTime={post.time}
 				userName={post.userName}
 				destination={`/profile/${post.userId}`}
 				previous={previous}
+				frameColor={post.frameColor}
 			/>
 			{/* THREE DOTS */}
-			<BsThreeDots
-				className="absolute cursor-pointer top-6 right-3"
-				onClick={() => dispatch({ type: ACTION_TYPES.TOGGLE_SHOW_OPTION_DIV })}
-			/>
+			{!isAdmin && (
+				<BsThreeDots
+					className="absolute cursor-pointer top-6 right-3"
+					onClick={() =>
+						dispatch({ type: ACTION_TYPES.TOGGLE_SHOW_OPTION_DIV })
+					}
+				/>
+			)}
+
 			{/* POST DESCRIPTION */}
 			<p className="my-3">{post.postDescription}</p>
 			{/* POST IMAGE / FILE */}
@@ -259,35 +282,40 @@ const GroupPost = ({ post }) => {
 			) : null}
 
 			{/* LIKE AND COMMENT DIV */}
-			<div className="grid grid-cols-11 mt-3">
-				{/* LIKE */}
-				<div
-					className="col-span-5 border border-black rounded-xl cursor-pointer grid grid-cols-3 py-2 hover:bg-gray-200"
-					onClick={() => !state.processing && handleLikes()}
-				>
+			{!isAdmin && (
+				<div className="grid grid-cols-11 mt-3">
+					{/* LIKE */}
 					<div
-						className={`justify-self-center text-xl ${
-							state.isLiked && "text-blue-600"
-						}`}
+						className="col-span-5 border border-black rounded-xl cursor-pointer grid grid-cols-3 py-2 hover:bg-gray-200"
+						onClick={() => !state.processing && handleLikes()}
 					>
-						<HiThumbUp />
+						<div
+							className={`justify-self-center text-xl ${
+								state.isLiked && "text-blue-600"
+							}`}
+						>
+							<HiThumbUp />
+						</div>
+						<h6 className="justify-self-center text-sm sm:text-base">Likes</h6>
+						<p className="justify-self-center">{state.likesCount}</p>
 					</div>
-					<h6 className="justify-self-center text-sm sm:text-base">Likes</h6>
-					<p className="justify-self-center">{state.likesCount}</p>
-				</div>
 
-				{/* COMMENT */}
-				<div
-					className="col-span-5 col-start-7 border border-black rounded-xl grid grid-cols-3 py-2 cursor-pointer hover:bg-gray-200"
-					onClick={() => dispatch({ type: ACTION_TYPES.TOGGLE_COMMENT })}
-				>
-					<div className="text-xl justify-self-center">
-						<FaCommentDots />
+					{/* COMMENT */}
+					<div
+						className="col-span-5 col-start-7 border border-black rounded-xl grid grid-cols-3 py-2 cursor-pointer hover:bg-gray-200"
+						onClick={() => dispatch({ type: ACTION_TYPES.TOGGLE_COMMENT })}
+					>
+						<div className="text-xl justify-self-center">
+							<FaCommentDots />
+						</div>
+						<h6 className="justify-self-center text-sm sm:text-base">
+							Comments
+						</h6>
+						<p className="justify-self-center">{post.postComments}</p>
 					</div>
-					<h6 className="justify-self-center text-sm sm:text-base">Comments</h6>
-					<p className="justify-self-center">{post.postComments}</p>
 				</div>
-			</div>
+			)}
+
 			{/* COMMENTS SECTION */}
 			{state.showComment && <Comments post={post} />}
 		</div>

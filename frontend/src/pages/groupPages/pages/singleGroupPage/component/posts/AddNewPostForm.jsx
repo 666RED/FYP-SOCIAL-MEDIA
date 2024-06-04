@@ -70,6 +70,7 @@ const AddNewPostForm = ({ toggleShowAddNewPostForm }) => {
 				});
 				toggleShowAddNewPostForm();
 				sliceDispatch(addNewPost(returnPost));
+				console.log(returnPost);
 			} else if (msg === "Fail to add new post") {
 				enqueueSnackbar("Fail to add new post", {
 					variant: "error",
@@ -194,6 +195,7 @@ const AddNewPostForm = ({ toggleShowAddNewPostForm }) => {
 								dispatch({ type: ACTION_TYPES.UPLOAD_IMAGE, payload })
 							}
 							imagePath={state.imagePath}
+							bigImage={false}
 						/>
 					) : (
 						<UploadFile

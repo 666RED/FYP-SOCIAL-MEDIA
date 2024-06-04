@@ -60,6 +60,12 @@ const YourGroups = ({ setLoading }) => {
 				if (msg === "Success") {
 					sliceDispatch(setGroupsArr(userGroupsArr));
 					sliceDispatch(setOriginalGroupsArr(userGroupsArr));
+
+					if (userGroupsArr.length < 10) {
+						sliceDispatch(setHasGroups(false));
+					} else {
+						sliceDispatch(setHasGroups(true));
+					}
 				} else if (msg === "User not found") {
 					enqueueSnackbar("User not found", {
 						variant: "error",

@@ -1,70 +1,48 @@
 export const INITIAL_STATE = {
-	userName: "",
-	profileImagePath: "",
-	conditionPosterId: "",
-	updateTimeDuration: "",
-	conditionTitle: "",
-	conditionDescription: "",
-	conditionImagePath: "",
-	conditionResolved: false,
 	showOptionDiv: false,
 	showEditConditionForm: false,
-	showReportConditionForm: false,
+	showReportForm: false,
 	isProcessing: false,
 	isUp: false,
 	isDown: false,
 	conditionUp: 0,
 	conditionDown: 0,
-	locationLatitude: 0,
-	locationLongitude: 0,
 	viewLocation: false,
+	conditionResolved: false,
 	loading: false,
 };
 
 export const CampusConditionReducer = (state, action) => {
 	switch (action.type) {
 		case "FIRST_RENDER": {
-			const { userId, userName, profileImagePath, duration, condition } =
-				action.payload;
-
 			const {
-				conditionTitle,
-				conditionDescription,
-				conditionImagePath,
-				conditionUp,
-				conditionDown,
 				conditionUpMaps,
 				conditionDownMaps,
-				conditionLocation,
+				conditionUp,
+				conditionDown,
+				userId,
 				conditionResolved,
-			} = condition;
-
-			const { locationLatitude, locationLongitude } = conditionLocation;
-
-			const durationString = duration === 0 ? "Within 1h" : duration + "h";
+			} = action.payload;
 
 			return {
 				...state,
-				userName,
-				conditionPosterId: condition.userId,
-				profileImagePath,
-				conditionTitle,
-				updateTimeDuration: durationString,
-				conditionDescription,
-				conditionImagePath,
-				conditionResolved,
-				conditionUp,
-				conditionDown,
 				isUp: conditionUpMaps.hasOwnProperty(userId),
 				isDown: conditionDownMaps.hasOwnProperty(userId),
-				locationLatitude,
-				locationLongitude,
+				conditionUp,
+				conditionDown,
+				conditionResolved,
 			};
 		}
 		case "TOGGLE_SHOW_OPTION_DIV": {
 			return {
 				...state,
 				showOptionDiv: !state.showOptionDiv,
+			};
+		}
+		case "TOGGLE_CONDITION_RESOLVED": {
+			return {
+				...state,
+				conditionResolved: !state.conditionResolved,
 			};
 		}
 		case "SET_IS_PROCESSING": {
@@ -135,10 +113,10 @@ export const CampusConditionReducer = (state, action) => {
 				showEditConditionForm: !state.showEditConditionForm,
 			};
 		}
-		case "TOGGLE_SHOW_REPORT_CONDITION_FORM": {
+		case "TOGGLE_SHOW_REPORT_FORM": {
 			return {
 				...state,
-				showReportConditionForm: !state.showReportConditionForm,
+				showReportForm: !state.showReportForm,
 			};
 		}
 		case "SET_LOADING": {
@@ -147,16 +125,9 @@ export const CampusConditionReducer = (state, action) => {
 				loading: action.payload,
 			};
 		}
-		case "TOGGLE_CONDITION_RESOLVED": {
-			return {
-				...state,
-				conditionResolved: !state.conditionResolved,
-			};
-		}
 		case "FINISH_MARKING": {
 			return {
 				...state,
-				conditionResolved: !state.conditionResolved,
 				showOptionDiv: !state.showOptionDiv,
 			};
 		}

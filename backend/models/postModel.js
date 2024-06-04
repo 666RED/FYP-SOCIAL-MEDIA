@@ -20,10 +20,6 @@ const postSchema = mongoose.Schema(
 			of: Boolean,
 			default: new Map(),
 		},
-		postTime: {
-			type: String,
-			required: true,
-		},
 		postDescription: {
 			type: String,
 			max: 2000,
@@ -31,6 +27,10 @@ const postSchema = mongoose.Schema(
 		postImagePath: {
 			type: String,
 			default: "",
+		},
+		removed: {
+			type: Boolean,
+			default: false,
 		},
 	},
 	{

@@ -1,5 +1,6 @@
 import { Group } from "../models/groupModel.js";
 import { User } from "../models/userModel.js";
+import { JoinGroupRequest } from "../models/joinGroupRequestModel.js";
 import mongoose from "mongoose";
 import path from "path";
 import fs from "fs";
@@ -94,38 +95,24 @@ export const getUserGroups = async (req, res) => {
 
 		const excludedGroups = groupsArr.map((group) => group._id);
 
-		let userGroupsIds = new Array();
+		let userGroupsIds = Array.from(userGroups.keys())
+			.filter((groupId) => !excludedGroups.includes(groupId))
+			.slice(0, limit);
 
-		// get haven't picked group ids
-		for (const [groupId] of userGroups) {
-			if (!excludedGroups.includes(groupId)) {
-				userGroupsIds.push(groupId);
-			}
-		}
-
-		const paginatedGroupsIds = userGroupsIds.slice(0, limit);
-
-		// pagination for 10 groups
-		const userGroupsArr = await Promise.all(
-			paginatedGroupsIds.map(async (groupId) => {
-				const group = await Group.findById(groupId).select({
-					groupCoverImagePath: 0,
-					groupBio: 0,
-					groupAdminId: 0,
-					createdAt: 0,
-					updatedAt: 0,
-					__v: 0,
-				});
-				if (group) {
-					return group;
-				}
-			})
-		);
+		const userGroupsArr = await Group.find({
+			_id: { $in: userGroupsIds },
+			removed: 0,
+		}).select({
+			groupCoverImagePath: 0,
+			groupBio: 0,
+			groupAdminId: 0,
+			createdAt: 0,
+			updatedAt: 0,
+			__v: 0,
+		});
 
 		res.status(200).json({ msg: "Success", userGroupsArr });
 	} catch (err) {
-		console.log(err);
-
 		res.status(500).json({ error: err.message });
 	}
 };
@@ -156,39 +143,27 @@ export const getUserGroupsSearch = async (req, res) => {
 
 		const excludedGroups = groupsArr.map((group) => group._id);
 
-		let userGroupsIds = new Array();
+		let userGroupsIds = Array.from(userGroups.keys())
+			.filter((groupId) => !excludedGroups.includes(groupId))
+			.map((groupId) => new mongoose.Types.ObjectId(groupId));
 
-		// get haven't picked group ids
-		for (const [groupId] of userGroups) {
-			if (!excludedGroups.includes(groupId)) {
-				userGroupsIds.push(new mongoose.Types.ObjectId(groupId));
-			}
-		}
-
-		const returnUserGroupsArr = await Group.aggregate([
-			{
-				$match: {
-					_id: { $in: userGroupsIds },
-					groupName: { $regex: searchText, $options: "i" }, // Case-insensitive search
-				},
-			},
-			{ $limit: limit },
-			{
-				$project: {
-					groupCoverImagePath: 0,
-					groupBio: 0,
-					groupAdminId: 0,
-					createdAt: 0,
-					updatedAt: 0,
-					__v: 0,
-				},
-			},
-		]);
+		const returnUserGroupsArr = await Group.find({
+			_id: { $in: userGroupsIds },
+			groupName: { $regex: searchText, $options: "i" }, // Case-insensitive search
+			removed: 0,
+		})
+			.select({
+				groupCoverImagePath: 0,
+				groupBio: 0,
+				groupAdminId: 0,
+				createdAt: 0,
+				updatedAt: 0,
+				__v: 0,
+			})
+			.limit(limit);
 
 		res.status(200).json({ msg: "Success", returnUserGroupsArr });
 	} catch (err) {
-		console.log(err);
-
 		res.status(500).json({ error: err.message });
 	}
 };
@@ -207,35 +182,27 @@ export const getDiscoverGroups = async (req, res) => {
 
 		const userGroups = user.groups;
 
-		let excludedGroups = new Array();
+		let excludedGroups = Array.from(userGroups.keys()).map(
+			(groupId) => new mongoose.Types.ObjectId(groupId)
+		);
 
-		for (const [groupId] of userGroups) {
-			excludedGroups.push(new mongoose.Types.ObjectId(groupId));
-		}
+		excludedGroups.push(
+			...randomGroupsArr.map((group) => new mongoose.Types.ObjectId(group._id))
+		);
 
-		excludedGroups = [
-			...excludedGroups,
-			...randomGroupsArr.map((group) => new mongoose.Types.ObjectId(group._id)),
-		];
-
-		const returnRandomGroupsArr = await Group.aggregate([
-			{
-				$match: {
-					_id: { $nin: excludedGroups },
-				},
-			},
-			{ $limit: limit },
-			{
-				$project: {
-					groupCoverImagePath: 0,
-					groupBio: 0,
-					groupAdminId: 0,
-					createdAt: 0,
-					updatedAt: 0,
-					__v: 0,
-				},
-			},
-		]);
+		const returnRandomGroupsArr = await Group.find({
+			_id: { $nin: excludedGroups },
+			removed: 0,
+		})
+			.select({
+				groupCoverImagePath: 0,
+				groupBio: 0,
+				groupAdminId: 0,
+				createdAt: 0,
+				updatedAt: 0,
+				__v: 0,
+			})
+			.limit(limit);
 
 		if (!returnRandomGroupsArr) {
 			return res.status(404).json({ msg: "Fail to find groups" });
@@ -272,41 +239,30 @@ export const getDiscoverGroupsSearch = async (req, res) => {
 
 		const userGroups = user.groups;
 
-		let excludedGroups = new Array();
+		let excludedGroups = Array.from(userGroups.keys()).map(
+			(groupId) => new mongoose.Types.ObjectId(groupId)
+		);
+		excludedGroups.push(
+			...randomGroupsArr.map((group) => new mongoose.Types.ObjectId(group._id))
+		);
 
-		for (const [groupId] of userGroups) {
-			excludedGroups.push(new mongoose.Types.ObjectId(groupId));
-		}
-
-		excludedGroups = [
-			...excludedGroups,
-			...randomGroupsArr.map((group) => new mongoose.Types.ObjectId(group._id)),
-		];
-
-		const returnRandomGroupsArr = await Group.aggregate([
-			{
-				$match: {
-					_id: { $nin: excludedGroups },
-					groupName: { $regex: searchText, $options: "i" }, // Case-insensitive search
-				},
-			},
-			{ $limit: limit },
-			{
-				$project: {
-					groupCoverImagePath: 0,
-					groupBio: 0,
-					groupAdminId: 0,
-					createdAt: 0,
-					updatedAt: 0,
-					__v: 0,
-				},
-			},
-		]);
+		const returnRandomGroupsArr = await Group.find({
+			_id: { $nin: excludedGroups },
+			groupName: { $regex: new RegExp(searchText, "i") }, // Case-insensitive search
+			removed: 0,
+		})
+			.select({
+				groupCoverImagePath: 0,
+				groupBio: 0,
+				groupAdminId: 0,
+				createdAt: 0,
+				updatedAt: 0,
+				__v: 0,
+			})
+			.limit(limit);
 
 		res.status(200).json({ msg: "Success", returnRandomGroupsArr });
 	} catch (err) {
-		console.log(err);
-
 		res.status(500).json({ error: err.message });
 	}
 };
@@ -315,7 +271,7 @@ export const getGroup = async (req, res) => {
 	try {
 		const { groupId } = req.query;
 
-		const group = await Group.findById(groupId);
+		const group = await Group.findOne({ _id: groupId, removed: 0 });
 
 		if (!group) {
 			return res.status(404).json({ msg: "Group not found" });
@@ -359,12 +315,13 @@ export const getMembers = async (req, res) => {
 				const member = await User.findById(memberId);
 				if (member) {
 					const { _id, userName, userProfile, userGender } = member;
-					const { profileImagePath } = userProfile;
+					const { profileImagePath, profileFrameColor } = userProfile;
 					return {
 						_id,
 						userName,
 						profileImagePath,
 						userGender,
+						frameColor: profileFrameColor,
 					};
 				}
 			})
@@ -422,6 +379,7 @@ export const getSearchedMembers = async (req, res) => {
 			userName: user.userName,
 			profileImagePath: user.userProfile.profileImagePath,
 			userGender: user.userGender,
+			frameColor: user.userProfile.profileFrameColor,
 		}));
 
 		res.status(200).json({ msg: "Success", returnMembersArr });
@@ -490,8 +448,19 @@ export const leaveGroup = async (req, res) => {
 			return res.status(404).json({ msg: "Fail to remove member" });
 		}
 
+		const deletedJoinGroupRequest = await JoinGroupRequest.findOneAndDelete({
+			requestorId: userId,
+			groupId: groupId,
+		});
+
+		if (!deletedJoinGroupRequest) {
+			return res.status(404).json({ error: "Fail to remove memeber" });
+		}
+
 		res.status(200).json({ msg: "Success" });
 	} catch (err) {
+		console.log(err);
+
 		res.status(500).json({ error: err.message });
 	}
 };
@@ -500,7 +469,7 @@ export const getGroupInfo = async (req, res) => {
 	try {
 		const { groupId } = req.query;
 
-		const group = await Group.findById(groupId);
+		const group = await Group.findOne({ _id: groupId, removed: 0 });
 
 		if (!group) {
 			return res.status(404).json({ msg: "Group not found" });
@@ -527,35 +496,8 @@ export const editGroup = async (req, res) => {
 		const groupCoverImage = req.files && req.files.groupCoverImage;
 
 		const originalGroup = await Group.findById(groupId);
-
-		// Delete original images if they exist and their name are not default
-		if (groupImage) {
-			if (
-				originalGroup.groupImagePath !== "default-group-image.png" &&
-				originalGroup.groupImagePath !== groupImage[0].filename
-			) {
-				const groupImagePath = path.join(
-					__dirname,
-					"public/images/group",
-					originalGroup.groupImagePath
-				);
-				fs.unlinkSync(groupImagePath);
-			}
-		}
-
-		if (groupCoverImage) {
-			if (
-				originalGroup.groupCoverImagePath !== "default-group-cover-image.jpg" &&
-				originalGroup.groupCoverImagePath !== groupCoverImage[0].filename
-			) {
-				const groupCoverImagePath = path.join(
-					__dirname,
-					"public/images/group",
-					originalGroup.groupCoverImagePath
-				);
-				fs.unlinkSync(groupCoverImagePath);
-			}
-		}
+		const originalGroupImagePath = originalGroup.groupImagePath;
+		const originalGroupCoverImagePath = originalGroup.groupCoverImagePath;
 
 		let group;
 
@@ -601,10 +543,37 @@ export const editGroup = async (req, res) => {
 			return res.status(400).json({ msg: "Fail to update group" });
 		}
 
+		// Delete original images if they exist and their name are not default
+		if (groupImage) {
+			if (
+				originalGroupImagePath !== "default-group-image.png" &&
+				originalGroupImagePath !== groupImage[0].filename
+			) {
+				const groupImagePath = path.join(
+					__dirname,
+					"public/images/group",
+					originalGroupImagePath
+				);
+				fs.unlinkSync(groupImagePath);
+			}
+		}
+
+		if (groupCoverImage) {
+			if (
+				originalGroupCoverImagePath !== "default-group-cover-image.jpg" &&
+				originalGroupCoverImagePath !== groupCoverImage[0].filename
+			) {
+				const groupCoverImagePath = path.join(
+					__dirname,
+					"public/images/group",
+					originalGroupCoverImagePath
+				);
+				fs.unlinkSync(groupCoverImagePath);
+			}
+		}
+
 		res.status(200).json({ msg: "Success" });
 	} catch (err) {
-		console.log(err);
-
 		res.status(500).json({ error: err.message });
 	}
 };
@@ -613,7 +582,7 @@ export const getGroupAdminId = async (req, res) => {
 	try {
 		const { groupId } = req.query;
 
-		const group = await Group.findById(groupId);
+		const group = await Group.findOne({ _id: groupId, removed: 0 });
 
 		if (!group) {
 			return res.status(404).json({ msg: "Group not found" });

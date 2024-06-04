@@ -1,12 +1,10 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import { HiThumbUp } from "react-icons/hi";
+import { HiThumbUp, HiThumbDown } from "react-icons/hi";
 import { IoIosCheckmarkCircle } from "react-icons/io";
 
 const MostUsefulCondition = ({ condition }) => {
 	const navigate = useNavigate();
-	const duration = Math.floor(condition.duration);
-	const uploadDuration = duration === 0 ? "within 1h" : duration + "h";
 	const conditionId = condition._id;
 
 	return (
@@ -28,15 +26,21 @@ const MostUsefulCondition = ({ condition }) => {
 					</div>
 				)}
 			</div>
-			{/* UP */}
+			{/* UP AND DOWN ROW */}
 			<div className="flex items-center mt-1">
-				<HiThumbUp />
-				<p className="ml-1">{`${condition.conditionUp}`}</p>
+				{/* UP */}
+				<div className="flex items-center">
+					<HiThumbUp />
+					<p className="ml-1">{`${condition.conditionUp}`}</p>
+				</div>
+				{/* DOWN */}
+				<div className="flex items-center ml-2">
+					<HiThumbDown />
+					<p className="ml-1">{`${condition.conditionDown}`}</p>
+				</div>
 			</div>
 			{/* UPLOAD TIME */}
-			<p className="">{`Uploaded ${uploadDuration} ${
-				duration !== 0 ? "ago" : ""
-			}`}</p>
+			<p className="">{`Uploaded ${condition.time}`}</p>
 		</div>
 	);
 };

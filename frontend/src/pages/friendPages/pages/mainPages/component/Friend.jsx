@@ -79,8 +79,6 @@ const Friend = ({ friend }) => {
 		}
 	};
 
-	console.log(friend);
-
 	return (
 		<div className="col-span-12 md:col-span-4 lg:col-span-3 rounded-xl p-3 my-2 border shadow-xl border-gray-300 grid grid-cols-12 items-center md:flex md:flex-col">
 			{loading && <Spinner />}
@@ -88,10 +86,10 @@ const Friend = ({ friend }) => {
 			<img
 				src={`${filePath}${friend.userProfile.profileImagePath}`}
 				alt="Friend profile image"
-				className="col-span-1 md:max-w-24 border border-blue-400 rounded-full "
+				className={`col-span-2 min-w-12 md:max-w-24 border-[2.5px] md:border-4 ${friend.userProfile.profileFrameColor} rounded-full`}
 			/>
 			{/* USER NAME AND FRIEND COUNT DIV */}
-			<div className="col-span-7 md:my-3 md:flex-1 flex-col ml-2">
+			<div className="col-span-6 md:my-3 md:flex-1 flex-col ml-2">
 				{/* USER NAME */}
 				<p
 					onClick={handleOnClick}
@@ -112,17 +110,22 @@ const Friend = ({ friend }) => {
 				</p>
 			</div>
 
-			{/* FRIEND STATUS BUTTON */}
+			{/* BUTTONS */}
 			<div className="col-span-4 md:w-full">
-				<FriendStatusButton
-					friendStatus="Friend"
-					functions={{
-						handleAddFriend: null,
-						handleCancelRequest: null,
-						toggleShowRespondForm: null,
-						handleRemoveFriend, // only remove function is needed
-					}}
-				/>
+				{/* VIEW PROFILE BUTTON */}
+				<button
+					className="btn-gray w-full mb-2 text-sm sm:text-base"
+					onClick={handleOnClick}
+				>
+					View Profile
+				</button>
+				{/* UNFRIEND BUTTON */}
+				<button
+					className="btn-red text-sm sm:text-base w-full"
+					onClick={handleRemoveFriend}
+				>
+					Unfriend
+				</button>
 			</div>
 		</div>
 	);

@@ -7,7 +7,9 @@ export const INITIAL_STATE = {
 	servicePosterImagePath: "",
 	userName: "",
 	userProfileImagePath: "",
+	frameColor: "",
 	userId: "",
+	showReportForm: false,
 };
 
 export const viewServiceReducer = (state, action) => {
@@ -29,6 +31,7 @@ export const viewServiceReducer = (state, action) => {
 				userName,
 				userProfileImagePath,
 				userId,
+				frameColor,
 			} = action.payload;
 
 			return {
@@ -41,6 +44,13 @@ export const viewServiceReducer = (state, action) => {
 				userName,
 				userProfileImagePath,
 				userId,
+				frameColor,
+			};
+		}
+		case "TOGGLE_SHOW_REPORT_FORM": {
+			return {
+				...state,
+				showReportForm: !state.showReportForm,
 			};
 		}
 		default: {

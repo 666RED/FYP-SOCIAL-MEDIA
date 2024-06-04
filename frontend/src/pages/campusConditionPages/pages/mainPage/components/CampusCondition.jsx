@@ -13,6 +13,7 @@ import ViewLocation from "./ViewLocation.jsx";
 import EditConditionForm from "./EditConditionForm.jsx";
 import OptionDiv from "../../../../../components/OptionDiv.jsx";
 import Spinner from "../../../../../components/Spinner/Spinner.jsx";
+import ReportForm from "../../../../../components/post/ReportForm.jsx";
 import {
 	CampusConditionReducer,
 	INITIAL_STATE,
@@ -22,8 +23,6 @@ import {
 	loadMap,
 	removeCampusCondition,
 	removeMostUsefulCondition,
-	updateCampusCondition,
-	updateMostUsefulCondition,
 	setHasConditions,
 } from "../../../features/campusConditionSlice.js";
 import { ServerContext } from "../../../../../App.js";
@@ -42,56 +41,10 @@ const CampusCondition = ({ condition, inViewMostUseful = false }) => {
 
 	const previous = window.location.pathname;
 
-	// get user info
+	// first render
 	useEffect(() => {
-		const getUserInfo = async () => {
-			try {
-				const res = await fetch(`${serverURL}/campus-condition/get-user-info`, {
-					method: "POST",
-					body: JSON.stringify({
-						userId: condition.userId,
-					}),
-					headers: {
-						"Content-Type": "application/json",
-						Authorization: `Bearer ${token}`,
-					},
-				});
-
-				if (!res.ok && res.status === 403) {
-					dispatch({
-						type: ACTION_TYPES.SET_LOADING,
-						payload: false,
-					});
-					enqueueSnackbar("Access Denied", { variant: "error" });
-					return;
-				}
-
-				const { msg, profileImagePath, userName } = await res.json();
-
-				if (msg === "Success") {
-					dispatch({
-						type: ACTION_TYPES.FIRST_RENDER,
-						payload: {
-							userId: user._id,
-							userName,
-							profileImagePath,
-							duration: Math.floor(condition.duration),
-							condition,
-						},
-					});
-				} else if (msg === "User not found") {
-					enqueueSnackbar("User not found", { variant: "error" });
-				} else {
-					enqueueSnackbar("Fail to load user info", { variant: "error" });
-				}
-			} catch (err) {
-				enqueueSnackbar("Could not connect to the server", {
-					variant: "error",
-				});
-			}
-		};
-		getUserInfo();
-	}, [condition]);
+		dispatch({ type: ACTION_TYPES.FIRST_RENDER, payload: condition });
+	}, []);
 
 	const handleUp = async () => {
 		try {
@@ -255,8 +208,8 @@ const CampusCondition = ({ condition, inViewMostUseful = false }) => {
 	const handleViewLocation = () => {
 		sliceDispatch(
 			loadMap({
-				lat: parseFloat(state.locationLatitude),
-				lng: parseFloat(state.locationLongitude),
+				lat: parseFloat(condition.conditionLocation.locationLatitude),
+				lng: parseFloat(condition.conditionLocation.locationLongitude),
 			})
 		);
 		dispatch({ type: ACTION_TYPES.TOGGLE_VIEW_LOCATION });
@@ -293,7 +246,7 @@ const CampusCondition = ({ condition, inViewMostUseful = false }) => {
 				const { msg, deletedCondition } = await res.json();
 
 				if (msg === "Success") {
-					if (campusConditions.length == 10) {
+					if (campusConditions.length === 10) {
 						sliceDispatch(setHasConditions(true));
 					}
 					sliceDispatch(removeCampusCondition(deletedCondition));
@@ -340,6 +293,7 @@ const CampusCondition = ({ condition, inViewMostUseful = false }) => {
 						method: "PATCH",
 						body: JSON.stringify({
 							campusConditionId: condition._id,
+							isConditionResolved: state.conditionResolved,
 						}),
 						headers: {
 							"Content-Type": "application/json",
@@ -354,12 +308,11 @@ const CampusCondition = ({ condition, inViewMostUseful = false }) => {
 					return;
 				}
 
-				const { msg, returnCondition } = await res.json();
+				const { msg } = await res.json();
 
 				if (msg === "Success") {
-					sliceDispatch(updateCampusCondition(returnCondition));
-					sliceDispatch(updateMostUsefulCondition(returnCondition));
-					if (returnCondition.conditionResolved) {
+					dispatch({ type: ACTION_TYPES.TOGGLE_CONDITION_RESOLVED });
+					if (!state.conditionResolved) {
 						enqueueSnackbar("Condition is marked resolved", {
 							variant: "success",
 						});
@@ -370,11 +323,11 @@ const CampusCondition = ({ condition, inViewMostUseful = false }) => {
 					}
 				} else if (msg === "Condition not found") {
 					enqueueSnackbar("Condition not found", {
-						variant: "success",
+						variant: "error",
 					});
 				} else if (msg === "Fail to update condition") {
 					enqueueSnackbar("Fail to update condition", {
-						variant: "success",
+						variant: "error",
 					});
 				} else {
 					enqueueSnackbar("An error occurred", {
@@ -400,6 +353,21 @@ const CampusCondition = ({ condition, inViewMostUseful = false }) => {
 	return (
 		<div className="relative mb-3 bg-white rounded-xl shadow-2xl py-4 px-2 w-full mx-auto">
 			{state.loading && <Spinner />}
+			{/* REPORT FORM */}
+			{state.showReportForm && (
+				<ReportForm
+					id={condition._id}
+					toggleShowReportForm={() =>
+						dispatch({ type: ACTION_TYPES.TOGGLE_SHOW_REPORT_FORM })
+					}
+					toggleShowOptionDiv={() =>
+						dispatch({
+							type: ACTION_TYPES.TOGGLE_SHOW_OPTION_DIV,
+						})
+					}
+					type="Condition"
+				/>
+			)}
 			{/* VIEW LOCATION DIV*/}
 			{state.viewLocation && (
 				<ViewLocation
@@ -428,7 +396,7 @@ const CampusCondition = ({ condition, inViewMostUseful = false }) => {
 			{/* OPTION DIV */}
 			{state.showOptionDiv && (
 				<div className="absolute right-3 top-10 border border-gray-600 bg-gray-200">
-					{user._id === state.conditionPosterId ? (
+					{user._id === condition.userId ? (
 						<div>
 							{/* EDIT */}
 							<OptionDiv
@@ -467,7 +435,7 @@ const CampusCondition = ({ condition, inViewMostUseful = false }) => {
 						<OptionDiv
 							func={() =>
 								dispatch({
-									type: ACTION_TYPES.TOGGLE_SHOW_REPORT_CONDITION_FORM,
+									type: ACTION_TYPES.TOGGLE_SHOW_REPORT_FORM,
 								})
 							}
 							icon={<MdReportProblem />}
@@ -479,27 +447,28 @@ const CampusCondition = ({ condition, inViewMostUseful = false }) => {
 
 			{/* HEADER */}
 			<UserPostHeader
-				imgPath={profileImgPath + state.profileImagePath}
-				userName={state.userName}
-				postTime={state.updateTimeDuration}
+				imgPath={profileImgPath + condition.profileImagePath}
+				userName={condition.userName}
+				postTime={condition.time}
 				conditionResolved={state.conditionResolved}
 				destination={`/profile/${condition.userId}`}
 				previous={previous}
+				frameColor={condition.frameColor}
 			/>
 			<BsThreeDots
 				className="absolute cursor-pointer top-6 right-3"
 				onClick={() => dispatch({ type: ACTION_TYPES.TOGGLE_SHOW_OPTION_DIV })}
 			/>
 			{/* CONDITION TITLE */}
-			<h3 className="mt-2 font-semibold">{state.conditionTitle}</h3>
+			<h3 className="mt-2 font-semibold">{condition.conditionTitle}</h3>
 
 			{/* CONDITION DESCRIPTION */}
-			<p className="mt-1 mb-4">{state.conditionDescription}</p>
+			<p className="mt-1 mb-4">{condition.conditionDescription}</p>
 
 			{/* CONDITION IMAGE */}
-			{state.conditionImagePath !== "" && (
+			{condition.conditionImagePath !== "" && (
 				<img
-					src={conditionImagePath + state.conditionImagePath}
+					src={conditionImagePath + condition.conditionImagePath}
 					alt="Condition image"
 					className="rounded-xl mx-auto w-full"
 				/>

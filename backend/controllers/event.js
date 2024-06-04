@@ -80,17 +80,19 @@ export const getEvent = async (req, res) => {
 
 		let userName = "";
 		let userProfileImagePath = "";
+		let frameColor = "";
 
 		if (user) {
 			userName = user.userName;
 			userProfileImagePath = user.userProfile.profileImagePath;
+			frameColor = user.userProfile.profileFrameColor;
 		}
 
 		const { __v, ...rest } = event._doc;
 
 		res.status(200).json({
 			msg: "Success",
-			event: { ...rest, userName, userProfileImagePath },
+			event: { ...rest, userName, userProfileImagePath, frameColor },
 		});
 	} catch (err) {
 		res.status(500).json({ error: err.message });
@@ -460,18 +462,9 @@ export const editEvent = async (req, res) => {
 		const image = req.file;
 
 		const originalEvent = await Event.findById(eventId);
+		const originalEventPosterImagePath = originalEvent.eventPosterImagePath;
 
 		let updatedEvent;
-
-		// remove original image
-		if (image) {
-			const imagePath = path.join(
-				__dirname,
-				"public/images/event",
-				originalEvent.eventPosterImagePath
-			);
-			fs.unlinkSync(imagePath);
-		}
 
 		// update image
 		if (image) {
@@ -554,6 +547,16 @@ export const editEvent = async (req, res) => {
 			return res.status(400).json({ msg: "Fail to edit event" });
 		}
 
+		// remove original image
+		if (image) {
+			const imagePath = path.join(
+				__dirname,
+				"public/images/event",
+				originalEventPosterImagePath
+			);
+			fs.unlinkSync(imagePath);
+		}
+
 		res.status(200).json({ msg: "Success" });
 	} catch (err) {
 		res.status(500).json({ error: err.message });
@@ -570,14 +573,6 @@ export const removeEvent = async (req, res) => {
 			return res.status(400).json({ msg: "Fail to remove event" });
 		}
 
-		// remove image
-		const eventPosterImagePath = path.join(
-			__dirname,
-			"public/images/event",
-			originalEvent.eventPosterImagePath
-		);
-		fs.unlinkSync(eventPosterImagePath);
-
 		const removedEvent = await Event.findByIdAndUpdate(eventId, {
 			$set: { removed: true },
 		});
@@ -585,6 +580,14 @@ export const removeEvent = async (req, res) => {
 		if (!removedEvent) {
 			return res.status(400).json({ msg: "Fail to remove event" });
 		}
+
+		// remove image
+		const eventPosterImagePath = path.join(
+			__dirname,
+			"public/images/event",
+			originalEvent.eventPosterImagePath
+		);
+		fs.unlinkSync(eventPosterImagePath);
 
 		res.status(200).json({ msg: "Success" });
 	} catch (err) {

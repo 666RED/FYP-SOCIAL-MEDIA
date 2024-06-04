@@ -4,6 +4,10 @@ import { formatDateTime } from "../usefulFunction.js";
 import path from "path";
 import fs from "fs";
 import { __dirname } from "../index.js";
+import { User } from "../models/userModel.js";
+import mongoose from "mongoose";
+import { addDoc, collection, serverTimestamp } from "firebase/firestore";
+import { db } from "../firebase-config.js";
 
 export const addNewPost = async (req, res) => {
 	try {
@@ -11,38 +15,51 @@ export const addNewPost = async (req, res) => {
 
 		const image = req.file;
 
-		const postTime = new Date();
-		const formattedPostTime = formatDateTime(postTime);
-
 		let newPost;
 
 		if (!image) {
 			newPost = new Post({
 				userId,
-				postTime: formattedPostTime,
 				postDescription: text,
 				likesMap: new Map(),
 			});
 		} else {
 			newPost = new Post({
 				userId,
-				postTime: formattedPostTime,
 				postDescription: text,
 				postImagePath: image.filename,
 				likesMap: new Map(),
 			});
 		}
 
-		const savedPost = await newPost.save();
+		let savedPost = await newPost.save();
 
 		if (!savedPost) {
 			return res.status(400).json({ msg: "Fail to add new post" });
 		}
 
-		const returnPost = await savedPost.populate(
-			"userId",
-			"userName userProfile"
-		);
+		const user = await User.findById(savedPost.userId);
+		let profileImagePath = "";
+		let userName = "";
+		let frameColor = "";
+
+		if (user) {
+			profileImagePath = user.userProfile.profileImagePath;
+			userName = user.userName;
+			frameColor = user.userProfile.profileFrameColor;
+		}
+
+		savedPost = {
+			...savedPost._doc,
+			time: formatDateTime(savedPost.createdAt),
+			profileImagePath,
+			userName,
+			frameColor,
+		};
+
+		const { createdAt, updatedAt, __v, ...rest } = savedPost;
+
+		const returnPost = rest;
 
 		if (!returnPost) {
 			return res.status(404).json({ msg: "Post not found" });
@@ -60,11 +77,7 @@ export const getPosts = async (req, res) => {
 		const count = parseInt(req.query.count) || 0;
 		const userId = req.query.userId;
 
-		const posts = await Post.find({ userId })
-			.populate({
-				path: "userId",
-				select: "userName userProfile.profileImagePath",
-			})
+		let posts = await Post.find({ userId, removed: 0 })
 			.sort({ createdAt: -1 })
 			.skip(count)
 			.limit(limit);
@@ -77,10 +90,26 @@ export const getPosts = async (req, res) => {
 			return res.status(200).json({ msg: "No post" });
 		}
 
+		const userIds = posts.map((post) => post.userId);
+
+		const users = await User.find({ _id: { $in: userIds } });
+
+		posts = posts.map((post) => {
+			const user = users.find(
+				(user) => user._id.toString() === post.userId.toString()
+			);
+			const { createdAt, updatedAt, __v, ...rest } = post._doc;
+			return {
+				...rest,
+				time: formatDateTime(createdAt),
+				userName: user ? user.userName : "",
+				profileImagePath: user ? user.userProfile.profileImagePath : "",
+				frameColor: user ? user.userProfile.profileFrameColor : "",
+			};
+		});
+
 		res.status(200).json({ msg: "Success", posts });
 	} catch (err) {
-		console.log(err);
-
 		res.status(500).json({ error: err.message });
 	}
 };
@@ -88,6 +117,7 @@ export const getPosts = async (req, res) => {
 export const upLikes = async (req, res) => {
 	try {
 		const { postId, userId } = req.body;
+		const notificationRef = collection(db, "notifications");
 
 		const updatedPost = await Post.findOneAndUpdate(
 			{ _id: postId },
@@ -99,6 +129,20 @@ export const upLikes = async (req, res) => {
 
 		if (!updatedPost) {
 			return res.status(400).json({ msg: "Fail to update post" });
+		}
+
+		if (updatedPost.userId.toString() !== userId) {
+			const user = await User.findById(userId);
+
+			await addDoc(notificationRef, {
+				createdAt: serverTimestamp(),
+				senderName: user.userName,
+				senderProfileImagePath: user.userProfile.profileImagePath,
+				postId: postId,
+				receiver: updatedPost.userId.toString(),
+				action: "Like post",
+				viewed: false,
+			});
 		}
 
 		res.status(200).json({ msg: "Success" });
@@ -137,21 +181,11 @@ export const editPost = async (req, res) => {
 		const postImage = req.file;
 
 		const originalPost = await Post.findById(postId);
+		const originalPostImagePath = originalPost.postImagePath;
 
 		let updatedPost;
 
-		const removeImage =
-			postImagePath === "" && originalPost.postImagePath !== "";
-
-		// delete original post image
-		if ((postImage && originalPost.postImagePath !== "") || removeImage) {
-			const postImagePath = path.join(
-				__dirname,
-				"public/images/post",
-				originalPost.postImagePath
-			);
-			fs.unlinkSync(postImagePath);
-		}
+		const removeImage = postImagePath === "" && originalPostImagePath !== "";
 
 		if (postImage || removeImage) {
 			// update both post description and image
@@ -164,7 +198,7 @@ export const editPost = async (req, res) => {
 					},
 				},
 				{ new: true }
-			).populate("userId", "userName userProfile");
+			);
 		} else {
 			// only update post description
 			updatedPost = await Post.findByIdAndUpdate(
@@ -175,17 +209,48 @@ export const editPost = async (req, res) => {
 					},
 				},
 				{ new: true }
-			).populate("userId", "userName userProfile");
+			);
 		}
 
 		if (!updatedPost) {
 			return res.status(400).json({ msg: "Fail to update post" });
 		}
 
+		const user = await User.findById(updatedPost.userId);
+		let profileImagePath = "";
+		let userName = "";
+		let frameColor = "";
+
+		if (user) {
+			profileImagePath = user.userProfile.profileImagePath;
+			userName = user.userName;
+			frameColor = user.userProfile.profileFrameColor;
+		}
+
+		const temp = {
+			...updatedPost._doc,
+			time: formatDateTime(updatedPost.createdAt),
+			userName,
+			profileImagePath,
+			frameColor,
+		};
+
+		const { createdAt, updatedAt, __v, ...rest } = temp;
+
+		updatedPost = rest;
+
+		// delete original post image
+		if ((postImage && originalPostImagePath !== "") || removeImage) {
+			const postImagePath = path.join(
+				__dirname,
+				"public/images/post",
+				originalPostImagePath
+			);
+			fs.unlinkSync(postImagePath);
+		}
+
 		res.status(200).json({ msg: "Success", updatedPost });
 	} catch (err) {
-		console.log(err);
-
 		res.status(500).json({ error: err.message });
 	}
 };
@@ -201,6 +266,15 @@ export const deletePost = async (req, res) => {
 			return res.status(400).json({ msg: "Fail to delete comments" });
 		}
 
+		// delete post
+		const deletedPost = await Post.findByIdAndUpdate(post._id, {
+			$set: { removed: 1 },
+		});
+
+		if (!deletedPost) {
+			return res.status(400).json({ msg: "Fail to delete post" });
+		}
+
 		// delete post image if got any
 		if (post.postImagePath !== "") {
 			const postImagePath = path.join(
@@ -211,17 +285,71 @@ export const deletePost = async (req, res) => {
 			fs.unlinkSync(postImagePath);
 		}
 
-		// delete post
-		const deletedPost = await Post.findByIdAndDelete(post._id);
-
-		if (!deletePost) {
-			return res.status(400).json({ msg: "Fail to delete post" });
-		}
-
 		res.status(200).json({ msg: "Success" });
 	} catch (err) {
-		console.log(err);
-
 		res.status(500).json({ err: err.message });
+	}
+};
+
+export const getHomePosts = async (req, res) => {
+	try {
+		const limit = 10;
+		const userId = req.query.userId;
+		const postsArr = req.query.postsArr;
+
+		const postsIds = JSON.parse(postsArr);
+
+		const user = await User.findById(userId);
+
+		if (!user) {
+			return res.status(400).json({ msg: "Fail to retrieve posts" });
+		}
+
+		const friendsIds = Array.from(user.userFriendsMap.keys());
+
+		let posts = await Post.find({
+			userId: {
+				$in: [
+					...friendsIds.map((id) => new mongoose.Types.ObjectId(id)),
+					new mongoose.Types.ObjectId(userId),
+				],
+			},
+			_id: { $nin: postsIds.map((id) => new mongoose.Types.ObjectId(id)) },
+			removed: 0,
+		})
+			.limit(limit)
+			.sort({
+				createdAt: -1,
+			});
+
+		if (!posts) {
+			return res.status(400).json({ msg: "Fail to retrieve posts" });
+		}
+
+		if (posts.length === 0) {
+			return res.status(200).json({ msg: "No post" });
+		}
+
+		const userIds = posts.map((post) => post.userId);
+
+		const users = await User.find({ _id: { $in: userIds } });
+
+		posts = posts.map((post) => {
+			const user = users.find(
+				(user) => user._id.toString() === post.userId.toString()
+			);
+			const { createdAt, updatedAt, __v, ...rest } = post._doc;
+			return {
+				...rest,
+				time: formatDateTime(createdAt),
+				userName: user ? user.userName : "",
+				profileImagePath: user ? user.userProfile.profileImagePath : "",
+				frameColor: user ? user.userProfile.profileFrameColor : "",
+			};
+		});
+
+		res.status(200).json({ msg: "Success", returnedPosts: posts });
+	} catch (err) {
+		res.status(500).json({ error: err.message });
 	}
 };

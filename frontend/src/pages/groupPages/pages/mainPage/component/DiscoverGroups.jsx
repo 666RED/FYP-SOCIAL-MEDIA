@@ -59,6 +59,12 @@ const DiscoverGroups = ({ setLoading }) => {
 				if (msg === "Success") {
 					sliceDispatch(setRandomGroupsArr(returnRandomGroupsArr));
 					sliceDispatch(setOriginalRandomGroupsArr(returnRandomGroupsArr));
+
+					if (returnRandomGroupsArr.length < 10) {
+						sliceDispatch(setHasGroups(false));
+					} else {
+						sliceDispatch(setHasGroups(true));
+					}
 				} else if (msg === "User not found") {
 					enqueueSnackbar("User not found", {
 						variant: "error",
@@ -69,6 +75,7 @@ const DiscoverGroups = ({ setLoading }) => {
 					});
 				} else if (msg === "No group") {
 					sliceDispatch(setRandomGroupsArr([]));
+					sliceDispatch(setHasGroups(false));
 				} else {
 					enqueueSnackbar("An error occurred", { variant: "error" });
 				}

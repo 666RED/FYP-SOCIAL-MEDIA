@@ -10,6 +10,7 @@ export const INITIAL_STATE = {
 	joinGroupStatus: "",
 	joinGroupRequest: [],
 	numberJoinGroupRequests: 0,
+	showReportForm: false,
 };
 
 export const groupProfileReducer = (state, action) => {
@@ -58,6 +59,12 @@ export const groupProfileReducer = (state, action) => {
 			return {
 				...state,
 				numberJoinGroupRequests: action.payload,
+			};
+		}
+		case "TOGGLE_SHOW_REPORT_FORM": {
+			return {
+				...state,
+				showReportForm: !state.showReportForm,
 			};
 		}
 		default: {

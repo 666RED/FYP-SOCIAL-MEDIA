@@ -1,4 +1,4 @@
-import { React, useState, useContext } from "react";
+import { React, useState, useContext, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { useSnackbar } from "notistack";
 import Header from "../../../../components/Header.jsx";
@@ -10,6 +10,7 @@ import LoadMoreButton from "../../../../components/LoadMoreButton.jsx";
 import {
 	appendCampusConditions,
 	setHasConditions,
+	resetState,
 } from "../../features/campusConditionSlice.js";
 import { ServerContext } from "../../../../App.js";
 
@@ -26,6 +27,13 @@ const CampusConditionPage = () => {
 	const currentTime = new Date();
 	currentTime.setSeconds(currentTime.getSeconds() + 1); // make sure newly added condition can be retrieved from db
 	const updatedTime = currentTime.toUTCString();
+
+	// reset state
+	useEffect(() => {
+		return () => {
+			sliceDispatch(resetState());
+		};
+	}, []);
 
 	const handleLoadMore = async () => {
 		try {

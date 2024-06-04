@@ -92,17 +92,19 @@ export const getProduct = async (req, res) => {
 
 		let userName = "";
 		let userProfileImagePath = "";
+		let frameColor = "";
 
 		if (user) {
 			userName = user.userName;
 			userProfileImagePath = user.userProfile.profileImagePath;
+			frameColor = user.userProfile.profileFrameColor;
 		}
 
 		const { __v, ...rest } = product._doc;
 
 		res.status(200).json({
 			msg: "Success",
-			product: { ...rest, userName, userProfileImagePath },
+			product: { ...rest, userName, userProfileImagePath, frameColor },
 		});
 	} catch (err) {
 		res.status(500).json({ error: err.message });
@@ -159,18 +161,9 @@ export const editProduct = async (req, res) => {
 		const image = req.file;
 
 		const originalProduct = await Product.findById(productId);
+		const originalProductImagePath = originalProduct.productImagePath;
 
 		let updatedProduct;
-
-		// remove original image
-		if (image) {
-			const productImagePath = path.join(
-				__dirname,
-				"public/images/product",
-				originalProduct.productImagePath
-			);
-			fs.unlinkSync(productImagePath);
-		}
 
 		// update image
 		if (image) {
@@ -201,6 +194,16 @@ export const editProduct = async (req, res) => {
 			return res.status(400).json({ msg: "Fail to edit product" });
 		}
 
+		// remove original image
+		if (image) {
+			const productImagePath = path.join(
+				__dirname,
+				"public/images/product",
+				originalProductImagePath
+			);
+			fs.unlinkSync(productImagePath);
+		}
+
 		res.status(200).json({ msg: "Success" });
 	} catch (err) {
 		res.status(500).json({ error: err.message });
@@ -211,16 +214,6 @@ export const removeProduct = async (req, res) => {
 	try {
 		const { productId } = req.body;
 
-		const originalProduct = await Product.findById(productId);
-
-		// remove image
-		const productImagePath = path.join(
-			__dirname,
-			"public/images/product",
-			originalProduct.productImagePath
-		);
-		fs.unlinkSync(productImagePath);
-
 		const removedProduct = await Product.findByIdAndUpdate(productId, {
 			$set: { removed: true },
 		});
@@ -228,6 +221,14 @@ export const removeProduct = async (req, res) => {
 		if (!removedProduct) {
 			return res.status(400).json({ msg: "Fail to remove product" });
 		}
+
+		// remove image
+		const productImagePath = path.join(
+			__dirname,
+			"public/images/product",
+			removedProduct.productImagePath
+		);
+		fs.unlinkSync(productImagePath);
 
 		res.status(200).json({ msg: "Success" });
 	} catch (err) {

@@ -7,6 +7,7 @@ import {
 	getRandomFriends,
 	getSearchedRandomFriends,
 	loadSearchedRandomFriends,
+	getIsFriend,
 } from "../controllers/friend.js";
 import { verifyToken } from "../middleware/auth.js";
 
@@ -27,5 +28,6 @@ router.get(
 	verifyToken,
 	loadSearchedRandomFriends
 );
+router.get("/get-is-friend", verifyToken, getIsFriend);
 
 export default router;

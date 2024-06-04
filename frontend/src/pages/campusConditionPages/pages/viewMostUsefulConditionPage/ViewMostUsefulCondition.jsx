@@ -1,6 +1,6 @@
 import { React, useEffect, useState, useContext } from "react";
 import { useSelector } from "react-redux";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { useSnackbar } from "notistack";
 import Loader from "../../../../components/Spinner/Loader.jsx";
 import CampusCondition from "../mainPage/components/CampusCondition.jsx";
@@ -9,7 +9,6 @@ import { ServerContext } from "../../../../App.js";
 
 const ViewMostUsefulCondition = () => {
 	const { conditionId } = useParams();
-	const navigate = useNavigate();
 	const [mostUsefulCondition, setMostUsefulCondition] = useState({});
 	const [loading, setLoading] = useState(false);
 	const serverURL = useContext(ServerContext);
@@ -63,20 +62,18 @@ const ViewMostUsefulCondition = () => {
 			{loading ? (
 				<Loader />
 			) : (
-				Object.keys(mostUsefulCondition).length !== 0 && (
-					<div>
-						<DirectBackArrowHeader
-							destination="/campus-condition"
-							title="Most Useful Condition"
+				<div>
+					<DirectBackArrowHeader
+						destination="/campus-condition"
+						title="Most Useful Condition"
+					/>
+					<div className="mt-5 md:w-4/5 md:mx-auto shadowDesign rounded-xl">
+						<CampusCondition
+							condition={mostUsefulCondition}
+							inViewMostUseful={true}
 						/>
-						<div className="mt-5 md:w-4/5 md:mx-auto shadowDesign rounded-xl">
-							<CampusCondition
-								condition={mostUsefulCondition}
-								inViewMostUseful={true}
-							/>
-						</div>
 					</div>
-				)
+				</div>
 			)}
 		</div>
 	);

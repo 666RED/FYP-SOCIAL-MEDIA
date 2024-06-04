@@ -79,7 +79,7 @@ const RegisterForm = ({ setDisplayRegForm }) => {
 					setDisplayRegForm(false);
 				} else {
 					enqueueSnackbar("An error occurred", {
-						variant: "success",
+						variant: "error",
 					});
 				}
 			}

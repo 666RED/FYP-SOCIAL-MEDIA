@@ -1,6 +1,6 @@
-import { React, useState, useContext, useEffect, useReducer } from "react";
+import { React, useContext, useEffect, useReducer } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { useSnackbar } from "notistack";
 import DirectBackArrowHeader from "../../../../components/BackArrow/DirectBackArrowHeader.jsx";
 import Error from "../../../../components/Error.jsx";
@@ -23,6 +23,7 @@ import { ServerContext } from "../../../../App.js";
 
 const SingleGroupPage = () => {
 	const serverURL = useContext(ServerContext);
+	const navigate = useNavigate();
 	const sliceDispatch = useDispatch();
 	const { groupId } = useParams();
 	const { user, token } = useSelector((store) => store.auth);
@@ -31,55 +32,8 @@ const SingleGroupPage = () => {
 	const { enqueueSnackbar } = useSnackbar();
 	const [state, dispatch] = useReducer(singleGroupPageReducer, INITIAL_STATE);
 	const currentTime = new Date();
-	currentTime.setSeconds(currentTime.getSeconds() + 1); // make sure newly added posts can be retrieved from db
+	currentTime.setSeconds(currentTime.getSeconds() + 1);
 	const updatedTime = currentTime.toUTCString();
-
-	// get group admin id (can be removed later)
-	useEffect(() => {
-		const getGroupAdminId = async () => {
-			dispatch({ type: ACTION_TYPES.SET_LOADING, payload: true });
-			try {
-				const res = await fetch(
-					`${serverURL}/group/get-group-admin-id?groupId=${groupId}`,
-					{
-						method: "GET",
-						headers: {
-							"Content-Type": "application/json",
-							Authorization: `Bearer ${token}`,
-						},
-					}
-				);
-
-				if (!res.ok && res.status === 403) {
-					dispatch({ type: ACTION_TYPES.SET_LOADING, payload: false });
-					enqueueSnackbar("Access Denied", { variant: "error" });
-					return;
-				}
-
-				const { msg, returnGroupAdminId } = await res.json();
-
-				if (msg === "Success") {
-					dispatch({
-						type: ACTION_TYPES.SET_GROUP_ADMIN_ID,
-						payload: returnGroupAdminId,
-					});
-				} else if (msg === "Group not found") {
-					enqueueSnackbar("Group not found", { variant: "error" });
-				} else {
-					enqueueSnackbar("An error occurred", { variant: "error" });
-				}
-
-				dispatch({ type: ACTION_TYPES.SET_LOADING, payload: false });
-			} catch (err) {
-				dispatch({ type: ACTION_TYPES.SET_LOADING, payload: false });
-				enqueueSnackbar("Could not connect to the server", {
-					variant: "error",
-				});
-			}
-		};
-
-		getGroupAdminId();
-	}, []);
 
 	// determine if user is group member
 	useEffect(() => {
@@ -217,7 +171,10 @@ const SingleGroupPage = () => {
 							Add New Post
 						</button>
 						{/* NOTES BUTTON */}
-						<button className="btn-blue col-span-4 lg:col-span-3 text-xs min-[400px]:text-sm min-[800px]:text-base lg:text-base">
+						<button
+							className="btn-blue col-span-4 lg:col-span-3 text-xs min-[400px]:text-sm min-[800px]:text-base lg:text-base"
+							onClick={() => navigate("view-notes")}
+						>
 							Notes
 						</button>
 					</div>
@@ -225,14 +182,20 @@ const SingleGroupPage = () => {
 
 				<hr className="border-4 border-gray-400 my-4" />
 				{/* GROUP POSTS */}
-				<GroupPosts currentTime={updatedTime} />
-				{/* LOAD MORE BUTTON */}
-				<LoadMoreButton
-					handleLoadMore={handleLoadMore}
-					hasComponent={hasPost}
-					isLoadingComponent={isLoadingPosts}
-					loadMore={state.loadMore}
-				/>
+				{isMember ? (
+					<div>
+						<GroupPosts currentTime={updatedTime} groupId={groupId} />
+						{/* LOAD MORE BUTTON */}
+						<LoadMoreButton
+							handleLoadMore={handleLoadMore}
+							hasComponent={hasPost}
+							isLoadingComponent={isLoadingPosts}
+							loadMore={state.loadMore}
+						/>
+					</div>
+				) : (
+					<h2 className="text-center mb-2">Join the group to view posts</h2>
+				)}
 			</div>
 		</div>
 	) : (

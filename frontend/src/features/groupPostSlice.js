@@ -13,7 +13,6 @@ const groupPostSlice = createSlice({
 	reducers: {
 		addNewPost: (state, action) => {
 			state.groupPosts = [action.payload, ...state.groupPosts];
-			state.hasPost = true;
 		},
 		setHasPost: (state, action) => {
 			state.hasPost = action.payload;

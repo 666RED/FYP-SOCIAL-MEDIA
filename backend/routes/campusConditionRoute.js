@@ -1,7 +1,6 @@
 import express from "express";
 import {
 	getCampusConditions,
-	getUserInfo,
 	handleUp,
 	cancelUp,
 	handleDown,
@@ -15,7 +14,6 @@ import { verifyToken } from "../middleware/auth.js";
 
 const router = express.Router();
 router.get("/get-campus-conditions", verifyToken, getCampusConditions);
-router.post("/get-user-info", verifyToken, getUserInfo);
 router.patch("/handle-up", verifyToken, handleUp);
 router.patch("/cancel-up", verifyToken, cancelUp);
 router.patch("/handle-down", verifyToken, handleDown);

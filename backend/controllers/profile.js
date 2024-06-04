@@ -30,38 +30,9 @@ export const editProfile = async (req, res) => {
 
 		// Get the original user document
 		const originalUser = await User.findById(userId);
-
-		// Delete original images if they exist and their names are not default
-		if (profileImage) {
-			if (
-				originalUser.userProfile.profileImagePath !==
-					"default-profile-image.png" &&
-				originalUser.userProfile.profileImagePath !== profileImage[0].filename
-			) {
-				const profileImagePath = path.join(
-					__dirname,
-					"public/images/profile",
-					originalUser.userProfile.profileImagePath
-				);
-				fs.unlinkSync(profileImagePath);
-			}
-		}
-
-		if (coverImage) {
-			if (
-				originalUser.userProfile.profileCoverImagePath !==
-					"default-cover-image.jpg" &&
-				originalUser.userProfile.profileCoverImagePath !==
-					coverImage[0].filename
-			) {
-				const coverImagePath = path.join(
-					__dirname,
-					"public/images/profile",
-					originalUser.userProfile.profileCoverImagePath
-				);
-				fs.unlinkSync(coverImagePath);
-			}
-		}
+		const originalProfileImagePath = originalUser.userProfile.profileImagePath;
+		const originalProfileCoverImagePath =
+			originalUser.userProfile.profileCoverImagePath;
 
 		let user;
 
@@ -123,10 +94,37 @@ export const editProfile = async (req, res) => {
 			return res.status(400).json({ msg: "User not found" });
 		}
 
+		// Delete original images if they exist and their names are not default
+		if (profileImage) {
+			if (
+				originalProfileImagePath !== "default-profile-image.png" &&
+				originalProfileImagePath !== profileImage[0].filename
+			) {
+				const profileImagePath = path.join(
+					__dirname,
+					"public/images/profile",
+					originalProfileImagePath
+				);
+				fs.unlinkSync(profileImagePath);
+			}
+		}
+
+		if (coverImage) {
+			if (
+				originalProfileCoverImagePath !== "default-cover-image.jpg" &&
+				originalProfileCoverImagePath !== coverImage[0].filename
+			) {
+				const coverImagePath = path.join(
+					__dirname,
+					"public/images/profile",
+					originalProfileCoverImagePath
+				);
+				fs.unlinkSync(coverImagePath);
+			}
+		}
+
 		res.status(200).json({ msg: "Success", user });
 	} catch (err) {
-		console.log(err);
-
 		res.status(500).json({ error: err.message });
 	}
 };

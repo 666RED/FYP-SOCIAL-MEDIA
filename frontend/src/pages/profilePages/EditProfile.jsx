@@ -65,6 +65,7 @@ const EditProfile = () => {
 							coverImagePath: filePath + userProfile.profileCoverImagePath,
 							name: userInfo.userName,
 							bio: userProfile.profileBio,
+							frameColor: userProfile.profileFrameColor,
 						},
 					});
 				} else {
@@ -217,7 +218,7 @@ const EditProfile = () => {
 				<img
 					src={state.profileImagePath}
 					alt="Profile image"
-					className="rounded-full border border-blue-400 object-cover mx-auto h-40 w-40 md:h-56 md:w-56"
+					className={`rounded-full border-4 ${state.frameColor} object-cover mx-auto h-40 w-40 md:h-56 md:w-56`}
 				/>
 				<hr className="my-5 border border-gray-300" />
 				{/* COVER IMAGE */}

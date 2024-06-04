@@ -7,14 +7,10 @@ export const addGroupPostComment = async (req, res) => {
 	try {
 		const { groupPostId, userId, comment } = req.body;
 
-		const commentTime = new Date();
-		const formattedCommentTime = formatDateTime(commentTime);
-
 		const newComment = new GroupPostComment({
 			groupPostId,
 			userId,
 			commentDescription: comment,
-			commentTime: formattedCommentTime,
 		});
 
 		const savedComment = await newComment.save();
@@ -29,20 +25,26 @@ export const addGroupPostComment = async (req, res) => {
 		});
 
 		const user = await User.findById(userId);
+		let profileImagePath = "";
+		let userName = "";
+		let frameColor = "";
 
-		if (!user) {
-			return res.status(404).json({ msg: "User not found" });
+		if (user) {
+			userName = user.userName;
+			profileImagePath = user.userProfile.profileImagePath;
+			frameColor = user.userProfile.profileFrameColor;
 		}
 
-		const userName = user.userName;
-		const profileImagePath = user.userProfile.profileImagePath;
+		const { createdAt, updatedAt, __v, ...rest } = savedComment._doc;
 
 		res.status(200).json({
 			msg: "Success",
 			returnComment: {
-				...savedComment._doc,
+				...rest,
 				userName,
 				profileImagePath,
+				time: formatDateTime(savedComment.createdAt),
+				frameColor,
 			},
 		});
 	} catch (err) {
@@ -81,19 +83,25 @@ export const getComments = async (req, res) => {
 		const returnComments = await Promise.all(
 			comments.map(async (comment) => {
 				const user = await User.findById(comment.userId);
+				let profileImagePath = "";
+				let userName = "";
+				let frameColor = "";
 
 				if (user) {
-					const userName = user.userName;
-					const profileImagePath = user.userProfile.profileImagePath;
-
-					return {
-						...comment._doc,
-						userName,
-						profileImagePath,
-					};
-				} else {
-					return null;
+					userName = user.userName;
+					profileImagePath = user.userProfile.profileImagePath;
+					frameColor = user.userProfile.profileFrameColor;
 				}
+
+				const { createdAt, updatedAt, __v, ...rest } = comment._doc;
+
+				return {
+					...rest,
+					userName,
+					profileImagePath,
+					time: formatDateTime(comment.createdAt),
+					frameColor,
+				};
 			})
 		);
 
@@ -122,17 +130,27 @@ export const editComment = async (req, res) => {
 		}
 
 		const user = await User.findById(userId);
+		let profileImagePath = "";
+		let userName = "";
+		let frameColor = "";
 
-		if (!user) {
-			return res.status(404).json({ msg: "User not found" });
+		if (user) {
+			userName = user.userName;
+			profileImagePath = user.userProfile.profileImagePath;
+			frameColor = user.userProfile.profileFrameColor;
 		}
 
-		const userName = user.userName;
-		const profileImagePath = user.userProfile.profileImagePath;
+		const { createdAt, updatedAt, __v, ...rest } = updatedComment._doc;
 
 		res.status(200).json({
 			msg: "Success",
-			returnComment: { ...updatedComment._doc, userName, profileImagePath },
+			returnComment: {
+				...rest,
+				userName,
+				profileImagePath,
+				time: formatDateTime(updatedComment.createdAt),
+				frameColor,
+			},
 		});
 	} catch (err) {
 		res.status(500).json({ error: err.message });

@@ -101,7 +101,7 @@ const UploadCondition = () => {
 				return;
 			}
 
-			const { msg, savedCampusCondition } = await res.json();
+			const { msg } = await res.json();
 
 			if (msg === "Success") {
 				enqueueSnackbar("Campus condition uploaded", {
@@ -110,11 +110,11 @@ const UploadCondition = () => {
 				navigate("/campus-condition");
 			} else if (msg === "Fail to upload new condition") {
 				enqueueSnackbar("Fail to upload new condition", {
-					variant: "success",
+					variant: "error",
 				});
 			} else {
 				enqueueSnackbar("An error occurred", {
-					variant: "success",
+					variant: "error",
 				});
 			}
 

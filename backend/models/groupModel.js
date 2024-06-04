@@ -30,6 +30,10 @@ const groupSchema = mongoose.Schema(
 			of: Boolean,
 			default: new Map(),
 		},
+		removed: {
+			type: Boolean,
+			default: false,
+		},
 	},
 	{
 		timestamps: true,

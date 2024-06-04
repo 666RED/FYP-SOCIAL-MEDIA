@@ -22,6 +22,9 @@ import groupPostCommentRoute from "./routes/groupPostCommentRoute.js";
 import productRoute from "./routes/productRoute.js";
 import serviceRoute from "./routes/serviceRoute.js";
 import eventRoute from "./routes/eventRoute.js";
+import settingRoute from "./routes/settingRoute.js";
+import amdinRoute from "./routes/adminRoute.js";
+import noteRoute from "./routes/noteRoute.js";
 // MIDDLEWARE & DIRECT PATH
 import { verifyToken } from "./middleware/auth.js";
 import { editProfile } from "./controllers/profile.js";
@@ -35,9 +38,10 @@ import { addNewGroupPost, editGroupPost } from "./controllers/groupPost.js";
 import { createNewProduct, editProduct } from "./controllers/product.js";
 import { createNewService, editService } from "./controllers/service.js";
 import { createNewEvent, editEvent } from "./controllers/event.js";
+import { createNewNote } from "./controllers/note.js";
 
 // change here before publish
-const isPublish = true;
+const isPublish = false;
 
 const app = express();
 dotenv.config();
@@ -146,6 +150,18 @@ const eventStorage = multer.diskStorage({
 	},
 });
 
+const noteStorage = multer.diskStorage({
+	destination: (req, file, cb) => {
+		cb(null, "public/images/note");
+	},
+	filename: (req, file, cb) => {
+		cb(
+			null,
+			file.originalname + "_" + Date.now() + path.extname(file.originalname)
+		);
+	},
+});
+
 // UPLOAD CONFIGURATION
 const profileUpload = multer({
 	storage: profileStorage,
@@ -177,6 +193,10 @@ const serviceUpload = multer({
 
 const eventUpload = multer({
 	storage: eventStorage,
+});
+
+const noteUpload = multer({
+	storage: noteStorage,
 });
 
 // GET THE IMAGE IN CLIENT SIDE
@@ -219,6 +239,11 @@ app.use(
 app.use(
 	"/public/images/event",
 	express.static(path.join(__dirname, "public/images/event"))
+);
+
+app.use(
+	"/public/images/note",
+	express.static(path.join(__dirname, "public/images/note"))
 );
 
 // DIRECT PATH
@@ -312,6 +337,12 @@ app.post(
 	eventUpload.single("image"),
 	editEvent
 );
+app.post(
+	"/note/create-new-note",
+	verifyToken,
+	noteUpload.single("file"),
+	createNewNote
+);
 
 // ROUTES
 app.use("/auth", authRoute);
@@ -329,6 +360,9 @@ app.use("/group-post-comment", groupPostCommentRoute);
 app.use("/product", productRoute);
 app.use("/service", serviceRoute);
 app.use("/event", eventRoute);
+app.use("/setting", settingRoute);
+app.use("/admin", amdinRoute);
+app.use("/note", noteRoute);
 
 // DATABASE CONFIGURATION
 let databaseUrl;

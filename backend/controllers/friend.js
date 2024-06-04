@@ -21,40 +21,27 @@ export const getFriends = async (req, res) => {
 
 		const excludedFriends = friendsArray.map((friend) => friend._id);
 
-		let returnFriendsArr = [];
+		const friendsIds = Array.from(user.userFriendsMap.keys());
+		const friendsToFetch = friendsIds.filter(
+			(friendId) => !excludedFriends.includes(friendId)
+		);
 
-		for (let friendId of user.userFriendsMap.keys()) {
-			if (!excludedFriends.includes(friendId)) {
-				const friend = await User.findById(friendId);
-				returnFriendsArr.push(friend);
-				if (returnFriendsArr.length == limit) {
-					break;
-				}
-			}
-		}
-
-		returnFriendsArr = returnFriendsArr.map((friend) => {
-			const {
-				userEmailAddress,
-				userPhoneNumber,
-				groups,
-				createdAt,
-				updatedAt,
-				userPassword,
-				verificationCode,
-				__v,
-				...rest
-			} = friend._doc;
-
-			const { userProfileImagePath } = rest.userProfile;
-
-			return { ...rest, userProfileImagePath };
-		});
+		const friendsData = await User.find({ _id: { $in: friendsToFetch } })
+			.limit(limit)
+			.select("-userPassword -verificationCode -__v") // Projection to exclude sensitive fields
+			.populate({
+				path: "userProfile",
+				select: "profileImagePath, profileFrameColor",
+			});
 
 		const numberOfFriends = user.userFriendsMap.size;
 
-		res.status(200).json({ msg: "Success", returnFriendsArr, numberOfFriends });
+		res
+			.status(200)
+			.json({ msg: "Success", returnFriendsArr: friendsData, numberOfFriends });
 	} catch (err) {
+		console.log(err);
+
 		res.status(500).json({ error: err.message });
 	}
 };
@@ -78,37 +65,34 @@ export const getSearchedFriends = async (req, res) => {
 
 		const friendsMap = user.userFriendsMap;
 
-		let returnFriendsArr = new Array();
 		const excludedFriends = friendsArray.map((friend) => friend._id);
 
-		for (let friendId of friendsMap.keys()) {
-			if (!excludedFriends.includes(friendId)) {
-				const friend = await User.findById(friendId);
-				if (friend.userName.toLowerCase().includes(searchText.toLowerCase())) {
-					returnFriendsArr.push(friend);
-				}
-				if (returnFriendsArr.length == limit) {
-					break;
-				}
-			}
-		}
+		const friendsToFetch = Array.from(friendsMap.keys()).filter(
+			(friendId) => !excludedFriends.includes(friendId)
+		);
 
-		returnFriendsArr = returnFriendsArr.map((friend) => {
+		const friendsData = await User.find({
+			_id: { $in: friendsToFetch },
+			userName: { $regex: new RegExp(searchText, "i") },
+		})
+			.limit(limit)
+			.select("-userPassword -verificationCode -__v") // Projection to exclude sensitive fields
+			.populate({
+				path: "userProfile",
+				select: "profileImagePath, profileFrameColor",
+			}); // Populate profileImagePath
+
+		const returnFriendsArr = friendsData.map((friend) => {
 			const {
 				userEmailAddress,
 				userPhoneNumber,
 				groups,
 				createdAt,
 				updatedAt,
-				userPassword,
-				verificationCode,
-				__v,
 				...rest
 			} = friend._doc;
-
-			const { userProfileImagePath } = rest.userProfile;
-
-			return { ...rest, userProfileImagePath };
+			const { profileImagePath } = rest.userProfile;
+			return { ...rest, profileImagePath };
 		});
 
 		res.status(200).json({ msg: "Success", returnFriendsArr });
@@ -506,6 +490,26 @@ export const loadSearchedRandomFriends = async (req, res) => {
 	} catch (err) {
 		console.log(err);
 
+		res.status(500).json({ error: err.message });
+	}
+};
+
+export const getIsFriend = async (req, res) => {
+	try {
+		const { userId, friendId } = req.query;
+
+		const user = await User.findById(userId);
+
+		if (!user) {
+			return res.status(400).json({ msg: "User not found" });
+		}
+
+		if (!Array.from(user.userFriendsMap.keys()).includes(friendId)) {
+			return res.status(200).json({ msg: "Not friend" });
+		} else {
+			return res.status(200).json({ msg: "Friend" });
+		}
+	} catch (err) {
 		res.status(500).json({ error: err.message });
 	}
 };

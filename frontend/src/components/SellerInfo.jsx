@@ -2,7 +2,7 @@ import { React, useContext } from "react";
 import { FaPhoneAlt } from "react-icons/fa";
 import { ServerContext } from "../App.js";
 
-const SellerInfo = ({ state, handleOnClick, name }) => {
+const SellerInfo = ({ state, handleOnClick, name, isAdmin = false }) => {
 	const serverURL = useContext(ServerContext);
 	const profileImagePath = `${serverURL}/public/images/profile/`;
 
@@ -14,13 +14,13 @@ const SellerInfo = ({ state, handleOnClick, name }) => {
 				<img
 					src={`${profileImagePath}${state.userProfileImagePath}`}
 					alt="Seller profile image"
-					className="rounded-full border border-blue-400 w-14 mr-2 md:w-20"
+					className={`rounded-full border-[2.5px] ${state.frameColor} w-14 mr-2 md:w-20`}
 				/>
 				{/* SELLER NAME */}
 				<div>
 					<p
-						className="cursor-pointer hover:opacity-80"
-						onClick={handleOnClick}
+						className={`${!isAdmin && "cursor-pointer hover:opacity-80"}`}
+						onClick={!isAdmin ? handleOnClick : null}
 					>
 						{state.userName}
 					</p>

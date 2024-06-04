@@ -124,7 +124,7 @@ const FriendRequest = ({ friendRequest }) => {
 			<img
 				src={filePath}
 				alt="User profile image"
-				className="col-span-2 row-span-3 border border-blue-400 rounded-full max-w-20 md:max-w-32 md:self-center"
+				className={`col-span-2 row-span-3 border-[2.5px] md:border-4 ${friendRequest.requestorId.userProfile.profileFrameColor} rounded-full max-w-20 md:max-w-32 md:self-center`}
 			/>
 			{/* USER NAME */}
 			<div className="col-span-8 md:my-3 md:text-xl md:flex-1 flex">

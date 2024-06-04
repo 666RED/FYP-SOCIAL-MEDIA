@@ -1,4 +1,4 @@
-import { React, useContext, useReducer } from "react";
+import { React, useContext, useReducer, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useSnackbar } from "notistack";
 import { BsThreeDots } from "react-icons/bs";
@@ -83,11 +83,12 @@ const Comment = ({ comment, post }) => {
 			{/* USER INFO */}
 			<UserPostHeader
 				imgPath={profileImgPath + comment.profileImagePath}
-				postTime={comment.commentTime}
+				postTime={comment.time}
 				userName={comment.userName}
 				destination={`/profile/${comment.userId}`}
 				isPost={false}
 				previous={previous}
+				frameColor={comment.frameColor}
 			/>
 			{/* THREE DOTS */}
 			{(user._id === comment.userId || post.userId === user._id) && (

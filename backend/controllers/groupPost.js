@@ -4,6 +4,7 @@ import { formatDateTime } from "../usefulFunction.js";
 import path from "path";
 import fs from "fs";
 import { __dirname } from "../index.js";
+import { GroupPostComment } from "../models/groupPostCommentModel.js";
 
 export const addNewGroupPost = async (req, res) => {
 	try {
@@ -12,9 +13,6 @@ export const addNewGroupPost = async (req, res) => {
 		const image = req.files && req.files.image;
 		const file = req.files && req.files.file;
 
-		const postTime = new Date();
-		const formatedPostTime = formatDateTime(postTime);
-
 		let newPost;
 
 		// just text
@@ -22,7 +20,6 @@ export const addNewGroupPost = async (req, res) => {
 			newPost = new GroupPost({
 				groupId,
 				userId,
-				postTime: formatedPostTime,
 				postDescription: text,
 			});
 		} else if (!file) {
@@ -30,7 +27,6 @@ export const addNewGroupPost = async (req, res) => {
 			newPost = new GroupPost({
 				groupId,
 				userId,
-				postTime: formatedPostTime,
 				postDescription: text,
 				postImagePath: image[0].filename,
 			});
@@ -39,33 +35,41 @@ export const addNewGroupPost = async (req, res) => {
 			newPost = new GroupPost({
 				groupId,
 				userId,
-				postTime: formatedPostTime,
 				postDescription: text,
 				postFilePath: file[0].filename,
 			});
 		}
 
-		const savedPost = await newPost.save();
+		let savedPost = await newPost.save();
 
 		if (!savedPost) {
+			return res.status(400).json({ msg: "Fail to add new post" });
 		}
 
 		const returnUser = await User.findById(userId);
+		let userName = "";
+		let profileImagePath = "";
+		let frameColor = "";
 
-		const userName = returnUser.userName;
-		const profileImagePath = returnUser.userProfile.profileImagePath;
+		if (returnUser) {
+			userName = returnUser.userName;
+			profileImagePath = returnUser.userProfile.profileImagePath;
+			frameColor = returnUser.userProfile.profileFrameColor;
+		}
+
+		const { createdAt, updatedAt, __v, ...rest } = savedPost._doc;
 
 		res.status(200).json({
 			msg: "Success",
 			returnPost: {
-				...savedPost._doc,
+				...rest,
 				userName,
 				profileImagePath,
+				time: formatDateTime(savedPost.createdAt),
+				frameColor,
 			},
 		});
 	} catch (err) {
-		console.log(err);
-
 		res.status(500).json({ error: err.message });
 	}
 };
@@ -80,6 +84,7 @@ export const getGroupPosts = async (req, res) => {
 		const groupPosts = await GroupPost.find({
 			groupId,
 			createdAt: { $lt: currentTime },
+			removed: 0,
 		})
 			.sort({ createdAt: -1 })
 			.skip(count)
@@ -96,22 +101,23 @@ export const getGroupPosts = async (req, res) => {
 		const returnGroupPosts = await Promise.all(
 			groupPosts.map(async (post) => {
 				const user = await User.findById(post.userId);
+				let profileImagePath = "";
+				let userName = "'";
+				let frameColor = "";
 
 				if (user) {
-					const userName = user.userName;
-					const profileImagePath = user.userProfile.profileImagePath;
-					return {
-						...post._doc,
-						userName,
-						profileImagePath,
-					};
-				} else {
-					return {
-						...post._doc,
-						userName: null,
-						profileImagePath: null,
-					};
+					userName = user.userName;
+					profileImagePath = user.userProfile.profileImagePath;
+					frameColor = user.userProfile.profileFrameColor;
 				}
+
+				return {
+					...post._doc,
+					userName,
+					profileImagePath,
+					time: formatDateTime(post.createdAt),
+					frameColor,
+				};
 			})
 		);
 
@@ -170,10 +176,21 @@ export const deletePost = async (req, res) => {
 		const { postId, postImagePath, postFilePath } = req.body;
 
 		// delete all comments in the group post
-		const deletedComments = await Comment.deleteMany({ postId: post._id });
+		const deletedComments = await GroupPostComment.deleteMany({
+			groupPostId: postId,
+		});
 
 		if (!deletedComments) {
 			return res.status(400).json({ msg: "Fail to delete comments" });
+		}
+
+		// delete post
+		const deletedPost = await GroupPost.findByIdAndUpdate(postId, {
+			$set: { removed: 1 },
+		});
+
+		if (!deletedPost) {
+			return res.status(400).json({ msg: "Fail to delete post" });
 		}
 
 		// delete group post image if got any
@@ -196,13 +213,6 @@ export const deletePost = async (req, res) => {
 			fs.unlinkSync(deletedPostFilePath);
 		}
 
-		// delete post
-		const deletedPost = await GroupPost.findByIdAndDelete(postId);
-
-		if (!deletePost) {
-			return res.status(400).json({ msg: "Fail to delete post" });
-		}
-
 		res.status(200).json({ msg: "Success" });
 	} catch (err) {
 		res.status(500).json({ err: err.message });
@@ -217,6 +227,8 @@ export const editGroupPost = async (req, res) => {
 		const file = req.files && req.files.file;
 
 		const originalPost = await GroupPost.findById(postId);
+		const originalPostImagePath = originalPost.postImagePath;
+		const originalPostFilePath = originalPost.postFilePath;
 
 		if (!originalPost) {
 			return res.status(404).json({ msg: "Original post not found" });
@@ -228,26 +240,6 @@ export const editGroupPost = async (req, res) => {
 		const removeFile = postFilePath === "" && originalPost.postFilePath !== "";
 
 		let updatedPost;
-
-		// delete original post image
-		if ((image && originalPost.postImagePath !== "") || removeImage) {
-			const postImagePath = path.join(
-				__dirname,
-				"public/images/group-post",
-				originalPost.postImagePath
-			);
-			fs.unlinkSync(postImagePath);
-		}
-
-		// delete original post file
-		if ((file && originalPost.postFilePath !== "") || removeFile) {
-			const postFilePath = path.join(
-				__dirname,
-				"public/images/group-post",
-				originalPost.postFilePath
-			);
-			fs.unlinkSync(postFilePath);
-		}
 
 		let updatedImagePath;
 		let needUpdateImage = true;
@@ -331,21 +323,43 @@ export const editGroupPost = async (req, res) => {
 		}
 
 		const user = await User.findById(userId);
+		let profileImagePath = "";
+		let userName = "";
+		let frameColor = "";
 
-		if (!user) {
-			return res.status(400).json({ msg: "User not found" });
+		if (user) {
+			userName = user.userName;
+			profileImagePath = user.userProfile.profileImagePath;
+			frameColor = user.userProfile.profileFrameColor;
 		}
 
-		const userName = user.userName;
-		const profileImagePath = user.userProfile.profileImagePath;
+		const { createdAt, updatedAt, __v, ...rest } = updatedPost._doc;
+
+		// delete original post image
+		if ((image && originalPostImagePath !== "") || removeImage) {
+			const postImagePath = path.join(
+				__dirname,
+				"public/images/group-post",
+				originalPostImagePath
+			);
+			fs.unlinkSync(postImagePath);
+		}
+
+		// delete original post file
+		if ((file && originalPostFilePath !== "") || removeFile) {
+			const postFilePath = path.join(
+				__dirname,
+				"public/images/group-post",
+				originalPostFilePath
+			);
+			fs.unlinkSync(postFilePath);
+		}
 
 		res.status(200).json({
 			msg: "Success",
-			returnGroupPost: { ...updatedPost._doc, userName, profileImagePath },
+			returnGroupPost: { ...rest, userName, profileImagePath, frameColor },
 		});
 	} catch (err) {
-		console.log(err);
-
 		res.status(500).json({ err: err.message });
 	}
 };

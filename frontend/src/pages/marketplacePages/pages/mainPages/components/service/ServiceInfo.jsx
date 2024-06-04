@@ -1,20 +1,10 @@
 import { React, useContext } from "react";
 import { ServerContext } from "../../../../../../App.js";
+import { capitalize } from "../../../../../../usefulFunction.js";
 
 const ServiceInfo = ({ service }) => {
 	const serverURL = useContext(ServerContext);
 	const servicePosterImagePath = `${serverURL}/public/images/service/`;
-
-	const capitalize = (category) => {
-		return category === ""
-			? ""
-			: category
-					.split("-")
-					.map((word, index) =>
-						index === 0 ? word[0].toUpperCase() + word.slice(1) : word
-					)
-					.join(" ");
-	};
 
 	return (
 		<div className="flex flex-col">

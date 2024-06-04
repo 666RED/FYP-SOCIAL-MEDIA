@@ -18,10 +18,6 @@ const commentSchema = mongoose.Schema(
 			min: 1,
 			max: 200,
 		},
-		commentTime: {
-			type: String,
-			required: true,
-		},
 	},
 	{
 		timestamps: true,

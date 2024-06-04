@@ -61,7 +61,7 @@ const userSchema = mongoose.Schema(
 			profileFrameColor: {
 				type: String,
 				required: true,
-				default: "default",
+				default: "none",
 			},
 		},
 		groups: {
