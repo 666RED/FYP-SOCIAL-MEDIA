@@ -41,7 +41,7 @@ import { createNewEvent, editEvent } from "./controllers/event.js";
 import { createNewNote } from "./controllers/note.js";
 
 // change here before publish
-const isPublish = false;
+const isPublish = true;
 
 const app = express();
 dotenv.config();

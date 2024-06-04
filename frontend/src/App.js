@@ -53,8 +53,8 @@ export const ServerContext = createContext();
 export const NotificationContext = createContext();
 
 function App() {
-	// const server = "https://fyp-fsktm-connect.onrender.com";
-	const server = "http://localhost:3001";
+	const server = "https://fyp-fsktm-connect.onrender.com";
+	// const server = "http://localhost:3001";
 
 	const { enqueueSnackbar } = useSnackbar();
 	const { user } = useSelector((store) => store.auth);
