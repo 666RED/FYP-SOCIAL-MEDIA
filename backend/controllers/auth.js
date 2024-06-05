@@ -4,6 +4,9 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { backendServer, frontendServer } from "../index.js";
 import _ from "lodash";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 export const register = async (req, res) => {
 	try {
