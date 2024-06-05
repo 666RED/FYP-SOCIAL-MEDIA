@@ -20,8 +20,6 @@ const Member = ({ member }) => {
 	const { enqueueSnackbar } = useSnackbar();
 	const [loading, setLoading] = useState(false);
 
-	const filePath = `${serverURL}/public/images/profile/`;
-
 	const handleOnClick = () => {
 		const previousArr = JSON.parse(localStorage.getItem("previous")) || [];
 		previousArr.push(`/group/view-members/${groupId}/${groupAdminId}`);
@@ -79,7 +77,7 @@ const Member = ({ member }) => {
 			<div className="flex items-center">
 				{/* PROFILE IMAGE */}
 				<img
-					src={`${filePath}${member.profileImagePath}`}
+					src={member.profileImagePath}
 					alt="Member profile image"
 					className={`w-14 md:w-16 border-[2.5px] ${member.frameColor} rounded-full`}
 				/>

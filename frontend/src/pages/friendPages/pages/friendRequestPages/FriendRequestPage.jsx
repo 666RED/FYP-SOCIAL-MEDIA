@@ -26,7 +26,9 @@ const FriendRequestPage = () => {
 			const res = await fetch(
 				`${serverURL}/friend-request/get-friend-requests?receiverId=${
 					user._id
-				}&requestsArr=${JSON.stringify(friendRequestsArr)}`,
+				}&requestIds=${JSON.stringify(
+					friendRequestsArr.map((request) => request._id)
+				)}`,
 				{
 					method: "GET",
 					headers: {

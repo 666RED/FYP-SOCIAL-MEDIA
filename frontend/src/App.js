@@ -45,6 +45,9 @@ import EventPage from "./pages/adminPages/navComponent/Event/EventPage.jsx";
 import ReportPage from "./pages/adminPages/navComponent/Report/ReportPage.jsx";
 import FolderPage from "./pages/groupPages/pages/singleGroupPage/component/notes/FolderPage.jsx";
 import NotePage from "./pages/groupPages/pages/singleGroupPage/component/notes/pages/NotePage.jsx";
+import ViewYourPostsPage from "./pages/groupPages/pages/singleGroupPage/component/posts/ViewYourPostsPage.jsx";
+import YourConditionsPage from "./pages/campusConditionPages/pages/yourConditionsPage/YourConditionsPage.jsx";
+import ContactPage from "./pages/adminPages/loginPages/ContactPage.jsx";
 
 import { onSnapshot, query, collection, where } from "firebase/firestore";
 import { db } from "./firebase-config.js";
@@ -132,6 +135,10 @@ function App() {
 							element={<UploadCondition />}
 						/>
 						<Route
+							path="/campus-condition/your-conditions"
+							element={<YourConditionsPage />}
+						/>
+						<Route
 							path="/campus-condition/view-most-useful-condition/:conditionId"
 							element={<ViewMostUsefulCondition />}
 						/>
@@ -211,6 +218,11 @@ function App() {
 							path="/group/:groupId/view-notes/:folderId"
 							element={<NotePage />}
 						/>
+						<Route
+							path="/group/:groupId/your-posts"
+							element={<ViewYourPostsPage />}
+						/>
+						<Route path="/admin/contact" element={<ContactPage />} />
 					</Routes>
 				</BrowserRouter>
 			</ServerContext.Provider>

@@ -10,7 +10,6 @@ const Product = ({ product }) => {
 	const navigate = useNavigate();
 	const { user } = useSelector((store) => store.auth);
 
-	const filePath = `${serverURL}/public/images/product/`;
 	const path =
 		product.userId === user._id
 			? `/marketplace/product/edit-product/${product._id}`
@@ -23,9 +22,9 @@ const Product = ({ product }) => {
 		>
 			{/* PRODUCT IMAGE */}
 			<img
-				src={`${filePath}${product.productImagePath}`}
+				src={product.productImagePath}
 				alt="Product image"
-				className="col-span-2 border border-blue-400 rounded-lg self-center mb-2 flex-1 w-full"
+				className="col-span-2 border border-blue-400 rounded-lg self-center mb-2 flex-1 max-h-64"
 			/>
 			{/* PRODUCT NAME */}
 			<p>{product.productName}</p>

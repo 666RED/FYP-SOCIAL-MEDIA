@@ -1,6 +1,5 @@
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-import { __dirname } from "../index.js";
 import { Admin } from "../models/adminModel.js";
 import { User } from "../models/userModel.js";
 import { Group } from "../models/groupModel.js";
@@ -158,8 +157,6 @@ export const retrieveUsers = async (req, res) => {
 
 		res.status(200).json({ msg: "Success", users });
 	} catch (err) {
-		console.log(err);
-
 		res.status(500).json({ error: err.message });
 	}
 };
@@ -249,7 +246,7 @@ export const searchGroups = async (req, res) => {
 			return res.status(200).json({ msg: "Stop searching" });
 		}
 
-		const groups = await Group.find({
+		let groups = await Group.find({
 			groupName: { $regex: new RegExp(searchText, "i") },
 		}).populate({
 			path: "groupAdminId",
@@ -259,6 +256,19 @@ export const searchGroups = async (req, res) => {
 		if (!groups) {
 			return res.status(400).json({ msg: "Groups not found" });
 		}
+
+		groups = await Promise.all(
+			groups.map(async (group) => {
+				let postCount = await GroupPost.countDocuments({
+					groupId: group._id,
+				});
+
+				return {
+					...group.toObject(),
+					postCount: postCount,
+				};
+			})
+		);
 
 		const formattedGroups = groups.map((group) => ({
 			_id: group._id,
@@ -307,8 +317,6 @@ export const retrieveConditions = async (req, res) => {
 
 		res.status(200).json({ msg: "Success", conditions });
 	} catch (err) {
-		console.log(err);
-
 		res.status(500).json({ error: err.message });
 	}
 };
@@ -350,8 +358,6 @@ export const searchConditions = async (req, res) => {
 
 		res.status(200).json({ msg: "Success", conditions });
 	} catch (err) {
-		console.log(err);
-
 		res.status(500).json({ error: err.message });
 	}
 };
@@ -386,8 +392,6 @@ export const retrieveProducts = async (req, res) => {
 
 		res.status(200).json({ msg: "Success", products });
 	} catch (err) {
-		console.log(err);
-
 		res.status(500).json({ error: err.message });
 	}
 };
@@ -786,8 +790,6 @@ export const retrieveReports = async (req, res) => {
 
 		res.status(200).json({ msg: "Success", reports });
 	} catch (err) {
-		console.log(err);
-
 		res.status(500).json({ error: err.message });
 	}
 };

@@ -19,7 +19,6 @@ const EditGroupPage = () => {
 	const { user, token } = useSelector((store) => store.auth);
 	const { enqueueSnackbar } = useSnackbar();
 	const [state, dispatch] = useReducer(editGroupPageReducer, INITIAL_STATE);
-	const filePath = `${serverURL}/public/images/group/`;
 	const { groupId } = useParams();
 
 	// fetch group profile info
@@ -52,7 +51,7 @@ const EditGroupPage = () => {
 				if (msg === "Success") {
 					dispatch({
 						type: ACTION_TYPES.FIRST_RENDER,
-						payload: { returnedGroup, filePath },
+						payload: { returnedGroup },
 					});
 				} else if (msg === "Group not found") {
 					enqueueSnackbar("Group not found", { variant: "error" });

@@ -13,7 +13,6 @@ const JoinGroupRequest = ({ joinGroupRequest }) => {
 	const { user, token } = useSelector((store) => store.auth);
 	const profileImagePath =
 		joinGroupRequest.requestorId.userProfile.profileImagePath;
-	const filePath = `${serverURL}/public/images/profile/${profileImagePath}`;
 	const [loading, setLoading] = useState(false);
 	const { enqueueSnackbar } = useSnackbar();
 	const navigate = useNavigate();
@@ -127,7 +126,7 @@ const JoinGroupRequest = ({ joinGroupRequest }) => {
 			{loading && <Spinner />}
 			{/* IMAGE */}
 			<img
-				src={filePath}
+				src={profileImagePath}
 				alt="Requestor profile image"
 				className="col-span-2 row-span-3 border border-blue-400 rounded-full max-w-20 md:max-w-32 md:self-center"
 			/>

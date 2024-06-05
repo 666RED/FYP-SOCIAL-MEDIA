@@ -76,8 +76,6 @@ export const getFriendRequest = async (req, res) => {
 			});
 		}
 	} catch (err) {
-		console.log(err);
-
 		res.status(500).json({ error: err.message });
 	}
 };
@@ -153,8 +151,6 @@ export const acceptFriendRequest = async (req, res) => {
 
 		res.status(200).json({ msg: "Success", updatedFriendRequest, updatedUser });
 	} catch (err) {
-		console.log(err);
-
 		res.status(500).json({ error: err.message });
 	}
 };
@@ -179,17 +175,15 @@ export const rejectFriendRequest = async (req, res) => {
 
 export const getFriendRequests = async (req, res) => {
 	try {
-		const { receiverId, requestsArr } = req.query;
-		const requestsArray = JSON.parse(requestsArr);
+		const { receiverId } = req.query;
+		const requestIds = JSON.parse(req.query.requestIds);
 		const limit = 10;
 
 		const receivedFriendRequests = await FriendRequest.find({
 			receiverId: receiverId,
 			status: "pending",
 			_id: {
-				$nin: requestsArray.map(
-					(request) => new mongoose.Types.ObjectId(request._id)
-				),
+				$nin: requestIds.map((id) => new mongoose.Types.ObjectId(id)),
 			},
 		})
 			.populate({
@@ -241,16 +235,14 @@ export const getFriendRequestsAmount = async (req, res) => {
 export const getPendingFriendRequests = async (req, res) => {
 	try {
 		const limit = 10;
-		const { requestorId, pendings } = req.query;
-		const pendingsArray = JSON.parse(pendings);
+		const { requestorId } = req.query;
+		const pendingIds = JSON.parse(req.query.pendingIds);
 
 		const pendingFriendRequests = await FriendRequest.find({
 			requestorId: requestorId,
 			status: "pending",
 			_id: {
-				$nin: pendingsArray.map(
-					(pending) => new mongoose.Types.ObjectId(pending._id)
-				),
+				$nin: pendingIds.map((id) => new mongoose.Types.ObjectId(id)),
 			},
 		})
 			.populate({

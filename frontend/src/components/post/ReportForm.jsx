@@ -102,7 +102,7 @@ const ReportForm = ({
 		<div>
 			{loading && <Spinner />}
 			<Filter />
-			<div className="center-container ">
+			<div className="center-container items-center">
 				<form onSubmit={handleSubmit} className="form">
 					{/* HEADER */}
 					<FormHeader

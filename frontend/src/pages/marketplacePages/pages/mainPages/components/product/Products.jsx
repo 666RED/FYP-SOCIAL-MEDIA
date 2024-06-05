@@ -29,8 +29,8 @@ const Products = ({ getProductPath, searchProductPath, setLoading }) => {
 			setLoadMore(true);
 
 			const res = await fetch(
-				`${getProductPath}?userId=${user._id}&productsArr=${JSON.stringify(
-					productsArr
+				`${getProductPath}?userId=${user._id}&productIds=${JSON.stringify(
+					productsArr.map((product) => product._id)
 				)}`,
 				{
 					method: "GET",
@@ -76,7 +76,9 @@ const Products = ({ getProductPath, searchProductPath, setLoading }) => {
 			const res = await fetch(
 				`${searchProductPath}?userId=${
 					user._id
-				}&searchText=${searchText}&productsArr=${JSON.stringify(productsArr)}`,
+				}&searchText=${searchText}&productIds=${JSON.stringify(
+					productsArr.map((product) => product._id)
+				)}`,
 				{
 					method: "GET",
 					headers: {
@@ -131,7 +133,7 @@ const Products = ({ getProductPath, searchProductPath, setLoading }) => {
 				sliceDispatch(setIsLoadingProducts(true));
 
 				const res = await fetch(
-					`${getProductPath}?userId=${user._id}&productsArr=${JSON.stringify(
+					`${getProductPath}?userId=${user._id}&productIds=${JSON.stringify(
 						[]
 					)}`,
 					{
@@ -208,7 +210,7 @@ const Products = ({ getProductPath, searchProductPath, setLoading }) => {
 			{isLoadingProducts ? (
 				<Loader />
 			) : productsArr.length > 0 ? (
-				<div className="grid grid-cols-12 gap-2 px-2 max-h-[30rem] overflow-y-auto min-[500px]:max-h-[23.5rem] mb-2">
+				<div className="grid grid-cols-12 gap-2 px-2 max-img-height overflow-y-auto marketplace-content-height mb-2">
 					{productsArr.map((product) => (
 						<Product key={product._id} product={product} />
 					))}

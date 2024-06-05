@@ -1,7 +1,10 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import Note from "./Note.jsx";
+import { noteContext } from "../pages/NotePage.jsx";
 
-const Notes = ({ notes, isGroupAdmin, setNotes }) => {
+const Notes = () => {
+	const { notes, isGroupAdmin, setNotes } = useContext(noteContext);
+
 	return (
 		<table className="mt-8 w-full min-w-max">
 			<thead>
@@ -15,14 +18,7 @@ const Notes = ({ notes, isGroupAdmin, setNotes }) => {
 			<tbody>
 				{notes.length > 0 ? (
 					notes.map((note, index) => (
-						<Note
-							note={note}
-							key={note._id}
-							count={index + 1}
-							isGroupAdmin={isGroupAdmin}
-							notes={notes}
-							setNotes={setNotes}
-						/>
+						<Note note={note} key={note._id} count={index + 1} />
 					))
 				) : (
 					<tr>

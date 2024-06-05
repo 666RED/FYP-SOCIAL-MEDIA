@@ -10,11 +10,13 @@ const groupSchema = mongoose.Schema(
 		},
 		groupImagePath: {
 			type: String,
-			default: "default-group-image.png",
+			default:
+				"https://firebasestorage.googleapis.com/v0/b/final-year-project-d85b9.appspot.com/o/group%2F1717572712982-default-group-image.png?alt=media&token=f477f873-41ee-4f68-ae76-11340d7b595b",
 		},
 		groupCoverImagePath: {
 			type: String,
-			default: "default-group-cover-image.jpg",
+			default:
+				"https://firebasestorage.googleapis.com/v0/b/final-year-project-d85b9.appspot.com/o/group%2F1717572713265-default-group-cover-image.jpg?alt=media&token=89c92422-f0e5-46e4-b603-9fd7a1ced3ff",
 		},
 		groupBio: {
 			type: String,

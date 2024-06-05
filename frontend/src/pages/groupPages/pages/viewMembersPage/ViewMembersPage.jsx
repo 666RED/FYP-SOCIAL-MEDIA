@@ -52,7 +52,7 @@ const ViewMembersPage = () => {
 
 		try {
 			const res = await fetch(
-				`${serverURL}/group/get-searched-members?groupId=${groupId}&searchText=${payload.trim()}&membersArr=${JSON.stringify(
+				`${serverURL}/group/get-searched-members?groupId=${groupId}&searchText=${payload.trim()}&memberIds=${JSON.stringify(
 					[]
 				)}`,
 				{

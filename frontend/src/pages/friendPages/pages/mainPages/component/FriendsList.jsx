@@ -34,7 +34,7 @@ const FriendsList = ({ setListLoading }) => {
 				const res = await fetch(
 					`${serverURL}/friend/get-friends?userId=${
 						user._id
-					}&friends=${JSON.stringify([])}`,
+					}&friendIds=${JSON.stringify([])}`,
 					{
 						method: "GET",
 						headers: {

@@ -29,7 +29,7 @@ const Posts = () => {
 				const res = await fetch(
 					`${serverURL}/post/get-home-posts?userId=${
 						user._id
-					}&postsArr=${JSON.stringify([])}`,
+					}&postIds=${JSON.stringify([])}`,
 					{
 						method: "GET",
 						headers: {

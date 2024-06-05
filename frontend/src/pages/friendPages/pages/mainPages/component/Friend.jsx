@@ -17,8 +17,6 @@ const Friend = ({ friend }) => {
 	const { enqueueSnackbar } = useSnackbar();
 	const [loading, setLoading] = useState(false);
 
-	const filePath = `${serverURL}/public/images/profile/`;
-
 	const handleOnClick = () => {
 		const previousArr = JSON.parse(localStorage.getItem("previous")) || [];
 		previousArr.push(`/friend`);
@@ -84,7 +82,7 @@ const Friend = ({ friend }) => {
 			{loading && <Spinner />}
 			{/* PROFILE IMAGE */}
 			<img
-				src={`${filePath}${friend.userProfile.profileImagePath}`}
+				src={friend.userProfile.profileImagePath}
 				alt="Friend profile image"
 				className={`col-span-2 min-w-12 md:max-w-24 border-[2.5px] md:border-4 ${friend.userProfile.profileFrameColor} rounded-full`}
 			/>

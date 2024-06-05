@@ -6,15 +6,14 @@ import { ServerContext } from "../../../../../../App.js";
 
 const EventInfo = ({ event }) => {
 	const serverURL = useContext(ServerContext);
-	const eventPosterImagePath = `${serverURL}/public/images/event/`;
 
 	return (
 		<div className="flex flex-col">
 			{/* EVENT POSTER IMAGE */}
 			<img
-				src={`${eventPosterImagePath}${event.eventPosterImagePath}`}
+				src={event.eventPosterImagePath}
 				alt="Event poster image"
-				className="rounded-xl self-center max-h-[30rem]"
+				className="rounded-xl self-center max-img-height"
 			/>
 			{/* EVENT NAME */}
 			<p className="border border-gray-400 rounded-xl p-3 mt-3">

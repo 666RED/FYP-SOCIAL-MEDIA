@@ -16,7 +16,6 @@ const Event = ({ event }) => {
 	const navigate = useNavigate();
 	const { user } = useSelector((store) => store.auth);
 
-	const filePath = `${serverURL}/public/images/event/`;
 	const path =
 		event.userId === user._id
 			? `/marketplace/event/edit-event/${event._id}`
@@ -29,9 +28,9 @@ const Event = ({ event }) => {
 		>
 			{/* EVENT IMAGE */}
 			<img
-				src={`${filePath}${event.eventPosterImagePath}`}
+				src={event.eventPosterImagePath}
 				alt="Event poster iamge"
-				className="col-span-2 border border-blue-400 rounded-lg self-center mb-2 flex-1 w-full"
+				className="col-span-2 border border-blue-400 rounded-lg self-center mb-2 flex-1 max-h-64"
 			/>
 			{/* EVENT NAME */}
 			<p>{event.eventName}</p>

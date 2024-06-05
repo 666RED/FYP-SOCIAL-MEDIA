@@ -1,4 +1,4 @@
-import { React, useContext, useEffect, useReducer } from "react";
+import { React, useContext, useEffect, useReducer, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useParams } from "react-router-dom";
 import { useSnackbar } from "notistack";
@@ -14,6 +14,7 @@ import OptionDiv from "../../../../../../components/OptionDiv.jsx";
 import UserPostHeader from "../../../../../profilePages/components/UserPostHeader.jsx";
 import ReportForm from "../../../../../../components/post/ReportForm.jsx";
 import Spinner from "../../../../../../components/Spinner/Spinner.jsx";
+import FocusImage from "../../../../../adminPages/components/FocusImage.jsx";
 import {
 	groupPostReducer,
 	INITIAL_STATE,
@@ -31,8 +32,7 @@ const GroupPost = ({ post, isAdmin = false }) => {
 	const [state, dispatch] = useReducer(groupPostReducer, INITIAL_STATE);
 	const { enqueueSnackbar } = useSnackbar();
 
-	const profileImgPath = `${serverURL}/public/images/profile/`;
-	const filePath = `${serverURL}/public/images/group-post/`;
+	const [showImage, setShowImage] = useState(false);
 
 	const previous = window.location.pathname;
 
@@ -45,7 +45,7 @@ const GroupPost = ({ post, isAdmin = false }) => {
 	}, []);
 
 	const handleDownload = () => {
-		window.open(filePath + post.postFilePath, "_blank");
+		window.open(post.postFilePath, "_blank");
 	};
 
 	const handleLikes = async () => {
@@ -246,7 +246,7 @@ const GroupPost = ({ post, isAdmin = false }) => {
 			)}
 			{/* HEADER */}
 			<UserPostHeader
-				imgPath={profileImgPath + post.profileImagePath}
+				imgPath={post.profileImagePath}
 				postTime={post.time}
 				userName={post.userName}
 				destination={`/profile/${post.userId}`}
@@ -262,14 +262,21 @@ const GroupPost = ({ post, isAdmin = false }) => {
 					}
 				/>
 			)}
-
+			{/* FOCUS IMAGE */}
+			{showImage && (
+				<FocusImage
+					imagePath={post.postImagePath}
+					setShowImage={setShowImage}
+				/>
+			)}
 			{/* POST DESCRIPTION */}
 			<p className="my-3">{post.postDescription}</p>
 			{/* POST IMAGE / FILE */}
 			{post.postImagePath !== "" ? (
 				<img
-					src={filePath + post.postImagePath}
-					className="rounded-xl mx-auto w-full"
+					src={post.postImagePath}
+					className="rounded-xl mx-auto max-img-height cursor-pointer"
+					onClick={() => setShowImage(true)}
 				/>
 			) : post.postFilePath !== "" ? (
 				<div
@@ -277,7 +284,7 @@ const GroupPost = ({ post, isAdmin = false }) => {
 					onClick={handleDownload}
 				>
 					<FaFile className="mr-2" />
-					<p>{post.postFilePath.split("_").slice(0, -1).join("_")}</p>
+					<p>{post.postFileOriginalName}</p>
 				</div>
 			) : null}
 
@@ -296,7 +303,9 @@ const GroupPost = ({ post, isAdmin = false }) => {
 						>
 							<HiThumbUp />
 						</div>
-						<h6 className="justify-self-center text-sm sm:text-base">Likes</h6>
+						<h6 className="justify-self-center text-sm sm:text-base select-none">
+							Likes
+						</h6>
 						<p className="justify-self-center">{state.likesCount}</p>
 					</div>
 
@@ -308,7 +317,7 @@ const GroupPost = ({ post, isAdmin = false }) => {
 						<div className="text-xl justify-self-center">
 							<FaCommentDots />
 						</div>
-						<h6 className="justify-self-center text-sm sm:text-base">
+						<h6 className="justify-self-center text-sm sm:text-base select-none">
 							Comments
 						</h6>
 						<p className="justify-self-center">{post.postComments}</p>

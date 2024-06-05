@@ -38,7 +38,7 @@ const Homepage = () => {
 			const res = await fetch(
 				`${serverURL}/post/get-home-posts?userId=${
 					user._id
-				}&postsArr=${JSON.stringify(posts.map((post) => post._id))}`,
+				}&postIds=${JSON.stringify(posts.map((post) => post._id))}`,
 				{
 					method: "GET",
 					headers: {
@@ -76,8 +76,6 @@ const Homepage = () => {
 
 			setLoadMore(false);
 		} catch (err) {
-			console.log(err);
-
 			enqueueSnackbar("Could not connect to the server", {
 				variant: "error",
 			});

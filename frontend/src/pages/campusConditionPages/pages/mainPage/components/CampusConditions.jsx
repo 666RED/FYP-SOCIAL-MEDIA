@@ -10,32 +10,34 @@ import {
 	setIsLoadingConditions,
 } from "../../../features/campusConditionSlice.js";
 
-const CampusConditions = ({ currentTime }) => {
+const CampusConditions = ({ currentTime, yourCondition = false }) => {
 	const sliceDispatch = useDispatch();
 	const serverURL = useContext(ServerContext);
-	const { token } = useSelector((store) => store.auth);
+	const { user, token } = useSelector((store) => store.auth);
 	const { campusConditions, isLoadingConditions } = useSelector(
 		(store) => store.campusCondition
 	);
 	const { enqueueSnackbar } = useSnackbar();
+	const getPath = yourCondition
+		? `${serverURL}/campus-condition/get-your-campus-conditions?currentTime=${currentTime}&userId=${
+				user._id
+		  }&conditions=${JSON.stringify([])}`
+		: `${serverURL}/campus-condition/get-campus-conditions?currentTime=${currentTime}&conditionIds=${JSON.stringify(
+				[]
+		  )}`;
 
 	// get conditions
 	useEffect(() => {
 		const getConditions = async () => {
 			sliceDispatch(setIsLoadingConditions(true));
 			try {
-				const res = await fetch(
-					`${serverURL}/campus-condition/get-campus-conditions?currentTime=${currentTime}&conditions=${JSON.stringify(
-						[]
-					)}`,
-					{
-						method: "GET",
-						headers: {
-							"Content-Type": "application/json",
-							Authorization: `Bearer ${token}`,
-						},
-					}
-				);
+				const res = await fetch(getPath, {
+					method: "GET",
+					headers: {
+						"Content-Type": "application/json",
+						Authorization: `Bearer ${token}`,
+					},
+				});
 
 				if (!res.ok && res.status === 403) {
 					sliceDispatch(setIsLoadingConditions(false));

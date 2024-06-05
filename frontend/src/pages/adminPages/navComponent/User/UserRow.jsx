@@ -5,7 +5,6 @@ import { ServerContext } from "../../../../App.js";
 
 const UserRow = ({ user, count }) => {
 	const serverURL = useContext(ServerContext);
-	const imagePath = `${serverURL}/public/images/profile/`;
 	const [showImage, setShowImage] = useState(false);
 	const [showCoverImage, setShowCoverImage] = useState(false);
 
@@ -29,14 +28,14 @@ const UserRow = ({ user, count }) => {
 			<td className="text-center">{user.registered}</td>
 			{showImage && (
 				<FocusImage
-					imagePath={`${imagePath}${user.imagePath}`}
+					imagePath={user.imagePath}
 					setShowImage={setShowImage}
 					isProfileImage={true}
 				/>
 			)}
 			{showCoverImage && (
 				<FocusImage
-					imagePath={`${imagePath}${user.coverImagePath}`}
+					imagePath={user.coverImagePath}
 					setShowImage={setShowCoverImage}
 				/>
 			)}

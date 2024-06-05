@@ -21,8 +21,6 @@ const EditEvent = () => {
 	const { user, token } = useSelector((store) => store.auth);
 	const [state, dispatch] = useReducer(editEventReducer, INITIAL_STATE);
 
-	const eventPosterImagePath = `${serverURL}/public/images/event/`;
-
 	// first render
 	useEffect(() => {
 		const getEvent = async () => {
@@ -259,11 +257,7 @@ const EditEvent = () => {
 					dispatch={(payload) =>
 						dispatch({ type: ACTION_TYPES.UPLOAD_IMAGE, payload })
 					}
-					imagePath={
-						state.hasImagePathChanged
-							? state.eventPosterImagePath
-							: `${eventPosterImagePath}${state.eventPosterImagePath}`
-					}
+					imagePath={state.eventPosterImagePath}
 				/>
 				{/* EVENT NAME */}
 				<h3 className="mt-3">Event name:</h3>

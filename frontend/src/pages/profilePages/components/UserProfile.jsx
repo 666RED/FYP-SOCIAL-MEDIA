@@ -1,4 +1,4 @@
-import { React, useEffect, useContext, useReducer } from "react";
+import { React, useEffect, useContext, useReducer, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { useSnackbar } from "notistack";
@@ -7,6 +7,7 @@ import Loader from "../../../components/Spinner/Loader.jsx";
 import FriendStatusButton from "../../../components/FriendStatusButton.jsx";
 import Filter from "../../../components/Filter.jsx";
 import FormHeader from "../../../components/FormHeader.jsx";
+import FocusImage from "../../adminPages/components/FocusImage.jsx";
 import {
 	userProfileReducer,
 	INITIAL_STATE,
@@ -23,11 +24,11 @@ const UserProfile = () => {
 	const navigate = useNavigate();
 	const { enqueueSnackbar } = useSnackbar();
 	const [state, dispatch] = useReducer(userProfileReducer, INITIAL_STATE);
+	const [showProfileImage, setShowProfileImage] = useState(false);
+	const [showCoverImage, setShowCoverImage] = useState(false);
 
 	const { user, token } = useSelector((store) => store.auth);
 	const serverURL = useContext(ServerContext);
-
-	const filePath = `${serverURL}/public/images/profile/`;
 
 	// set up user profile info
 	useEffect(() => {
@@ -48,8 +49,8 @@ const UserProfile = () => {
 						type: ACTION_TYPES.FETCH_DATA,
 						payload: {
 							name,
-							profileImagePath: filePath + profileImagePath,
-							coverImagePath: filePath + coverImagePath,
+							profileImagePath: profileImagePath,
+							coverImagePath: coverImagePath,
 							bio: profileBio,
 							frameColor,
 						},
@@ -90,8 +91,8 @@ const UserProfile = () => {
 							type: ACTION_TYPES.FETCH_DATA,
 							payload: {
 								name: userName,
-								profileImagePath: filePath + profileImagePath,
-								coverImagePath: filePath + profileCoverImagePath,
+								profileImagePath: profileImagePath,
+								coverImagePath: profileCoverImagePath,
 								bio: profileBio,
 								frameColor: profileFrameColor,
 							},
@@ -485,7 +486,7 @@ const UserProfile = () => {
 			{state.showRespondForm && (
 				<div>
 					<Filter />
-					<div className="center-container">
+					<div className="center-container items-center">
 						<div className="form pb-5">
 							<FormHeader
 								closeFunction={() =>
@@ -509,13 +510,28 @@ const UserProfile = () => {
 					</div>
 				</div>
 			)}
-
+			{/* FOCUS IMAGE (PROFILE IMAGE) */}
+			{showProfileImage && (
+				<FocusImage
+					imagePath={state.profileImagePath}
+					setShowImage={setShowProfileImage}
+					isProfileImage={true}
+				/>
+			)}
+			{/* FOCUS IMAGE (COVER IMAGE) */}
+			{showCoverImage && (
+				<FocusImage
+					imagePath={state.coverImagePath}
+					setShowImage={setShowCoverImage}
+				/>
+			)}
 			<div className="page-design">
 				{/* COVER IMAGE */}
 				<img
 					src={state.coverImagePath}
 					alt="Profile cover photo"
-					className="rounded-xl mt-3 component-layout"
+					className="rounded-xl mt-3 component-layout cursor-pointer"
+					onClick={() => setShowCoverImage(true)}
 				/>
 				<div className="component-layout my-3 shadow-xl rounded-xl py-3 bg-white grid grid-cols-12 items-center pl-1">
 					<div className="flex flex-col items-center justify -center col-span-5">
@@ -523,7 +539,8 @@ const UserProfile = () => {
 						<img
 							src={state.profileImagePath}
 							alt="Profile picture"
-							className={`rounded-full md:w-36 w-28 ${state.frameColor} border-4`}
+							className={`rounded-full md:w-36 w-28 ${state.frameColor} border-4 cursor-pointer`}
+							onClick={() => setShowProfileImage(true)}
 						/>
 						{/* USER NAME */}
 						<p className="my-3 md:text-lg text-base font-semibold">

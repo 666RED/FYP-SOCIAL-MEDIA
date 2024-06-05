@@ -18,7 +18,6 @@ const ConditionRow = ({ condition, count }) => {
 		condition.resolved
 	);
 	const [showImage, setShowImage] = useState(false);
-	const conditionImagePath = `${serverURL}/public/images/campus-condition/`;
 
 	const handleMarkResolved = async () => {
 		try {
@@ -112,7 +111,7 @@ const ConditionRow = ({ condition, count }) => {
 			{loading && <Spinner />}
 			{showImage && (
 				<FocusImage
-					imagePath={`${conditionImagePath}${condition.imagePath}`}
+					imagePath={condition.imagePath}
 					setShowImage={setShowImage}
 				/>
 			)}

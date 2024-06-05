@@ -28,11 +28,10 @@ export const getJoinGroupRequests = async (req, res) => {
 	try {
 		const limit = 10;
 		const groupId = req.query.groupId;
-		const joinGroupRequestsArr =
-			JSON.parse(req.query.joinGroupRequestsArr) || [];
+		const joinGroupRequestIds = JSON.parse(req.query.joinGroupRequestIds);
 
-		const excludeJoinGroupRequests = joinGroupRequestsArr.map(
-			(joinGroupRequest) => new mongoose.Types.ObjectId(joinGroupRequest._id)
+		const excludeJoinGroupRequests = joinGroupRequestIds.map(
+			(id) => new mongoose.Types.ObjectId(id)
 		);
 
 		const returnJoinGroupRequestsArr = await JoinGroupRequest.find({
@@ -56,8 +55,6 @@ export const getJoinGroupRequests = async (req, res) => {
 
 		res.status(200).json({ msg: "Success", returnJoinGroupRequestsArr });
 	} catch (err) {
-		console.log(err);
-
 		res.status(500).json({ error: err.message });
 	}
 };

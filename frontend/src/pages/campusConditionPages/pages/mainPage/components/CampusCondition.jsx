@@ -1,4 +1,4 @@
-import { React, useEffect, useContext, useReducer } from "react";
+import { React, useEffect, useContext, useReducer, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { useSnackbar } from "notistack";
@@ -14,6 +14,7 @@ import EditConditionForm from "./EditConditionForm.jsx";
 import OptionDiv from "../../../../../components/OptionDiv.jsx";
 import Spinner from "../../../../../components/Spinner/Spinner.jsx";
 import ReportForm from "../../../../../components/post/ReportForm.jsx";
+import FocusImage from "../../../../adminPages/components/FocusImage.jsx";
 import {
 	CampusConditionReducer,
 	INITIAL_STATE,
@@ -35,9 +36,7 @@ const CampusCondition = ({ condition, inViewMostUseful = false }) => {
 	const { enqueueSnackbar } = useSnackbar();
 	const [state, dispatch] = useReducer(CampusConditionReducer, INITIAL_STATE);
 	const { campusConditions } = useSelector((store) => store.campusCondition);
-
-	const profileImgPath = `${serverURL}/public/images/profile/`;
-	const conditionImagePath = `${serverURL}/public/images/campus-condition/`;
+	const [showImage, setShowImage] = useState(false);
 
 	const previous = window.location.pathname;
 
@@ -445,9 +444,17 @@ const CampusCondition = ({ condition, inViewMostUseful = false }) => {
 				</div>
 			)}
 
+			{/* FOCUS IMAGE */}
+			{showImage && (
+				<FocusImage
+					imagePath={condition.conditionImagePath}
+					setShowImage={setShowImage}
+				/>
+			)}
+
 			{/* HEADER */}
 			<UserPostHeader
-				imgPath={profileImgPath + condition.profileImagePath}
+				imgPath={condition.profileImagePath}
 				userName={condition.userName}
 				postTime={condition.time}
 				conditionResolved={state.conditionResolved}
@@ -468,9 +475,10 @@ const CampusCondition = ({ condition, inViewMostUseful = false }) => {
 			{/* CONDITION IMAGE */}
 			{condition.conditionImagePath !== "" && (
 				<img
-					src={conditionImagePath + condition.conditionImagePath}
+					src={condition.conditionImagePath}
 					alt="Condition image"
-					className="rounded-xl mx-auto w-full"
+					className="rounded-xl mx-auto max-img-height cursor-pointer"
+					onClick={() => setShowImage(true)}
 				/>
 			)}
 
@@ -497,7 +505,9 @@ const CampusCondition = ({ condition, inViewMostUseful = false }) => {
 					>
 						<HiThumbUp />
 					</div>
-					<h6 className="justify-self-center text-sm sm:text-base">Up</h6>
+					<h6 className="justify-self-center text-sm sm:text-base select-none">
+						Up
+					</h6>
 					<p className="justify-self-center">{state.conditionUp}</p>
 				</div>
 
@@ -513,7 +523,9 @@ const CampusCondition = ({ condition, inViewMostUseful = false }) => {
 					>
 						<HiThumbDown />
 					</div>
-					<h6 className="justify-self-center text-sm sm:text-base">Down</h6>
+					<h6 className="justify-self-center text-sm sm:text-base select-none">
+						Down
+					</h6>
 					<p className="justify-self-center">{state.conditionDown}</p>
 				</div>
 			</div>

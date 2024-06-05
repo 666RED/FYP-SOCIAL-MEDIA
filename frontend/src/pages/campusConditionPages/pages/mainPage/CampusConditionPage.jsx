@@ -1,5 +1,6 @@
 import { React, useState, useContext, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
+import { useNavigate } from "react-router-dom";
 import { useSnackbar } from "notistack";
 import Header from "../../../../components/Header.jsx";
 import SideBar from "../../../../components/Sidebar/SideBar.jsx";
@@ -15,6 +16,7 @@ import {
 import { ServerContext } from "../../../../App.js";
 
 const CampusConditionPage = () => {
+	const navigate = useNavigate();
 	const serverURL = useContext(ServerContext);
 	const { enqueueSnackbar } = useSnackbar();
 	const sliceDispatch = useDispatch();
@@ -25,7 +27,7 @@ const CampusConditionPage = () => {
 		(store) => store.campusCondition
 	);
 	const currentTime = new Date();
-	currentTime.setSeconds(currentTime.getSeconds() + 1); // make sure newly added condition can be retrieved from db
+	currentTime.setSeconds(currentTime.getSeconds() + 1);
 	const updatedTime = currentTime.toUTCString();
 
 	// reset state
@@ -39,8 +41,8 @@ const CampusConditionPage = () => {
 		try {
 			setLoadMore(true);
 			const res = await fetch(
-				`${serverURL}/campus-condition/get-campus-conditions?currentTime=${updatedTime}&conditions=${JSON.stringify(
-					campusConditions
+				`${serverURL}/campus-condition/get-campus-conditions?currentTime=${updatedTime}&conditionIds=${JSON.stringify(
+					campusConditions.map((condition) => condition._id)
 				)}`,
 				{
 					method: "GET",
@@ -99,14 +101,33 @@ const CampusConditionPage = () => {
 				setExtendSideBar={setExtendSideBar}
 				title={"Campus Condition"}
 			/>
+
+			{/* MAIN CONTENT */}
 			<div className="page-design lg:grid lg:grid-cols-5 gap-x-3">
+				{/* BUTTON ROW */}
+				<div className="lg:col-span-5 grid grid-cols-12 gap-x-2 my-3">
+					{/* UPLOAD NEW BUTTTON */}
+					<button
+						className="btn-green text-base select-none col-span-5 md:col-span-3 lg:col-span-2"
+						onClick={() => navigate("/campus-condition/upload-condition")}
+					>
+						Upload New
+					</button>
+					{/* YOUR CONDITIONS BUTTON */}
+					<button
+						className="btn-gray text-base select-none col-span-6 md:col-span-3 lg:col-span-2"
+						onClick={() => navigate("/campus-condition/your-conditions")}
+					>
+						Your Conditions
+					</button>
+				</div>
 				{/* MOST USEFUL SECITON */}
-				<div className="lg:col-span-2">
+				<div className="lg:col-span-2 ">
 					<MostUseful />
 				</div>
 				<hr className="border-gray-400 my-3 border-2 lg:hidden" />
 				{/* CAMPUS CONDITIONS */}
-				<div className="lg:col-span-3 col-start-2">
+				<div className="lg:col-span-3 col-start-2 ">
 					<CampusConditions currentTime={updatedTime} />
 				</div>
 				{/* LOAD MORE BUTTON*/}

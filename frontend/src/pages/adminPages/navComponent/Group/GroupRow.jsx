@@ -8,9 +8,6 @@ const GroupRow = ({ group, count }) => {
 	const [showImage, setShowImage] = useState(false);
 	const [showCoverImage, setShowCoverImage] = useState(false);
 	const serverURL = useContext(ServerContext);
-	const imagePath = `${serverURL}/public/images/group/`;
-
-	console.log(group);
 
 	return (
 		<tr className="hover:bg-gray-200">
@@ -32,14 +29,14 @@ const GroupRow = ({ group, count }) => {
 			{<StatusText isRemoved={group.removed} />}
 			{showImage && (
 				<FocusImage
-					imagePath={`${imagePath}${group.imagePath}`}
+					imagePath={group.imagePath}
 					setShowImage={setShowImage}
 					isProfileImage={true}
 				/>
 			)}
 			{showCoverImage && (
 				<FocusImage
-					imagePath={`${imagePath}${group.coverImagePath}`}
+					imagePath={group.coverImagePath}
 					setShowImage={setShowCoverImage}
 				/>
 			)}

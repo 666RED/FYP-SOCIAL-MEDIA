@@ -33,7 +33,7 @@ const FriendsList = ({ setLoading }) => {
 				setLoading(true);
 				sliceDispatch(setIsLoadingFriend(true));
 				const res = await fetch(
-					`${serverURL}/friend/get-friends?userId=${userId}&friends=${JSON.stringify(
+					`${serverURL}/friend/get-friends?userId=${userId}&friendIds=${JSON.stringify(
 						[]
 					)}`,
 					{
@@ -94,7 +94,7 @@ const FriendsList = ({ setLoading }) => {
 			const res = await fetch(
 				`${serverURL}/friend/get-friends?userId=${
 					user._id
-				}&friends=${JSON.stringify(friendsArr)}`,
+				}&friendIds=${JSON.stringify(friendsArr.map((friend) => friend._id))}`,
 				{
 					method: "GET",
 					headers: {
@@ -143,8 +143,8 @@ const FriendsList = ({ setLoading }) => {
 			const res = await fetch(
 				`${serverURL}/friend/get-searched-friends?userId=${
 					user._id
-				}&searchText=${searchText.trim()}&friends=${JSON.stringify(
-					friendsArr
+				}&searchText=${searchText.trim()}&friendIds=${JSON.stringify(
+					friendsArr.map((friend) => friend._id)
 				)}`,
 				{
 					method: "GET",

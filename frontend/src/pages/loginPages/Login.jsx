@@ -114,12 +114,12 @@ const Login = () => {
 							required
 						/>
 						{viewPassword ? (
-							<BsEyeSlashFill
+							<BsEyeFill
 								className="absolute text-xl top-9 right-2 cursor-pointer hover:text-blue-600"
 								onClick={() => dispatch(toggleViewPassword())}
 							/>
 						) : (
-							<BsEyeFill
+							<BsEyeSlashFill
 								className="absolute text-xl top-9 right-2 cursor-pointer hover:text-blue-600"
 								onClick={() => dispatch(toggleViewPassword())}
 							/>

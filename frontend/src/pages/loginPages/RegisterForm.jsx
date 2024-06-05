@@ -1,7 +1,8 @@
 import { React, useContext, useReducer } from "react";
 import { useDispatch } from "react-redux";
+import { MdCancel } from "react-icons/md";
 import { BsEyeFill, BsEyeSlashFill } from "react-icons/bs/index.js";
-import { enqueueSnackbar } from "notistack";
+import { enqueueSnackbar, closeSnackbar } from "notistack";
 import Spinner from "../../components/Spinner/Spinner.jsx";
 import Filter from "../../components/Filter.jsx";
 import FormHeader from "../../components/FormHeader.jsx";
@@ -58,22 +59,31 @@ const RegisterForm = ({ setDisplayRegForm }) => {
 					}),
 				});
 
-				const data = await res.json();
+				const { msg } = await res.json();
 
-				if (data.msg === "Email existed") {
+				if (msg === "Email existed") {
 					dispatch({ type: ACTION_TYPES.EMAIL_EXISTED });
 					enqueueSnackbar("Email already existed", {
 						variant: "error",
 					});
-				} else if (data.msg === "Phone number existed") {
+				} else if (msg === "Phone number existed") {
 					dispatch({ type: ACTION_TYPES.PHONE_NUMBER_EXISTED });
 					enqueueSnackbar("Phone number already existed", {
 						variant: "error",
 					});
-				} else if (data.msg === "Success") {
-					enqueueSnackbar("Registered successfully", {
-						variant: "success",
-					});
+				} else if (msg === "Success") {
+					enqueueSnackbar(
+						"Please click the link in your email to activate your account",
+						{
+							autoHideDuration: null,
+							variant: "custom-snackbar",
+							action: (key) => (
+								<button onClick={() => closeSnackbar(key)}>
+									<MdCancel className="text-xl" />
+								</button>
+							),
+						}
+					);
 					loginDispatch(clearState());
 					dispatch({ type: ACTION_TYPES.SUGGESS_REGISTER });
 					setDisplayRegForm(false);
@@ -95,13 +105,13 @@ const RegisterForm = ({ setDisplayRegForm }) => {
 		<div>
 			{state.loading && <Spinner />}
 			<Filter />
-			<div className="center-container">
+			<div className="center-container items-center py-2">
 				<form onSubmit={handleSubmit} className="form">
+					{/* HEADER */}
 					<FormHeader
 						title="Register"
 						closeFunction={() => dispatch(setDisplayRegForm(false))}
 					/>
-					{/* inputs */}
 					{/* NAME */}
 					<label htmlFor="register-name">Name:</label>
 					<input
@@ -218,12 +228,12 @@ const RegisterForm = ({ setDisplayRegForm }) => {
 							required
 						/>
 						{state.viewPassword === "password" ? (
-							<BsEyeFill
+							<BsEyeSlashFill
 								className="absolute text-xl top-5 right-2 cursor-pointer hover:text-blue-600"
 								onClick={() => dispatch({ type: ACTION_TYPES.TOGGLE_PASSWORD })}
 							/>
 						) : (
-							<BsEyeSlashFill
+							<BsEyeFill
 								className="absolute text-xl top-5 right-2 cursor-pointer hover:text-blue-600"
 								onClick={() => dispatch({ type: ACTION_TYPES.TOGGLE_PASSWORD })}
 							/>

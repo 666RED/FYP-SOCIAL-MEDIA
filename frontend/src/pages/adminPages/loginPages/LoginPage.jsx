@@ -94,12 +94,12 @@ const LoginPage = () => {
 							required
 						/>
 						{viewPassword ? (
-							<BsEyeSlashFill
+							<BsEyeFill
 								className="absolute text-xl top-9 right-2 cursor-pointer hover:text-blue-600"
 								onClick={() => setViewPassword((prev) => !prev)}
 							/>
 						) : (
-							<BsEyeFill
+							<BsEyeSlashFill
 								className="absolute text-xl top-9 right-2 cursor-pointer hover:text-blue-600"
 								onClick={() => setViewPassword((prev) => !prev)}
 							/>
@@ -107,10 +107,11 @@ const LoginPage = () => {
 					</div>
 					{/* LOGIN BUTTON */}
 					<button className="btn-blue block w-1/2 mx-auto mt-5">LOGIN</button>
+					{/* FORGOT PASSWORD */}
 					<p
 						className="text-center inline-block mx-auto mt-5 text-blue-600 cursor-pointer text-sm hover:opacity-80"
 						onClick={() => {
-							navigate("/recover-password");
+							navigate("contact");
 						}}
 					>
 						Forgot password?

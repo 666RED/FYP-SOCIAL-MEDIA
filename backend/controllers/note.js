@@ -1,8 +1,6 @@
 import { Folder } from "../models/folderModel.js";
 import { Note } from "../models/noteModel.js";
-import path from "path";
-import fs from "fs";
-import { __dirname } from "../index.js";
+import { uploadFile, deleteFile } from "../middleware/handleFile.js";
 
 export const createNewFolder = async (req, res) => {
 	try {
@@ -77,18 +75,28 @@ export const createNewNote = async (req, res) => {
 
 		const file = req.file;
 
+		const fileURL = await uploadFile("note/", file);
+
 		const newNote = new Note({
-			filePath: file.filename,
+			filePath: fileURL,
 			folderId: folderId,
+			noteOriginalName: file.originalname,
 		});
 
-		const savedNote = newNote.save();
+		const savedNote = await newNote.save();
 
 		if (!savedNote) {
 			return res.status(400).json({ msg: "Fail to upload new note" });
 		}
 
-		res.status(200).json({ msg: "Success", returnedNote: savedNote });
+		const returnedNote = {
+			_id: savedNote._id,
+			noteOriginalName: savedNote.noteOriginalName,
+			filePath: savedNote.filePath,
+			uploaded: new Date(savedNote.createdAt).toLocaleString(),
+		};
+
+		res.status(200).json({ msg: "Success", returnedNote });
 	} catch (err) {
 		res.status(500).json({ error: err.message });
 	}
@@ -107,6 +115,7 @@ export const retrieveNotes = async (req, res) => {
 		const returnedNotes = notes.map((note) => {
 			return {
 				_id: note._id,
+				noteOriginalName: note.noteOriginalName,
 				filePath: note.filePath,
 				uploaded: new Date(note.createdAt).toLocaleString(),
 			};
@@ -129,17 +138,10 @@ export const removeNote = async (req, res) => {
 		}
 
 		// delete note file
-		const deletedFilePath = path.join(
-			__dirname,
-			"public/images/note",
-			filePath
-		);
-		fs.unlinkSync(deletedFilePath);
+		await deleteFile(filePath);
 
 		res.status(200).json({ msg: "Success", noteId });
 	} catch (err) {
-		console.log(err);
-
 		res.status(500).json({ err: err.message });
 	}
 };
@@ -154,6 +156,10 @@ export const removeFolder = async (req, res) => {
 			return res.status(400).json({ msg: "Fail to remove notes" });
 		}
 
+		for (const note of deletedNotes) {
+			await deleteFile(note.filePath);
+		}
+
 		const deletedFolder = await Folder.findByIdAndDelete(folderId);
 
 		if (!deletedFolder) {
@@ -162,8 +168,6 @@ export const removeFolder = async (req, res) => {
 
 		res.status(200).json({ msg: "Success", folderId });
 	} catch (err) {
-		console.log(err);
-
 		res.status(500).json({ error: err.message });
 	}
 };

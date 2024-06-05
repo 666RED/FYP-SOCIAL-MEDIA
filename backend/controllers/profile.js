@@ -1,7 +1,5 @@
 import { User } from "../models/userModel.js";
-import path from "path";
-import fs from "fs";
-import { __dirname } from "../index.js";
+import { uploadFile, deleteFile } from "../middleware/handleFile.js";
 
 export const getUserProfile = async (req, res) => {
 	try {
@@ -50,11 +48,12 @@ export const editProfile = async (req, res) => {
 			);
 		} else if (!profileImage) {
 			// only update cover image
+			const imageURL = await uploadFile("profile/", coverImage[0]);
 			user = await User.findByIdAndUpdate(
 				userId,
 				{
 					$set: {
-						"userProfile.profileCoverImagePath": coverImage[0].filename,
+						"userProfile.profileCoverImagePath": imageURL,
 						userName,
 						"userProfile.profileBio": bio,
 					},
@@ -63,11 +62,12 @@ export const editProfile = async (req, res) => {
 			);
 		} else if (!coverImage) {
 			// only update profile image
+			const imageURL = await uploadFile("profile", profileImage[0]);
 			user = await User.findByIdAndUpdate(
 				userId,
 				{
 					$set: {
-						"userProfile.profileImagePath": profileImage[0].filename,
+						"userProfile.profileImagePath": imageURL,
 						userName,
 						"userProfile.profileBio": bio,
 					},
@@ -76,12 +76,14 @@ export const editProfile = async (req, res) => {
 			);
 		} else {
 			// update both images
+			const profileImageURL = await uploadFile("profile/", profileImage[0]);
+			const coverImageURL = await uploadFile("profile/", coverImage[0]);
 			user = await User.findByIdAndUpdate(
 				userId,
 				{
 					$set: {
-						"userProfile.profileImagePath": profileImage[0].filename,
-						"userProfile.profileCoverImagePath": coverImage[0].filename,
+						"userProfile.profileImagePath": profileImageURL,
+						"userProfile.profileCoverImagePath": coverImageURL,
 						userName,
 						"userProfile.profileBio": bio,
 					},
@@ -97,29 +99,21 @@ export const editProfile = async (req, res) => {
 		// Delete original images if they exist and their names are not default
 		if (profileImage) {
 			if (
-				originalProfileImagePath !== "default-profile-image.png" &&
+				originalProfileImagePath !==
+					"https://firebasestorage.googleapis.com/v0/b/final-year-project-d85b9.appspot.com/o/profile%2F1717595482346-default-profile-image.png?alt=media&token=b8145895-9bf3-47f7-8092-0a003eda3282" &&
 				originalProfileImagePath !== profileImage[0].filename
 			) {
-				const profileImagePath = path.join(
-					__dirname,
-					"public/images/profile",
-					originalProfileImagePath
-				);
-				fs.unlinkSync(profileImagePath);
+				await deleteFile(originalProfileImagePath);
 			}
 		}
 
 		if (coverImage) {
 			if (
-				originalProfileCoverImagePath !== "default-cover-image.jpg" &&
+				originalProfileCoverImagePath !==
+					"https://firebasestorage.googleapis.com/v0/b/final-year-project-d85b9.appspot.com/o/profile%2F1717595482778-default-cover-image.jpg?alt=media&token=0e92b9db-e471-4bba-bcd5-02821c17bf75" &&
 				originalProfileCoverImagePath !== coverImage[0].filename
 			) {
-				const coverImagePath = path.join(
-					__dirname,
-					"public/images/profile",
-					originalProfileCoverImagePath
-				);
-				fs.unlinkSync(coverImagePath);
+				await deleteFile(originalProfileCoverImagePath);
 			}
 		}
 

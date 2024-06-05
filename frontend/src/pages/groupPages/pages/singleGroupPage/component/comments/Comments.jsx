@@ -54,8 +54,6 @@ const Comments = ({ post }) => {
 				const { msg, returnComments } = await res.json();
 
 				if (msg === "Success") {
-					console.log(returnComments);
-
 					sliceDispatch(pushComments(returnComments));
 
 					if (returnComments.length < 10) {

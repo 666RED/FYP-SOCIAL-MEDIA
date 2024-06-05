@@ -9,7 +9,6 @@ const Service = ({ service }) => {
 	const navigate = useNavigate();
 	const { user } = useSelector((store) => store.auth);
 
-	const filePath = `${serverURL}/public/images/service/`;
 	const path =
 		service.userId === user._id
 			? `/marketplace/service/edit-service/${service._id}`
@@ -22,9 +21,9 @@ const Service = ({ service }) => {
 		>
 			{/* SERVICE IMAGE */}
 			<img
-				src={`${filePath}${service.servicePosterImagePath}`}
+				src={service.servicePosterImagePath}
 				alt="Service image"
-				className="col-span-2 border border-blue-400 rounded-lg self-center mb-2 flex-1 w-full"
+				className="col-span-2 border border-blue-400 rounded-lg self-center mb-2 flex-1 max-h-64"
 			/>
 			{/* SERVICE NAME */}
 			<p>{service.serviceName}</p>

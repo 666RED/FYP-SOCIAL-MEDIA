@@ -1,6 +1,9 @@
 import { User } from "../models/userModel.js";
-import bcrypt from "bcrypt"; // encrypt the password
-import jwt from "jsonwebtoken"; // send the user a web token that is used for authorization
+import nodemailer from "nodemailer";
+import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
+import { backendServer, frontendServer } from "../index.js";
+import _ from "lodash";
 
 export const register = async (req, res) => {
 	try {
@@ -41,10 +44,51 @@ export const register = async (req, res) => {
 
 		const savedUser = await newUser.save();
 
-		delete savedUser.password;
+		jwt.sign(
+			{
+				user: { id: savedUser._id }, // Store the user's id in the token payload
+			},
+			process.env.EMAIL_SECRET, // Secret key for JWT
+			{
+				expiresIn: "1d", // Token expiration time (1 day)
+			},
+			(err, emailToken) => {
+				// Callback function to handle JWT signing
+				if (err) {
+					console.error("Error generating email token:", err);
+					return;
+				}
 
-		res.status(201).json({ msg: "Success", savedUser }); // 201: something has been created, frontend receive savedUser as the response
+				// Construct the confirmation URL with the generated token
+				const url = `${backendServer}/confirmation/${emailToken}`;
+
+				const transporter = nodemailer.createTransport({
+					service: "gmail",
+					auth: {
+						user: "fsktmconnect@gmail.com",
+						pass: "thpd fawn tbgy nalr",
+					},
+				});
+
+				// Define the email options
+				const mailOptions = {
+					from: "fsktmconnect",
+					to: userEmailAddress,
+					subject: "Confirm Email",
+					html: `Please click this email to confirm your email: <a href="${url}">${url}</a>`,
+				};
+
+				// Send an email to the user with the confirmation URL
+				transporter.sendMail(mailOptions);
+			}
+		);
+
+		// delete savedUser.password;
+
+		res.status(201).json({ msg: "Success" }); // 201: something has been created, frontend receive savedUser as the response
 	} catch (err) {
+		console.log(err);
+
 		res.status(500).json({ error: err.message });
 	}
 };
@@ -75,8 +119,23 @@ export const login = async (req, res) => {
 
 		res.status(200).json({ msg: "Success", token, user });
 	} catch (err) {
-		console.log(err);
-
 		res.status(500).json({ error: err.message });
+	}
+};
+
+export const confirmation = async (req, res) => {
+	try {
+		const {
+			user: { id },
+		} = jwt.verify(req.params.token, process.env.EMAIL_SECRET);
+
+		// Update user's confirmed status in the database
+		await User.findByIdAndUpdate(id, { confirmed: true });
+
+		// Redirect to the success page after updating confirmation status
+		res.redirect(`${frontendServer}`);
+	} catch (e) {
+		console.error("Error verifying token:", e);
+		res.status(500).send("Error verifying token");
 	}
 };

@@ -23,7 +23,6 @@ const RandomFriendsList = ({ setLoading }) => {
 		(store) => store.friend
 	);
 	const { searchText } = useSelector((store) => store.search);
-	const [emptyText, toggleEmptyText] = useState(false);
 
 	// get 15 random users
 	useEffect(() => {
@@ -39,7 +38,7 @@ const RandomFriendsList = ({ setLoading }) => {
 				const res = await fetch(
 					`${serverURL}/friend/get-random-friends?userId=${
 						user._id
-					}&randomFriendsArr=${JSON.stringify([])}`,
+					}&randomFriendIds=${JSON.stringify([])}`,
 					{
 						method: "GET",
 						headers: {
@@ -99,7 +98,7 @@ const RandomFriendsList = ({ setLoading }) => {
 		};
 
 		getRandomFriends();
-	}, [emptyText]);
+	}, []);
 
 	// cancel request
 	useEffect(() => {
@@ -118,11 +117,7 @@ const RandomFriendsList = ({ setLoading }) => {
 				</div>
 			) : randomFriendsArr.length > 0 ? (
 				randomFriendsArr.map((randomFriend) => (
-					<RandomFriend
-						key={randomFriend._id}
-						randomFriend={randomFriend}
-						toggleEmptyText={toggleEmptyText}
-					/>
+					<RandomFriend key={randomFriend._id} randomFriend={randomFriend} />
 				))
 			) : searchText === "" ? (
 				<h2 className="col-span-12">No friend</h2>

@@ -4,7 +4,6 @@ import { ServerContext } from "../../../../../App.js";
 
 const YourGroup = ({ group }) => {
 	const serverURL = useContext(ServerContext);
-	const imagePath = `${serverURL}/public/images/group/`;
 	const [numOfMembers, setNumOfMembers] = useState(
 		Object.keys(group.members).length
 	);
@@ -20,7 +19,7 @@ const YourGroup = ({ group }) => {
 			onClick={handleNavigate}
 		>
 			<img
-				src={`${imagePath}${group.groupImagePath}`}
+				src={group.groupImagePath}
 				alt="Group image"
 				className="max-w-20 md:max-w-24 border border-gray-400 rounded-xl my-2"
 			/>

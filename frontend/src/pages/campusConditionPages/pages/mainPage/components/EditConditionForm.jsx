@@ -32,7 +32,6 @@ const EditConditionForm = ({
 	const [state, dispatch] = useReducer(editConditionFormReducer, INITIAL_STATE);
 	const sliceDispatch = useDispatch();
 	const { enqueueSnackbar } = useSnackbar();
-	const conditionImagePath = `${serverURL}/public/images/campus-condition/`;
 	const { token } = useSelector((store) => store.auth);
 	const { center, hasConditionLocationChanged } = useSelector(
 		(store) => store.campusCondition
@@ -160,7 +159,7 @@ const EditConditionForm = ({
 		<div>
 			{state.loading && <Spinner />}
 			<Filter />
-			<div className="center-container py-4">
+			<div className="center-container items-center py-4">
 				<form
 					className="form max-h-full overflow-y-auto w-5/6"
 					onSubmit={handleSubmit}
@@ -223,12 +222,7 @@ const EditConditionForm = ({
 					</div>
 					<UploadImage
 						imagePath={
-							state.conditionImagePath === ""
-								? ""
-								: // added new condition image
-								state.hasConditionImagePathChanged
-								? state.conditionImagePath // new image path
-								: `${conditionImagePath}${state.conditionImagePath}` // original image path
+							state.conditionImagePath === "" ? "" : state.conditionImagePath // added new condition image
 						}
 						dispatch={(payload) =>
 							dispatch({ type: ACTION_TYPES.UPLOAD_IMAGE, payload })

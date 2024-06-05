@@ -5,22 +5,16 @@ import { ServerContext } from "../../../../../App.js";
 
 const ReportPost = ({ target, type }) => {
 	const serverURL = useContext(ServerContext);
-	const imagePath =
-		type === "Post"
-			? `${serverURL}/public/images/post/`
-			: `${serverURL}/public/images/group-post/`;
-	const profileImagePath = `${serverURL}/public/images/profile/`;
-	const filePath = `${serverURL}/public/images/group-post/`;
 
 	const handleDownload = () => {
-		window.open(filePath + target.postFilePath, "_blank");
+		window.open(target.postFilePath, "_blank");
 	};
 
 	return (
 		<div>
 			{/* HEADER */}
 			<PostHeader
-				imagePath={profileImagePath + target.profileImagePath}
+				imagePath={target.profileImagePath}
 				time={target.time}
 				userName={target.userName}
 			/>
@@ -30,7 +24,7 @@ const ReportPost = ({ target, type }) => {
 			{type === "Group Post" ? (
 				target.postImagePath !== "" ? (
 					<img
-						src={`${imagePath}${target.postImagePath}`}
+						src={target.postImagePath}
 						alt="Post image"
 						className="rounded-xl mx-auto w-full"
 					/>
@@ -52,7 +46,7 @@ const ReportPost = ({ target, type }) => {
 			) : (
 				target.postImagePath !== "" && (
 					<img
-						src={`${imagePath}${target.postImagePath}`}
+						src={target.postImagePath}
 						alt="Post image"
 						className="rounded-xl mx-auto w-full"
 					/>

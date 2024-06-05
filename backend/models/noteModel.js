@@ -10,6 +10,10 @@ const noteSchema = mongoose.Schema(
 			ref: "Folder",
 			required: true,
 		},
+		noteOriginalName: {
+			type: "String",
+			default: "",
+		},
 	},
 	{ timestamps: true }
 );

@@ -28,12 +28,14 @@ const UploadImage = ({ imagePath, dispatch, bigImage = true }) => {
 				<img
 					src={imagePath}
 					alt="Post image"
-					className={`rounded-xl ${!bigImage && "max-h-52 md:max-h-56"}`}
+					className={`rounded-xl max-img-height ${
+						!bigImage && "max-h-52 md:max-h-56"
+					}`}
 				/>
 			) : (
 				<div className="flex items-center">
 					<FaImages className="mr-2" />
-					<p>Upload image</p>
+					<p className="select-none">Upload image</p>
 				</div>
 			)}
 

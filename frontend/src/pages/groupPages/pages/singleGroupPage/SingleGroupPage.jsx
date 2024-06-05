@@ -155,7 +155,7 @@ const SingleGroupPage = () => {
 			<div className="mx-3 my-3 bg-white">
 				<DirectBackArrowHeader destination="/group" title="" />
 			</div>
-			<div className="page-design mb-3">
+			<div className="page-design pb-3">
 				{/* GROUP PROFILE */}
 				<GroupProfile />
 				{/* BUTTONS ROW */}
@@ -169,6 +169,13 @@ const SingleGroupPage = () => {
 							}
 						>
 							Add New Post
+						</button>
+						{/* YOUR POSTS BUTTON */}
+						<button
+							className="btn-gray col-span-4 lg:col-span-3 text-xs min-[400px]:text-sm min-[800px]:text-base"
+							onClick={() => navigate(`/group/${groupId}/your-posts`)}
+						>
+							Your Posts
 						</button>
 						{/* NOTES BUTTON */}
 						<button

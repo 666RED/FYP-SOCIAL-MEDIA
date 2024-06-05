@@ -6,6 +6,7 @@ import Spinner from "./Spinner/Spinner.jsx";
 const UploadFile = ({
 	filePath = "",
 	dispatch,
+	originalName = "",
 	editFile = false,
 	isRequired = false,
 }) => {
@@ -49,13 +50,13 @@ const UploadFile = ({
 				<div className="flex items-center border border-gray-600 w-full p-2 rounded-xl overflow-x-auto">
 					<FaFile className="mr-2 flex-shrink-0" />
 					{editFile
-						? filePath.split("\\").pop()
+						? originalName
 						: document.getElementById("note-file").value.split("\\").pop()}
 				</div>
 			) : (
 				<div className="flex items-center">
 					<FaFile className="mr-2" />
-					<p>Upload file</p>
+					<p className="select-none">Upload file</p>
 				</div>
 			)}
 

@@ -28,7 +28,9 @@ const PendingPage = () => {
 			const res = await fetch(
 				`${serverURL}/friend-request/get-pending-friend-requests?requestorId=${
 					user._id
-				}&pendings=${JSON.stringify(pendingsArr)}`,
+				}&pendingIds=${JSON.stringify(
+					pendingsArr.map((pending) => pending._id)
+				)}`,
 				{
 					method: "GET",
 					headers: {

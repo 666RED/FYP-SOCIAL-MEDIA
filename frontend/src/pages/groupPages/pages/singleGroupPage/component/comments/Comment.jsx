@@ -16,7 +16,6 @@ const Comment = ({ comment, post }) => {
 	const sliceDispatch = useDispatch();
 	const { enqueueSnackbar } = useSnackbar();
 	const serverURL = useContext(ServerContext);
-	const profileImgPath = `${serverURL}/public/images/profile/`;
 	const { user, token } = useSelector((store) => store.auth);
 	const [state, dispatch] = useReducer(commentReducer, INITIAL_STATE);
 
@@ -82,7 +81,7 @@ const Comment = ({ comment, post }) => {
 			{state.loading && <Spinner />}
 			{/* USER INFO */}
 			<UserPostHeader
-				imgPath={profileImgPath + comment.profileImagePath}
+				imgPath={comment.profileImagePath}
 				postTime={comment.time}
 				userName={comment.userName}
 				destination={`/profile/${comment.userId}`}

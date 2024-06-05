@@ -71,7 +71,7 @@ const GroupPage = () => {
 			const res = await fetch(
 				`${serverURL}/group/get-user-groups-search?userId=${
 					user._id
-				}&searchText=${payload.trim()}&groupsArr=${JSON.stringify([])}`,
+				}&searchText=${payload.trim()}&groupIds=${JSON.stringify([])}`,
 				{
 					method: "GET",
 					headers: {
@@ -143,7 +143,7 @@ const GroupPage = () => {
 			const res = await fetch(
 				`${serverURL}/group/get-discover-groups-search?userId=${
 					user._id
-				}&searchText=${payload.trim()}&randomGroupsArr=${JSON.stringify([])}`,
+				}&searchText=${payload.trim()}&randomGroupIds=${JSON.stringify([])}`,
 				{
 					method: "GET",
 					headers: {

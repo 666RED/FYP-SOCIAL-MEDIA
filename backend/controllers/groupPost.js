@@ -1,10 +1,8 @@
 import { GroupPost } from "../models/groupPostModel.js";
 import { User } from "../models/userModel.js";
 import { formatDateTime } from "../usefulFunction.js";
-import path from "path";
-import fs from "fs";
-import { __dirname } from "../index.js";
 import { GroupPostComment } from "../models/groupPostCommentModel.js";
+import { uploadFile, deleteFile } from "../middleware/handleFile.js";
 
 export const addNewGroupPost = async (req, res) => {
 	try {
@@ -24,19 +22,22 @@ export const addNewGroupPost = async (req, res) => {
 			});
 		} else if (!file) {
 			// only upload image
+			const imageURL = await uploadFile("group-post/", image[0]);
 			newPost = new GroupPost({
 				groupId,
 				userId,
 				postDescription: text,
-				postImagePath: image[0].filename,
+				postImagePath: imageURL,
 			});
 		} else if (!image) {
 			// only upload file
+			const fileURL = await uploadFile("group-post/", file[0]);
 			newPost = new GroupPost({
 				groupId,
 				userId,
 				postDescription: text,
-				postFilePath: file[0].filename,
+				postFilePath: fileURL,
+				postFileOriginalName: file[0].originalname,
 			});
 		}
 
@@ -85,6 +86,61 @@ export const getGroupPosts = async (req, res) => {
 			groupId,
 			createdAt: { $lt: currentTime },
 			removed: 0,
+		})
+			.sort({ createdAt: -1 })
+			.skip(count)
+			.limit(limit);
+
+		if (!groupPosts) {
+			return res.status(400).json({ msg: "Fail to retrieve group posts" });
+		}
+
+		if (groupPosts.length === 0) {
+			return res.status(200).json({ msg: "No post" });
+		}
+
+		const returnGroupPosts = await Promise.all(
+			groupPosts.map(async (post) => {
+				const user = await User.findById(post.userId);
+				let profileImagePath = "";
+				let userName = "'";
+				let frameColor = "";
+
+				if (user) {
+					userName = user.userName;
+					profileImagePath = user.userProfile.profileImagePath;
+					frameColor = user.userProfile.profileFrameColor;
+				}
+
+				return {
+					...post._doc,
+					userName,
+					profileImagePath,
+					time: formatDateTime(post.createdAt),
+					frameColor,
+				};
+			})
+		);
+
+		res.status(200).json({ msg: "Success", returnGroupPosts });
+	} catch (err) {
+		res.status(500).json({ error: err.message });
+	}
+};
+
+export const getYourGroupPosts = async (req, res) => {
+	try {
+		const limit = 10;
+		const count = parseInt(req.query.count) || 0;
+		const groupId = req.query.groupId;
+		const currentTime = new Date(req.query.currentTime) || new Date();
+		const userId = req.query.userId;
+
+		const groupPosts = await GroupPost.find({
+			groupId,
+			createdAt: { $lt: currentTime },
+			removed: 0,
+			userId: userId,
 		})
 			.sort({ createdAt: -1 })
 			.skip(count)
@@ -195,22 +251,12 @@ export const deletePost = async (req, res) => {
 
 		// delete group post image if got any
 		if (postImagePath !== "") {
-			const deletedPostImagePath = path.join(
-				__dirname,
-				"public/images/group-post",
-				postImagePath
-			);
-			fs.unlinkSync(deletedPostImagePath);
+			await deleteFile(postImagePath);
 		}
 
 		// delete group post file if got any
 		if (postFilePath !== "") {
-			const deletedPostFilePath = path.join(
-				__dirname,
-				"public/images/group-post",
-				postFilePath
-			);
-			fs.unlinkSync(deletedPostFilePath);
+			await deleteFile(postFilePath);
 		}
 
 		res.status(200).json({ msg: "Success" });
@@ -240,32 +286,27 @@ export const editGroupPost = async (req, res) => {
 		const removeFile = postFilePath === "" && originalPost.postFilePath !== "";
 
 		let updatedPost;
-
 		let updatedImagePath;
-		let needUpdateImage = true;
-
-		if (removeImage) {
-			updatedImagePath = "";
-		} else {
-			if (image) {
-				updatedImagePath = image[0].filename;
-			} else {
-				needUpdateImage = false;
-			}
-		}
-
 		let updatedFilePath;
-		let needUpdateFile = true;
+		let fileOriginalName;
 
-		if (removeFile) {
-			updatedFilePath = "";
-		} else {
-			if (file) {
-				updatedFilePath = file[0].filename;
-			} else {
-				needUpdateFile = false;
-			}
+		if (image || removeImage) {
+			const imageURL = removeImage
+				? ""
+				: await uploadFile("group-post/", image[0]);
+			updatedImagePath = imageURL;
 		}
+		if (file || removeFile) {
+			const fileURL = removeFile
+				? ""
+				: await uploadFile("group-post/", file[0]);
+			updatedFilePath = fileURL;
+
+			fileOriginalName = removeFile ? "" : file[0].originalname;
+		}
+
+		const needUpdateImage = removeImage || image;
+		const needUpdateFile = removeFile || file;
 
 		if (needUpdateImage && needUpdateFile) {
 			updatedPost = await GroupPost.findByIdAndUpdate(
@@ -275,6 +316,7 @@ export const editGroupPost = async (req, res) => {
 						postDescription: text,
 						postImagePath: updatedImagePath,
 						postFilePath: updatedFilePath,
+						postFileOriginalName: fileOriginalName,
 					},
 				},
 				{ new: true }
@@ -287,7 +329,6 @@ export const editGroupPost = async (req, res) => {
 					$set: {
 						postDescription: text,
 						postImagePath: updatedImagePath,
-						postFilePath: updatedFilePath,
 					},
 				},
 				{ new: true }
@@ -300,6 +341,7 @@ export const editGroupPost = async (req, res) => {
 					$set: {
 						postDescription: text,
 						postFilePath: updatedFilePath,
+						postFileOriginalName: fileOriginalName,
 					},
 				},
 				{ new: true }
@@ -337,22 +379,12 @@ export const editGroupPost = async (req, res) => {
 
 		// delete original post image
 		if ((image && originalPostImagePath !== "") || removeImage) {
-			const postImagePath = path.join(
-				__dirname,
-				"public/images/group-post",
-				originalPostImagePath
-			);
-			fs.unlinkSync(postImagePath);
+			await deleteFile(originalPostImagePath);
 		}
 
 		// delete original post file
 		if ((file && originalPostFilePath !== "") || removeFile) {
-			const postFilePath = path.join(
-				__dirname,
-				"public/images/group-post",
-				originalPostFilePath
-			);
-			fs.unlinkSync(postFilePath);
+			await deleteFile(originalPostFilePath);
 		}
 
 		res.status(200).json({

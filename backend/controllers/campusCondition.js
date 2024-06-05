@@ -1,10 +1,8 @@
-import path from "path";
-import fs from "fs";
-import { __dirname } from "../index.js";
 import { CampusCondition } from "../models/campusConditionModel.js";
 import { User } from "../models/userModel.js";
 import mongoose from "mongoose";
 import { formatDateTime } from "../usefulFunction.js";
+import { uploadFile, deleteFile } from "../middleware/handleFile.js";
 
 export const addNewCampusCondition = async (req, res) => {
 	try {
@@ -15,11 +13,12 @@ export const addNewCampusCondition = async (req, res) => {
 		let newCampusCondition;
 
 		if (image) {
+			const imageURL = await uploadFile("campus-condition/", image);
 			newCampusCondition = new CampusCondition({
 				userId,
 				conditionTitle: title,
 				conditionDescription: description,
-				conditionImagePath: image.filename,
+				conditionImagePath: imageURL,
 				conditionLocation: {
 					locationLatitude: latitude,
 					locationLongitude: longitude,
@@ -55,9 +54,8 @@ export const getCampusConditions = async (req, res) => {
 		const currentTime = req.query.currentTime
 			? new Date(req.query.currentTime)
 			: new Date();
-		const conditions = req.query.conditions;
 
-		const conditionsArray = JSON.parse(conditions);
+		const conditionIds = JSON.parse(req.query.conditionIds);
 
 		const campusConditions = await CampusCondition.aggregate([
 			{
@@ -65,9 +63,7 @@ export const getCampusConditions = async (req, res) => {
 					createdAt: { $lt: currentTime },
 					removed: false,
 					_id: {
-						$nin: conditionsArray.map(
-							(condition) => new mongoose.Types.ObjectId(condition._id)
-						),
+						$nin: conditionIds.map((id) => new mongoose.Types.ObjectId(id)),
 					},
 				},
 			},
@@ -79,7 +75,7 @@ export const getCampusConditions = async (req, res) => {
 			},
 		]);
 
-		if (!campusConditions || campusConditions.length === 0) {
+		if (!campusConditions) {
 			return res.status(404).json({ msg: "Campus conditions not found" });
 		}
 
@@ -107,6 +103,71 @@ export const getCampusConditions = async (req, res) => {
 		});
 
 		// Exclude unnecessary fields
+		const returnConditions = formattedConditions.map((condition) => {
+			const { createdAt, updatedAt, __v, removed, ...rest } = condition;
+			return rest;
+		});
+
+		res.status(200).json({ msg: "Success", returnConditions });
+	} catch (err) {
+		res.status(500).json({ error: err.message });
+	}
+};
+
+export const getYourCampusConditions = async (req, res) => {
+	try {
+		const limit = 10;
+		const currentTime = req.query.currentTime
+			? new Date(req.query.currentTime)
+			: new Date();
+		const userId = req.query.userId;
+
+		const conditionIds = JSON.parse(req.query.conditionIds);
+
+		const campusConditions = await CampusCondition.aggregate([
+			{
+				$match: {
+					userId: new mongoose.Types.ObjectId(userId),
+					createdAt: { $lt: currentTime },
+					removed: false,
+					_id: {
+						$nin: conditionIds.map((id) => new mongoose.Types.ObjectId(id)),
+					},
+				},
+			},
+			{
+				$sort: { createdAt: -1 },
+			},
+			{
+				$limit: limit,
+			},
+		]);
+
+		if (!campusConditions) {
+			return res.status(404).json({ msg: "Campus conditions not found" });
+		}
+
+		const userIds = campusConditions.map((condition) => condition.userId);
+
+		const users = await User.find({ _id: { $in: userIds } }).select(
+			"userName userProfile.profileImagePath userProfile.profileFrameColor"
+		);
+
+		const formattedConditions = campusConditions.map((condition) => {
+			const user = users.find((user) => user._id.equals(condition.userId));
+			const userName = user ? user.userName : "";
+			const profileImagePath = user ? user.userProfile.profileImagePath : "";
+			const frameColor = user ? user.userProfile.profileFrameColor : "";
+
+			return {
+				...condition,
+				userName,
+				profileImagePath,
+				time: formatDateTime(condition.createdAt),
+				frameColor,
+			};
+		});
+
 		const returnConditions = formattedConditions.map((condition) => {
 			const { createdAt, updatedAt, __v, removed, ...rest } = condition;
 			return rest;
@@ -182,8 +243,6 @@ export const cancelUp = async (req, res) => {
 
 		res.status(200).json({ msg: "Success" });
 	} catch (err) {
-		console.log(err);
-
 		res.status(500).json({ error: err.message });
 	}
 };
@@ -278,7 +337,12 @@ export const editCondition = async (req, res) => {
 
 		const originalConditionImagePath = originalCondition.conditionImagePath;
 
+		// upload image
 		if (conditionImage || removeImage) {
+			const imageURL = removeImage
+				? ""
+				: await uploadFile("campus-condition/", conditionImage);
+
 			updatedCondition = await CampusCondition.findByIdAndUpdate(
 				campusConditionId,
 				{
@@ -286,12 +350,13 @@ export const editCondition = async (req, res) => {
 						conditionDescription,
 						conditionTitle,
 						conditionLocation: { locationLatitude, locationLongitude },
-						conditionImagePath: removeImage ? "" : conditionImage.filename,
+						conditionImagePath: imageURL,
 					},
 				},
 				{ new: true }
 			);
 		} else {
+			// without upload image
 			updatedCondition = await CampusCondition.findByIdAndUpdate(
 				campusConditionId,
 				{
@@ -325,12 +390,7 @@ export const editCondition = async (req, res) => {
 
 		// remove image
 		if ((conditionImage && originalConditionImagePath !== "") || removeImage) {
-			const conditionImagePath = path.join(
-				__dirname,
-				"public/images/campus-condition",
-				originalConditionImagePath
-			);
-			fs.unlinkSync(conditionImagePath);
+			await deleteFile(originalConditionImagePath);
 		}
 
 		res.status(200).json({
@@ -365,12 +425,7 @@ export const deleteCondition = async (req, res) => {
 
 		// remove image if got any
 		if (condition.conditionImagePath !== "") {
-			const conditionImagePath = path.join(
-				__dirname,
-				"public/images/campus-condition",
-				condition.conditionImagePath
-			);
-			fs.unlinkSync(conditionImagePath);
+			await deleteFile(condition.conditionImagePath);
 		}
 
 		res.status(200).json({ msg: "Success", deletedCondition });
@@ -399,8 +454,6 @@ export const updateConditionResolved = async (req, res) => {
 
 		res.status(200).json({ msg: "Success" });
 	} catch (err) {
-		console.log(err);
-
 		res.status(500).json({ error: err.message });
 	}
 };
@@ -491,7 +544,5 @@ export const getMostUsefulCondition = async (req, res) => {
 				frameColor,
 			},
 		});
-	} catch (err) {
-		console.log(err);
-	}
+	} catch (err) {}
 };

@@ -14,11 +14,10 @@ export const editGroupPageReducer = (state, action) => {
 		case "FIRST_RENDER": {
 			const { groupImagePath, groupCoverImagePath, groupName, groupBio } =
 				action.payload.returnedGroup;
-			const filePath = action.payload.filePath;
 			return {
 				...state,
-				groupImagePath: filePath + groupImagePath,
-				groupCoverImagePath: filePath + groupCoverImagePath,
+				groupImagePath: groupImagePath,
+				groupCoverImagePath: groupCoverImagePath,
 				groupName,
 				groupBio,
 			};

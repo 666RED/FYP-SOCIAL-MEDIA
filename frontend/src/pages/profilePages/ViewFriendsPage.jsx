@@ -51,7 +51,7 @@ const ViewFriendsPage = () => {
 
 		try {
 			const res = await fetch(
-				`${serverURL}/friend/get-searched-friends?userId=${userId}&searchText=${payload.trim()}&friends=${JSON.stringify(
+				`${serverURL}/friend/get-searched-friends?userId=${userId}&searchText=${payload.trim()}&friendIds=${JSON.stringify(
 					[]
 				)}`,
 				{

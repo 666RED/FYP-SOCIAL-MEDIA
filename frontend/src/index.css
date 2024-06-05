@@ -124,4 +124,16 @@
 	.option-div-container {
 		@apply absolute right-3 top-10 border border-gray-600 bg-gray-200;
 	}
+
+	button {
+		@apply select-none;
+	}
+
+	.max-img-height {
+		@apply max-h-[44rem] object-contain;
+	}
+
+	.marketplace-content-height {
+		@apply md:max-h-[26.5rem] min-[500px]:max-h-[23.5rem] max-h-[31.5rem];
+	}
 }

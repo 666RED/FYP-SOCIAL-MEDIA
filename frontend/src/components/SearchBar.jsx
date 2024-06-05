@@ -13,7 +13,7 @@ const SearchBar = ({ text, func, placeholderText, isDisabled = false }) => {
 
 	return (
 		<form
-			className="flex border-2 border-gray-600 rounded-xl w-7/12 items-center max-w-72"
+			className="flex border-2 border-gray-600 rounded-xl w-full items-center max-w-72 min-w-36"
 			onClick={handleFocus}
 			autoComplete="off"
 			onSubmit={handleSubmit}

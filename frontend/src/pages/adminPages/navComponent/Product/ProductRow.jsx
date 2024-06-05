@@ -7,7 +7,6 @@ import { ServerContext } from "../../../../App.js";
 const ProductRow = ({ product, count }) => {
 	const serverURL = useContext(ServerContext);
 	const [showImage, setShowImage] = useState(false);
-	const productImagePath = `${serverURL}/public/images/product/`;
 
 	return (
 		<tr className="hover:bg-gray-200">
@@ -27,10 +26,7 @@ const ProductRow = ({ product, count }) => {
 			<td className="text-center">{product.uploaded}</td>
 			<StatusText isRemoved={product.removed} />
 			{showImage && (
-				<FocusImage
-					imagePath={`${productImagePath}${product.imagePath}`}
-					setShowImage={setShowImage}
-				/>
+				<FocusImage imagePath={product.imagePath} setShowImage={setShowImage} />
 			)}
 		</tr>
 	);

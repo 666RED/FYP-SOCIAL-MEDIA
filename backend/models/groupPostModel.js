@@ -37,6 +37,10 @@ const groupPostSchema = mongoose.Schema(
 			type: String,
 			default: "",
 		},
+		postFileOriginalName: {
+			type: String,
+			default: "",
+		},
 		removed: {
 			type: Boolean,
 			default: false,

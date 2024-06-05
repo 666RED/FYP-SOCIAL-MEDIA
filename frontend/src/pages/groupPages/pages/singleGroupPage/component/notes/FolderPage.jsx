@@ -112,7 +112,7 @@ const FolderPage = () => {
 
 	return user && token ? (
 		<folderContext.Provider value={{ folders, setFolders }}>
-			<div className="page-layout-with-back-arrow relative">
+			<div className="page-layout-with-back-arrow relative pb-2">
 				{/* HEADER */}
 				<DirectBackArrowHeader
 					destination={`/group/${groupId}`}

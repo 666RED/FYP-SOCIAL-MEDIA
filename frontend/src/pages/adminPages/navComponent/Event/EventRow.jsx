@@ -7,7 +7,6 @@ import { ServerContext } from "../../../../App.js";
 const EventRow = ({ event, count }) => {
 	const serverURL = useContext(ServerContext);
 	const [showImage, setShowImage] = useState(false);
-	const eventImagePath = `${serverURL}/public/images/event/`;
 
 	return (
 		<tr className="hover:bg-gray-200">
@@ -34,10 +33,7 @@ const EventRow = ({ event, count }) => {
 			<td className="text-center">{event.uploaded}</td>
 			<StatusText isRemoved={event.removed} />
 			{showImage && (
-				<FocusImage
-					imagePath={`${eventImagePath}${event.imagePath}`}
-					setShowImage={setShowImage}
-				/>
+				<FocusImage imagePath={event.imagePath} setShowImage={setShowImage} />
 			)}
 		</tr>
 	);

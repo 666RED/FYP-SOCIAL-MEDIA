@@ -23,7 +23,6 @@ const EditPostForm = ({
 	const sliceDispatch = useDispatch();
 	const { enqueueSnackbar } = useSnackbar();
 	const serverURL = useContext(ServerContext);
-	const filePath = `${serverURL}/public/images/group-post/`;
 	const { user, token } = useSelector((store) => store.auth);
 	const [state, dispatch] = useReducer(editPostFormReducer, INITIAL_STATE);
 
@@ -127,7 +126,7 @@ const EditPostForm = ({
 		<div>
 			{state.loading && <Spinner />}
 			<Filter />
-			<div className="center-container">
+			<div className="center-container items-center">
 				<form className="form" onSubmit={handleSubmit}>
 					{/* HEADER */}
 					<FormHeader
@@ -225,13 +224,7 @@ const EditPostForm = ({
 							dispatch={(payload) =>
 								dispatch({ type: ACTION_TYPES.UPLOAD_IMAGE, payload })
 							}
-							imagePath={
-								state.postImagePath === ""
-									? ""
-									: state.hasImagePathChanged
-									? state.postImagePath
-									: `${filePath}${state.postImagePath}`
-							}
+							imagePath={state.postImagePath === "" ? "" : state.postImagePath}
 							bigImage={false}
 						/>
 					) : (
@@ -240,6 +233,7 @@ const EditPostForm = ({
 								dispatch({ type: ACTION_TYPES.UPLOAD_FILE, payload })
 							}
 							filePath={state.postFilePath}
+							originalName={post.postFileOriginalName}
 							editFile={!state.hasFilePathChanged}
 						/>
 					)}

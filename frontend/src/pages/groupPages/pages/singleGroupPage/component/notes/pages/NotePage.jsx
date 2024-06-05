@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useContext } from "react";
+import React, { useEffect, useState, useContext, createContext } from "react";
 import { useSnackbar } from "notistack";
 import { useSelector } from "react-redux";
 import { useParams } from "react-router-dom";
@@ -9,6 +9,7 @@ import AddNewNote from "../components/AddNewNote.jsx";
 import Notes from "../components/Notes.jsx";
 import Spinner from "../../../../../../../components/Spinner/Spinner.jsx";
 import { ServerContext } from "../../../../../../../App.js";
+export const noteContext = createContext(null);
 
 const NotePage = () => {
 	const { enqueueSnackbar } = useSnackbar();
@@ -17,7 +18,6 @@ const NotePage = () => {
 	const [showAddNewNoteDiv, setShowAddNewNoteDiv] = useState(false);
 	const [loading, setLoading] = useState(true);
 	const { user, token } = useSelector((store) => store.auth);
-	const [addedNewNote, setAddedNewNote] = useState(false);
 	const [notes, setNotes] = useState([]);
 	const [isGroupAdmin, setIsGroupAdmin] = useState(false);
 
@@ -63,7 +63,7 @@ const NotePage = () => {
 		};
 
 		retrieveNotes();
-	}, [addedNewNote]);
+	}, []);
 
 	// is group admin
 	useEffect(() => {
@@ -109,43 +109,38 @@ const NotePage = () => {
 	}, []);
 
 	return user && token ? (
-		<div className="page-layout-with-back-arrow relative">
-			{/* HEADER */}
-			<DirectBackArrowHeader
-				destination={`/group/${groupId}/view-notes`}
-				title="View Notes"
-			/>
-			{/* NOTES */}
-			{loading ? (
-				<Spinner />
-			) : (
-				<div className="overflow-x-auto">
-					<Notes
-						notes={notes}
-						isGroupAdmin={isGroupAdmin}
-						setNotes={setNotes}
-					/>
-				</div>
-			)}
-			{/* ADD NEW NOTE BUTTON */}
-			{isGroupAdmin && (
-				<button
-					className="btn-green flex items-center absolute top-1 right-1"
-					onClick={() => setShowAddNewNoteDiv((prev) => !prev)}
-				>
-					<BsFileEarmarkPlusFill className="mr-2" />
-					New Note
-				</button>
-			)}
-
-			{/* ADD NEW NOTE DIV */}
-			{showAddNewNoteDiv && (
-				<AddNewNote
-					setShowAddNewNoteDiv={setShowAddNewNoteDiv}
-					setAddedNewNote={setAddedNewNote}
+		<noteContext.Provider value={{ notes, isGroupAdmin, setNotes }}>
+			<div className="page-layout-with-back-arrow relative">
+				{/* HEADER */}
+				<DirectBackArrowHeader
+					destination={`/group/${groupId}/view-notes`}
+					title="View Notes"
 				/>
-			)}
-		</div>
+				{/* NOTES */}
+				{loading ? (
+					<Spinner />
+				) : (
+					<div className="overflow-x-auto">
+						<Notes />
+					</div>
+				)}
+				{/* ADD NEW NOTE BUTTON */}
+				{isGroupAdmin && (
+					<button
+						className="btn-green flex items-center absolute top-1 right-1"
+						onClick={() => setShowAddNewNoteDiv((prev) => !prev)}
+					>
+						<BsFileEarmarkPlusFill className="mr-2" />
+						New Note
+					</button>
+				)}
+
+				{/* ADD NEW NOTE DIV */}
+				{showAddNewNoteDiv && (
+					<AddNewNote setShowAddNewNoteDiv={setShowAddNewNoteDiv} />
+				)}
+			</div>
+		</noteContext.Provider>
 	) : (
 		<Error />
 	);

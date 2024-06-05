@@ -8,7 +8,6 @@ import { capitalize } from "../../../../usefulFunction.js";
 const ServiceRow = ({ service, count }) => {
 	const serverURL = useContext(ServerContext);
 	const [showImage, setShowImage] = useState(false);
-	const serviceImagePath = `${serverURL}/public/images/service/`;
 
 	return (
 		<tr className="hover:bg-gray-200">
@@ -28,10 +27,7 @@ const ServiceRow = ({ service, count }) => {
 			<td className="text-center">{service.uploaded}</td>
 			<StatusText isRemoved={service.removed} />
 			{showImage && (
-				<FocusImage
-					imagePath={`${serviceImagePath}${service.imagePath}`}
-					setShowImage={setShowImage}
-				/>
+				<FocusImage imagePath={service.imagePath} setShowImage={setShowImage} />
 			)}
 		</tr>
 	);

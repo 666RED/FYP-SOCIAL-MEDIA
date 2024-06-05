@@ -29,8 +29,8 @@ const Events = ({ getEventPath, searchEventPath, setLoading }) => {
 			setLoadMore(true);
 
 			const res = await fetch(
-				`${getEventPath}?userId=${user._id}&eventsArr=${JSON.stringify(
-					eventsArr
+				`${getEventPath}?userId=${user._id}&eventIds=${JSON.stringify(
+					eventsArr.map((event) => event._id)
 				)}&category=${eventCategory}`,
 				{
 					method: "GET",
@@ -76,8 +76,8 @@ const Events = ({ getEventPath, searchEventPath, setLoading }) => {
 			const res = await fetch(
 				`${searchEventPath}?userId=${
 					user._id
-				}&searchText=${searchText}&eventsArr=${JSON.stringify(
-					eventsArr
+				}&searchText=${searchText}&eventIds=${JSON.stringify(
+					eventsArr.map((event) => event._id)
 				)}&category=${eventCategory}`,
 				{
 					method: "GET",
@@ -133,7 +133,7 @@ const Events = ({ getEventPath, searchEventPath, setLoading }) => {
 				sliceDispatch(setIsLoadingEvents(true));
 
 				const res = await fetch(
-					`${getEventPath}?userId=${user._id}&eventsArr=${JSON.stringify(
+					`${getEventPath}?userId=${user._id}&eventIds=${JSON.stringify(
 						[]
 					)}&category=${eventCategory}`,
 					{
@@ -210,7 +210,7 @@ const Events = ({ getEventPath, searchEventPath, setLoading }) => {
 			{isLoadingEvents ? (
 				<Loader />
 			) : eventsArr.length > 0 ? (
-				<div className="grid grid-cols-12 gap-2 px-2 max-h-[30rem] overflow-y-auto min-[500px]:max-h-[23.5rem] mb-2">
+				<div className="grid grid-cols-12 gap-2 px-2 max-img-height overflow-y-auto marketplace-content-height mb-2">
 					{eventsArr.map((event) => (
 						<Event key={event._id} event={event} />
 					))}

@@ -1,10 +1,11 @@
-import { React, useContext, useEffect, useReducer } from "react";
+import { React, useContext, useEffect, useReducer, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useSnackbar } from "notistack";
 import { useParams, useNavigate } from "react-router-dom";
 import Spinner from "../../../../../components/Spinner/Spinner.jsx";
 import Loader from "../../../../../components/Spinner/Loader.jsx";
 import JoinGroupStatusButton from "./JoinGroupStatusButton.jsx";
+import FocusImage from "../../../../adminPages/components/FocusImage.jsx";
 import ReportForm from "../../../../../components/post/ReportForm.jsx";
 import {
 	groupProfileReducer,
@@ -22,8 +23,8 @@ const GroupProfile = () => {
 	const { user, token } = useSelector((store) => store.auth);
 	const [state, dispatch] = useReducer(groupProfileReducer, INITIAL_STATE);
 	const navigate = useNavigate();
-
-	const filePath = `${serverURL}/public/images/group/`;
+	const [showGroupImage, setShowGroupImage] = useState(false);
+	const [showCoverImage, setShowCoverImage] = useState(false);
 
 	// retrieve group profile info
 	useEffect(() => {
@@ -52,7 +53,7 @@ const GroupProfile = () => {
 				if (msg === "Success") {
 					dispatch({
 						type: ACTION_TYPES.FIRST_RENDER,
-						payload: { returnGroup, filePath },
+						payload: { returnGroup },
 					});
 				} else if (msg === "Group not found") {
 					enqueueSnackbar("Group not found", { variant: "error" });
@@ -374,11 +375,27 @@ const GroupProfile = () => {
 					type="Group"
 				/>
 			)}
+			{/* FOCUS IMAGE (GROUP IMAGE) */}
+			{showGroupImage && (
+				<FocusImage
+					imagePath={state.groupImagePath}
+					setShowImage={setShowGroupImage}
+					isProfileImage={true}
+				/>
+			)}
+			{/* FOCUS IMAGE (COVER IMAGE) */}
+			{showCoverImage && (
+				<FocusImage
+					imagePath={state.groupCoverImagePath}
+					setShowImage={setShowCoverImage}
+				/>
+			)}
 			{/* GROUP COVER IMAGE */}
 			<img
 				src={state.groupCoverImagePath}
 				alt="Group cover image"
-				className="rounded-xl mt-3 component-layout"
+				className="rounded-xl mt-3 component-layout cursor-pointer"
+				onClick={() => setShowCoverImage(true)}
 			/>
 			{/* LOWER PART */}
 			<div className="component-layout my-3 shadow-xl rounded-xl py-3 bg-white grid grid-cols-12 items-center">
@@ -388,7 +405,8 @@ const GroupProfile = () => {
 					<img
 						src={state.groupImagePath}
 						alt="Group image"
-						className="rounded-full md:w-36 w-28 border border-blue-400"
+						className="rounded-full md:w-36 w-28 border border-blue-400 cursor-pointer"
+						onClick={() => setShowGroupImage(true)}
 					/>
 					{/* GROUP NAME */}
 					<p className="my-3 md:text-xl text-lg font-semibold leading-none">

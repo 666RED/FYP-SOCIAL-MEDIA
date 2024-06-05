@@ -37,7 +37,7 @@ const YourGroups = ({ setLoading }) => {
 				const res = await fetch(
 					`${serverURL}/group/get-user-groups?userId=${
 						user._id
-					}&groupsArr=${JSON.stringify(groupsArr)}`,
+					}&groupIds=${JSON.stringify([])}`,
 					{
 						method: "GET",
 						headers: {
@@ -109,7 +109,7 @@ const YourGroups = ({ setLoading }) => {
 			const res = await fetch(
 				`${serverURL}/group/get-user-groups?userId=${
 					user._id
-				}&groupsArr=${JSON.stringify(groupsArr)}`,
+				}&groupIds=${JSON.stringify(groupsArr.map((group) => group._id))}`,
 				{
 					method: "GET",
 					headers: {
@@ -161,7 +161,9 @@ const YourGroups = ({ setLoading }) => {
 			const res = await fetch(
 				`${serverURL}/group/get-user-groups-search?userId=${
 					user._id
-				}&groupsArr=${JSON.stringify(groupsArr)}&searchText=${searchText}`,
+				}&groupIds=${JSON.stringify(
+					groupsArr.map((group) => group._id)
+				)}&searchText=${searchText}`,
 				{
 					method: "GET",
 					headers: {

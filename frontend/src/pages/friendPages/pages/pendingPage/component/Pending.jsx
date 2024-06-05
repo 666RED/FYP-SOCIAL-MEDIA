@@ -12,7 +12,6 @@ const Pending = ({ pending }) => {
 	const serverURL = useContext(ServerContext);
 	const { user, token } = useSelector((store) => store.auth);
 	const profileImagePath = pending.receiverId.userProfile.profileImagePath;
-	const filePath = `${serverURL}/public/images/profile/${profileImagePath}`;
 	const { enqueueSnackbar } = useSnackbar();
 	const navigate = useNavigate();
 	const [state, dispatch] = useReducer(pendingReducer, INITIAL_STATE);
@@ -143,7 +142,7 @@ const Pending = ({ pending }) => {
 			{state.loading && <Spinner />}
 			{/* IMAGE */}
 			<img
-				src={filePath}
+				src={profileImagePath}
 				alt="User profile image"
 				className={`col-span-2 row-span-3 border-[2.5px] md:border-4 ${pending.receiverId.userProfile.profileFrameColor} rounded-full max-w-20 md:max-w-32 md:self-center`}
 			/>

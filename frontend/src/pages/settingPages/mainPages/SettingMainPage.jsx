@@ -1,4 +1,4 @@
-import { React, useEffect, useState, createContext } from "react";
+import { React, useEffect, useState, createContext, useRef } from "react";
 import { useSelector } from "react-redux";
 import SettingList from "./components/SettingList.jsx";
 import Error from "../../../components/Error.jsx";
@@ -8,7 +8,7 @@ import ChangePassword from "./components/Options/ChangePassword.jsx";
 import UpdatePersonalInfo from "./components/Options/UpdatePersonalInfo.jsx";
 import FramePreference from "./components/Options/FramePreference.jsx";
 import TermOfService from "./components/Options/TermOfService.jsx";
-import PrivacePolicy from "./components/Options/PrivacePolicy.jsx";
+import PrivacyPolicy from "./components/Options/PrivacyPolicy.jsx";
 import FQAs from "./components/Options/FAQs.jsx";
 import VersionAndUpdate from "./components/Options/VersionAndUpdate.jsx";
 export const SettingContext = createContext(null);
@@ -18,12 +18,16 @@ const SettingMainPage = () => {
 	const [extendSideBar, setExtendSideBar] = useState(false);
 	const [option, setOption] = useState("");
 	const [discardChanges, setDiscardChanges] = useState(false);
+	const mainContentRef = useRef(null);
 
 	useEffect(() => {
-		document.documentElement.scrollIntoView({
-			behavior: "smooth",
-			block: "end",
-		});
+		if (mainContentRef.current) {
+			const wrapperTop = mainContentRef.current.offsetTop - 10;
+			window.scrollTo({
+				top: wrapperTop,
+				behavior: "smooth",
+			});
+		}
 	}, [option]);
 
 	return user && token ? (
@@ -50,7 +54,10 @@ const SettingMainPage = () => {
 						<SettingList />
 					</div>
 					{/* HORIZONTAL LINE */}
-					<hr className="col-span-12 h-1 border border-gray-600 bg-gray-600 mt-3 md:hidden" />
+					<hr
+						className="col-span-12 h-1 border border-gray-600 bg-gray-600 mt-3 md:hidden"
+						ref={mainContentRef}
+					/>
 					{/* MAIN CONTENT */}
 					<div className="md:col-span-9 md:ml-3 col-span-12 mt-3 md:mt-0">
 						{option === "Update personal information" ? (
@@ -62,7 +69,7 @@ const SettingMainPage = () => {
 						) : option === "Term of service" ? (
 							<TermOfService />
 						) : option === "Privacy policy" ? (
-							<PrivacePolicy />
+							<PrivacyPolicy />
 						) : option === "FAQs" ? (
 							<FQAs />
 						) : option === "Version and update" ? (

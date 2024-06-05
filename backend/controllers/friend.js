@@ -4,10 +4,10 @@ import mongoose from "mongoose";
 
 export const getFriends = async (req, res) => {
 	try {
-		const { userId, friends } = req.query;
+		const { userId } = req.query;
 		const limit = 10;
 
-		const friendsArray = JSON.parse(friends);
+		const friendIds = JSON.parse(req.query.friendIds);
 
 		const user = await User.findById(userId);
 
@@ -19,7 +19,9 @@ export const getFriends = async (req, res) => {
 			return res.status(200).json({ msg: "No friend" });
 		}
 
-		const excludedFriends = friendsArray.map((friend) => friend._id);
+		const excludedFriends = friendIds.map(
+			(id) => new mongoose.Types.ObjectId(id)
+		);
 
 		const friendsIds = Array.from(user.userFriendsMap.keys());
 		const friendsToFetch = friendsIds.filter(
@@ -40,18 +42,16 @@ export const getFriends = async (req, res) => {
 			.status(200)
 			.json({ msg: "Success", returnFriendsArr: friendsData, numberOfFriends });
 	} catch (err) {
-		console.log(err);
-
 		res.status(500).json({ error: err.message });
 	}
 };
 
 export const getSearchedFriends = async (req, res) => {
 	try {
-		const { userId, searchText, friends } = req.query;
+		const { userId, searchText } = req.query;
 		const limit = 10;
 
-		const friendsArray = JSON.parse(friends);
+		const friendIds = JSON.parse(req.query.friendIds);
 
 		if (searchText === "") {
 			return res.status(200).json({ msg: "Stop searching" });
@@ -65,7 +65,9 @@ export const getSearchedFriends = async (req, res) => {
 
 		const friendsMap = user.userFriendsMap;
 
-		const excludedFriends = friendsArray.map((friend) => friend._id);
+		const excludedFriends = friendIds.map(
+			(id) => new mongoose.Types.ObjectId(id)
+		);
 
 		const friendsToFetch = Array.from(friendsMap.keys()).filter(
 			(friendId) => !excludedFriends.includes(friendId)
@@ -150,8 +152,6 @@ export const removeFriend = async (req, res) => {
 
 		res.status(200).json({ msg: "Success", updatedUser });
 	} catch (err) {
-		console.log(err);
-
 		res.status(500).json({ error: err.message });
 	}
 };
@@ -206,26 +206,34 @@ export const directRemoveFriend = async (req, res) => {
 			return res.status(404).json({ msg: "Friend not found" });
 		}
 
-		let friendsArr = [];
+		let friendIds = Array.from(updatedUser.userFriendsMap.keys()).map(
+			(id) => new mongoose.Types.ObjectId(id)
+		);
 
-		for (let friendId of updatedUser.userFriendsMap.keys()) {
-			const friend = await User.findById(friendId);
-			friend.userPassword = undefined;
-			friend.verificationCode = undefined;
-			friendsArr.push(friend);
-		}
+		const friendsArr = await User.find({ _id: { $in: friendIds } }).select(
+			"-userPassword -verificationCode"
+		);
+
+		// for (let friendId of updatedUser.userFriendsMap.keys()) {
+		// 	const friend = await User.findById(friendId);
+		// 	friend.userPassword = undefined;
+		// 	friend.verificationCode = undefined;
+		// 	friendsArr.push(friend);
+		// }
 
 		res.status(200).json({ msg: "Success", friendsArr });
 	} catch (err) {
+		console.log(err);
+
 		res.status(500).json({ error: err.message });
 	}
 };
 
 export const getRandomFriends = async (req, res) => {
 	try {
-		const { userId, randomFriendsArr } = req.query;
+		const { userId } = req.query;
 
-		const randomFriendsArray = JSON.parse(randomFriendsArr);
+		const randomFriendIds = JSON.parse(req.query.randomFriendIds);
 
 		const user = await User.findById(userId);
 
@@ -256,16 +264,16 @@ export const getRandomFriends = async (req, res) => {
 						// not friend
 						{
 							_id: {
-								$nin: friendsArr.map(
-									(friendId) => new mongoose.Types.ObjectId(friendId)
+								$nin: randomFriendIds.map(
+									(id) => new mongoose.Types.ObjectId(id)
 								),
 							},
 						},
 						// do not pick already-picked uesrs
 						{
 							_id: {
-								$nin: randomFriendsArray.map(
-									(friend) => new mongoose.Types.ObjectId(friend._id)
+								$nin: randomFriendIds.map(
+									(id) => new mongoose.Types.ObjectId(id)
 								),
 							},
 						},
@@ -303,8 +311,6 @@ export const getRandomFriends = async (req, res) => {
 
 		res.status(200).json({ msg: "Success", randomFriends: randomFriends });
 	} catch (err) {
-		console.log(err);
-
 		res.status(500).json({ error: err.message });
 	}
 };
@@ -393,17 +399,15 @@ export const getSearchedRandomFriends = async (req, res) => {
 
 		res.status(200).json({ msg: "Success", randomFriends: randomFriends });
 	} catch (err) {
-		console.log(err);
-
 		res.status(500).json({ error: err.message });
 	}
 };
 
 export const loadSearchedRandomFriends = async (req, res) => {
 	try {
-		const { userId, randomFriendsArr, searchText } = req.query;
+		const { userId, searchText } = req.query;
 
-		const randomFriendsArray = JSON.parse(randomFriendsArr);
+		const randomFriendIds = JSON.parse(req.query.randomFriendIds);
 
 		const user = await User.findById(userId);
 
@@ -442,8 +446,8 @@ export const loadSearchedRandomFriends = async (req, res) => {
 						// do not pick already-picked uesrs
 						{
 							_id: {
-								$nin: randomFriendsArray.map(
-									(friend) => new mongoose.Types.ObjectId(friend._id)
+								$nin: randomFriendIds.map(
+									(id) => new mongoose.Types.ObjectId(id)
 								),
 							},
 						},
@@ -488,8 +492,6 @@ export const loadSearchedRandomFriends = async (req, res) => {
 
 		res.status(200).json({ msg: "Success", randomFriends: randomFriends });
 	} catch (err) {
-		console.log(err);
-
 		res.status(500).json({ error: err.message });
 	}
 };

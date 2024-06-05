@@ -9,8 +9,6 @@ import { ServerContext } from "../../../../../App.js";
 const ReportCondition = ({ target }) => {
 	const sliceDispatch = useDispatch();
 	const serverURL = useContext(ServerContext);
-	const profileImagePath = `${serverURL}/public/images/profile/`;
-	const imagePath = `${serverURL}/public/images/campus-condition/`;
 
 	const [viewLocation, setViewLocation] = useState(false);
 
@@ -32,7 +30,7 @@ const ReportCondition = ({ target }) => {
 			)}
 			{/* HEADER */}
 			<PostHeader
-				imagePath={`${profileImagePath}${target.profileImagePath}`}
+				imagePath={target.profileImagePath}
 				time={target.time}
 				userName={target.userName}
 			/>
@@ -43,7 +41,7 @@ const ReportCondition = ({ target }) => {
 			{/* CONDITION IMAGE */}
 			{target.conditionImagePath !== "" && (
 				<img
-					src={`${imagePath}${target.conditionImagePath}`}
+					src={target.conditionImagePath}
 					alt="Condition image"
 					className="rounded-xl mt-2"
 				/>

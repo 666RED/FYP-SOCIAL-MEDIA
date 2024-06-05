@@ -22,8 +22,6 @@ const EditService = () => {
 	const { user, token } = useSelector((store) => store.auth);
 	const [state, dispatch] = useReducer(editServiceReducer, INITIAL_STATE);
 
-	const servicePosterImagePath = `${serverURL}/public/images/service/`;
-
 	// first render
 	useEffect(() => {
 		const getService = async () => {
@@ -222,11 +220,7 @@ const EditService = () => {
 					dispatch={(payload) =>
 						dispatch({ type: ACTION_TYPES.UPLOAD_IMAGE, payload })
 					}
-					imagePath={
-						state.hasImagePathChanged
-							? state.servicePosterImagePath
-							: `${servicePosterImagePath}${state.servicePosterImagePath}`
-					}
+					imagePath={state.servicePosterImagePath}
 				/>
 				{/* SERVICE NAME */}
 				<h3 className="mt-3">Service name:</h3>

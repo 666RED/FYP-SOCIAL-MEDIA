@@ -107,8 +107,6 @@ export const getComments = async (req, res) => {
 
 		res.status(200).json({ msg: "Success", returnComments });
 	} catch (err) {
-		console.log(err);
-
 		res.status(500).json({ error: err.message });
 	}
 };

@@ -70,7 +70,6 @@ const AddNewPostForm = ({ toggleShowAddNewPostForm }) => {
 				});
 				toggleShowAddNewPostForm();
 				sliceDispatch(addNewPost(returnPost));
-				console.log(returnPost);
 			} else if (msg === "Fail to add new post") {
 				enqueueSnackbar("Fail to add new post", {
 					variant: "error",

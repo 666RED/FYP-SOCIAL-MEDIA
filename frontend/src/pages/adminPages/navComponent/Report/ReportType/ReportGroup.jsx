@@ -14,7 +14,6 @@ const ReportGroup = ({ target }) => {
 	const { token } = useSelector((store) => store.admin);
 	const { enqueueSnackbar } = useSnackbar();
 	const serverURL = useContext(ServerContext);
-	const imagePath = `${serverURL}/public/images/group/`;
 	const [viewPosts, setViewPosts] = useState(false);
 	const { hasPost, isLoadingPosts } = useSelector((store) => store.groupPost);
 	const [loadMore, setLoadMore] = useState(false);
@@ -76,7 +75,7 @@ const ReportGroup = ({ target }) => {
 		<div>
 			{/* COVER IMAGE */}
 			<img
-				src={`${imagePath}${target.groupCoverImagePath}`}
+				src={target.groupCoverImagePath}
 				alt="Cover image"
 				className="rounded-xl mx-auto w-10/12"
 			/>
@@ -85,7 +84,7 @@ const ReportGroup = ({ target }) => {
 				{/* LEFT PART */}
 				<div className="col-span-4 md:col-span-3 flex flex-col items-center">
 					<img
-						src={`${imagePath}${target.groupImagePath}`}
+						src={target.groupImagePath}
 						alt="Profile image"
 						className="w-full rounded-full border border-black"
 					/>

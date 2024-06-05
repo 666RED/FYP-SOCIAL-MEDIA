@@ -120,7 +120,9 @@ const ExploreFriendPage = () => {
 			const res = await fetch(
 				`${serverURL}/friend/get-random-friends?userId=${
 					user._id
-				}&randomFriendsArr=${JSON.stringify(randomFriendsArr)}`,
+				}&randomFriendIds=${JSON.stringify(
+					randomFriendsArr.map((friend) => friend._id)
+				)}`,
 				{
 					method: "GET",
 					headers: {
@@ -174,8 +176,8 @@ const ExploreFriendPage = () => {
 			const res = await fetch(
 				`${serverURL}/friend/load-searched-random-friends?userId=${
 					user._id
-				}&randomFriendsArr=${JSON.stringify(
-					randomFriendsArr
+				}&randomFriendIds=${JSON.stringify(
+					randomFriendsArr.map((friend) => friend._id)
 				)}&searchText=${searchText}`,
 				{
 					method: "GET",

@@ -8,8 +8,9 @@ import Spinner from "../../../../../../../components/Spinner/Spinner.jsx";
 import Filter from "../../../../../../../components/Filter.jsx";
 import HorizontalRule from "../../../../../../../components/HorizontalRule.jsx";
 import { ServerContext } from "../../../../../../../App.js";
+import { noteContext } from "../pages/NotePage.jsx";
 
-const AddNewNote = ({ setShowAddNewNoteDiv, setAddedNewNote }) => {
+const AddNewNote = ({ setShowAddNewNoteDiv }) => {
 	const serverURL = useContext(ServerContext);
 	const { enqueueSnackbar } = useSnackbar();
 	const [loading, setLoading] = useState(false);
@@ -18,6 +19,7 @@ const AddNewNote = ({ setShowAddNewNoteDiv, setAddedNewNote }) => {
 	const [discardChanges, setDiscardChanges] = useState(false);
 	const { folderId } = useParams();
 	const { token } = useSelector((store) => store.auth);
+	const { notes, setNotes } = useContext(noteContext);
 
 	const uploadFile = ({ filePath, file }) => {
 		setFile(file);
@@ -68,7 +70,7 @@ const AddNewNote = ({ setShowAddNewNoteDiv, setAddedNewNote }) => {
 					variant: "success",
 				});
 				setShowAddNewNoteDiv(false);
-				setAddedNewNote((prev) => !prev);
+				setNotes([...notes, returnedNote]);
 			} else if (msg === "Fail to upload new note") {
 				enqueueSnackbar("Fail to upload new note", { variant: "error" });
 			} else {

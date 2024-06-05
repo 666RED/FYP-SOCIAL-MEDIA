@@ -51,7 +51,7 @@ const FriendPage = () => {
 			const res = await fetch(
 				`${serverURL}/friend/get-friends?userId=${
 					user._id
-				}&friends=${JSON.stringify(friendsArr)}`,
+				}&friendIds=${JSON.stringify(friendsArr.map((friend) => friend._id))}`,
 				{
 					method: "GET",
 					headers: {
@@ -100,8 +100,8 @@ const FriendPage = () => {
 			const res = await fetch(
 				`${serverURL}/friend/get-searched-friends?userId=${
 					user._id
-				}&searchText=${searchText.trim()}&friends=${JSON.stringify(
-					friendsArr
+				}&searchText=${searchText.trim()}&friendIds=${JSON.stringify(
+					friendsArr.map((friend) => friend._id)
 				)}`,
 				{
 					method: "GET",
@@ -267,7 +267,7 @@ const FriendPage = () => {
 			const res = await fetch(
 				`${serverURL}/friend/get-searched-friends?userId=${
 					user._id
-				}&searchText=${payload.trim()}&friends=${JSON.stringify([])}`,
+				}&searchText=${payload.trim()}&friendIds=${JSON.stringify([])}`,
 				{
 					method: "GET",
 					headers: {
@@ -378,12 +378,14 @@ const FriendPage = () => {
 				{/* TITLE */}
 				<h2>Your Friends ({numberOfFriends})</h2>
 				{/* SEARCH BAR */}
-				<SearchBar
-					func={handleOnChange}
-					placeholderText="Search user"
-					text={searchText}
-					isDisabled={listLoading}
-				/>
+				<div className="max-w-[10.5rem] md:max-w-96">
+					<SearchBar
+						func={handleOnChange}
+						placeholderText="Search user"
+						text={searchText}
+						isDisabled={listLoading}
+					/>
+				</div>
 			</div>
 			<div className="max-h-[33rem] min-[500px]:max-h-[26rem] overflow-y-auto pb-2">
 				{/* FRIENDS LIST */}

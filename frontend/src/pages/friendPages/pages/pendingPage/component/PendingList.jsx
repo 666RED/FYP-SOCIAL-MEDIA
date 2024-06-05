@@ -32,7 +32,7 @@ const PendingList = () => {
 				const res = await fetch(
 					`${serverURL}/friend-request/get-pending-friend-requests?requestorId=${
 						user._id
-					}&pendings=${JSON.stringify([])}`,
+					}&pendingIds=${JSON.stringify([])}`,
 					{
 						method: "GET",
 						headers: {

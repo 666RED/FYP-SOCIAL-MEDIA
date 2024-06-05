@@ -22,7 +22,6 @@ const EditPostForm = ({
 	const sliceDispatch = useDispatch();
 	const { enqueueSnackbar } = useSnackbar();
 	const serverURL = useContext(ServerContext);
-	const postImgPath = `${serverURL}/public/images/post/`;
 	const [state, dispatch] = useReducer(editPostFormReducer, INITIAL_STATE);
 	const { token } = useSelector((store) => store.auth);
 
@@ -102,7 +101,7 @@ const EditPostForm = ({
 		<div>
 			{state.loading && <Spinner />}
 			<Filter />
-			<div className="center-container">
+			<div className="center-container items-center">
 				<form className="form" onSubmit={handleSubmit}>
 					{/* HEADER */}
 					<FormHeader
@@ -143,12 +142,7 @@ const EditPostForm = ({
 					</div>
 					<UploadImage
 						imagePath={
-							state.postImagePath === ""
-								? ""
-								: // added new post image
-								state.hasImagePathChanged
-								? state.postImagePath // new image path
-								: `${postImgPath}${state.postImagePath}` // original image path
+							state.postImagePath === "" ? "" : state.postImagePath // added new post image
 						}
 						dispatch={(payload) =>
 							dispatch({ type: ACTION_TYPES.UPLOAD_IMAGE, payload })

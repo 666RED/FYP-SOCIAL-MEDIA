@@ -76,7 +76,7 @@ const EditCommentForm = ({
 		<div>
 			{loading && <Spinner />}
 			<Filter />
-			<div className="center-container">
+			<div className="center-container items-center">
 				<form onSubmit={handleSubmit} className="form">
 					<FormHeader
 						title="Edit Comment"

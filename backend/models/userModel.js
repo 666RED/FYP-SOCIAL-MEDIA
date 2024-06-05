@@ -47,11 +47,13 @@ const userSchema = mongoose.Schema(
 		userProfile: {
 			profileImagePath: {
 				type: String,
-				default: "default-profile-image.png",
+				default:
+					"https://firebasestorage.googleapis.com/v0/b/final-year-project-d85b9.appspot.com/o/profile%2F1717595482346-default-profile-image.png?alt=media&token=b8145895-9bf3-47f7-8092-0a003eda3282",
 			},
 			profileCoverImagePath: {
 				type: String,
-				default: "default-cover-image.jpg",
+				default:
+					"https://firebasestorage.googleapis.com/v0/b/final-year-project-d85b9.appspot.com/o/profile%2F1717595482778-default-cover-image.jpg?alt=media&token=0e92b9db-e471-4bba-bcd5-02821c17bf75",
 			},
 			profileBio: {
 				type: String,
@@ -68,6 +70,10 @@ const userSchema = mongoose.Schema(
 			type: Map,
 			of: Boolean,
 			default: new Map(),
+		},
+		confirmed: {
+			type: Boolean,
+			default: false,
 		},
 	},
 	{

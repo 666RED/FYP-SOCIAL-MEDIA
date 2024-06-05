@@ -25,7 +25,6 @@ const EditProfile = () => {
 	const [coverImage, setCoverImage] = useState({});
 
 	const { enqueueSnackbar } = useSnackbar();
-	const filePath = `${serverURL}/public/images/profile/`;
 
 	// fetch profile info
 	useEffect(() => {
@@ -61,8 +60,8 @@ const EditProfile = () => {
 					dispatch({
 						type: ACTION_TYPES.FIEST_RENDER,
 						payload: {
-							profileImagePath: filePath + userProfile.profileImagePath,
-							coverImagePath: filePath + userProfile.profileCoverImagePath,
+							profileImagePath: userProfile.profileImagePath,
+							coverImagePath: userProfile.profileCoverImagePath,
 							name: userInfo.userName,
 							bio: userProfile.profileBio,
 							frameColor: userProfile.profileFrameColor,

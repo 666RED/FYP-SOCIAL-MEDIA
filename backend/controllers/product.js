@@ -1,9 +1,7 @@
 import mongoose from "mongoose";
 import { Product } from "../models/productModel.js";
 import { User } from "../models/userModel.js";
-import path from "path";
-import fs from "fs";
-import { __dirname } from "../index.js";
+import { uploadFile, deleteFile } from "../middleware/handleFile.js";
 
 export const createNewProduct = async (req, res) => {
 	try {
@@ -12,12 +10,14 @@ export const createNewProduct = async (req, res) => {
 
 		const image = req.file;
 
+		const imageURL = await uploadFile("product/", image);
+
 		const newProduct = new Product({
 			productName: name,
 			productDescription: description,
 			productPrice: price,
 			productQuantity: quantity,
-			productImagePath: image.filename,
+			productImagePath: imageURL,
 			userId,
 			contactNumber,
 		});
@@ -36,22 +36,17 @@ export const createNewProduct = async (req, res) => {
 
 export const getProducts = async (req, res) => {
 	try {
-		const { userId, productsArr } = req.query;
-
-		const productsArray = JSON.parse(productsArr);
+		const productIds = JSON.parse(req.query.productIds);
 
 		const products = await Product.aggregate([
 			{
 				$match: {
 					$and: [
 						// not equal to userId
-						{ userId: { $ne: new mongoose.Types.ObjectId(userId) } },
 						{ removed: false },
 						{
 							_id: {
-								$nin: productsArray.map(
-									(product) => new mongoose.Types.ObjectId(product._id)
-								),
+								$nin: productIds.map((id) => new mongoose.Types.ObjectId(id)),
 							},
 						},
 					],
@@ -73,8 +68,6 @@ export const getProducts = async (req, res) => {
 
 		res.status(200).json({ msg: "Success", returnProducts });
 	} catch (err) {
-		console.log(err);
-
 		res.status(500).json({ error: err.message });
 	}
 };
@@ -113,9 +106,9 @@ export const getProduct = async (req, res) => {
 
 export const getMyProducts = async (req, res) => {
 	try {
-		const { userId, productsArr } = req.query;
+		const { userId } = req.query;
 
-		const productsArray = JSON.parse(productsArr);
+		const productIds = JSON.parse(req.query.productIds);
 
 		const products = await Product.aggregate([
 			{
@@ -125,9 +118,7 @@ export const getMyProducts = async (req, res) => {
 						{ removed: false },
 						{
 							_id: {
-								$nin: productsArray.map(
-									(product) => new mongoose.Types.ObjectId(product._id)
-								),
+								$nin: productIds.map((id) => new mongoose.Types.ObjectId(id)),
 							},
 						},
 					],
@@ -167,13 +158,14 @@ export const editProduct = async (req, res) => {
 
 		// update image
 		if (image) {
+			const imageURL = await uploadFile("product/", image);
 			updatedProduct = await Product.findByIdAndUpdate(productId, {
 				$set: {
 					productName: name,
 					productDescription: description,
 					productPrice: price,
 					productQuantity: quantity,
-					productImagePath: image.filename,
+					productImagePath: imageURL,
 					contactNumber,
 				},
 			});
@@ -196,12 +188,7 @@ export const editProduct = async (req, res) => {
 
 		// remove original image
 		if (image) {
-			const productImagePath = path.join(
-				__dirname,
-				"public/images/product",
-				originalProductImagePath
-			);
-			fs.unlinkSync(productImagePath);
+			await deleteFile(originalProductImagePath);
 		}
 
 		res.status(200).json({ msg: "Success" });
@@ -223,12 +210,7 @@ export const removeProduct = async (req, res) => {
 		}
 
 		// remove image
-		const productImagePath = path.join(
-			__dirname,
-			"public/images/product",
-			removedProduct.productImagePath
-		);
-		fs.unlinkSync(productImagePath);
+		await deleteFile(removedProduct.productImagePath);
 
 		res.status(200).json({ msg: "Success" });
 	} catch (err) {
@@ -238,24 +220,23 @@ export const removeProduct = async (req, res) => {
 
 export const getSearchedProducts = async (req, res) => {
 	try {
-		const { userId, searchText, productsArr } = req.query;
+		const { searchText } = req.query;
 		const limit = 15;
-		const productsArray = JSON.parse(productsArr);
+		const productIds = JSON.parse(req.query.productIds);
 
 		// STOP SEARCHING
 		if (searchText === "") {
 			return res.status(200).json({ msg: "Stop searching" });
 		}
 
-		const excludedProducts = productsArray.map(
-			(product) => new mongoose.Types.ObjectId(product._id)
+		const excludedProducts = productIds.map(
+			(id) => new mongoose.Types.ObjectId(id)
 		);
 
 		const products = await Product.aggregate([
 			{
 				$match: {
 					_id: { $nin: excludedProducts },
-					userId: { $ne: new mongoose.Types.ObjectId(userId) },
 					removed: false,
 					productName: { $regex: searchText, $options: "i" },
 				},
@@ -276,24 +257,23 @@ export const getSearchedProducts = async (req, res) => {
 
 		res.status(200).json({ msg: "Success", returnProducts });
 	} catch (err) {
-		console.log(err);
 		res.status(500).json({ error: err.message });
 	}
 };
 
 export const getSearchedMyProducts = async (req, res) => {
 	try {
-		const { userId, searchText, productsArr } = req.query;
+		const { userId, searchText } = req.query;
 		const limit = 15;
-		const productsArray = JSON.parse(productsArr);
+		const productIds = JSON.parse(req.query.productIds);
 
 		// STOP SEARCHING
 		if (searchText === "") {
 			return res.status(200).json({ msg: "Stop searching" });
 		}
 
-		const excludedProducts = productsArray.map(
-			(product) => new mongoose.Types.ObjectId(product._id)
+		const excludedProducts = productIds.map(
+			(id) => new mongoose.Types.ObjectId(id)
 		);
 
 		const products = await Product.aggregate([
@@ -321,7 +301,6 @@ export const getSearchedMyProducts = async (req, res) => {
 
 		res.status(200).json({ msg: "Success", returnProducts });
 	} catch (err) {
-		console.log(err);
 		res.status(500).json({ error: err.message });
 	}
 };

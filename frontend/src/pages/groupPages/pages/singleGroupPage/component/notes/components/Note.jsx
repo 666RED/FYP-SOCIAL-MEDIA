@@ -4,16 +4,17 @@ import { useSnackbar } from "notistack";
 import { MdDeleteForever } from "react-icons/md";
 import Spinner from "../../../../../../../components/Spinner/Spinner.jsx";
 import { ServerContext } from "../../../../../../../App.js";
+import { noteContext } from "../pages/NotePage.jsx";
 
-const Note = ({ note, count, isGroupAdmin, notes, setNotes }) => {
+const Note = ({ note, count }) => {
 	const serverURL = useContext(ServerContext);
-	const filePath = `${serverURL}/public/images/note/`;
 	const [loading, setLoading] = useState(false);
 	const { token } = useSelector((store) => store.auth);
 	const { enqueueSnackbar } = useSnackbar();
+	const { isGroupAdmin, notes, setNotes } = useContext(noteContext);
 
 	const handleDownload = () => {
-		window.open(filePath + note.filePath, "_blank");
+		window.open(note.filePath, "_blank");
 	};
 
 	const handleRemove = async () => {
@@ -67,7 +68,7 @@ const Note = ({ note, count, isGroupAdmin, notes, setNotes }) => {
 					className="cursor-pointer hover:opacity-70 inline"
 					onClick={handleDownload}
 				>
-					{note.filePath.split("_").slice(0, -1).join("_")}
+					{note.noteOriginalName}
 				</p>
 			</td>
 			<td>{note.uploaded}</td>

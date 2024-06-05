@@ -24,12 +24,11 @@ export const groupProfileReducer = (state, action) => {
 				groupAdminId,
 				members,
 			} = action.payload.returnGroup;
-			const { filePath } = action.payload;
 			return {
 				...state,
 				groupName,
-				groupImagePath: filePath + groupImagePath,
-				groupCoverImagePath: filePath + groupCoverImagePath,
+				groupImagePath: groupImagePath,
+				groupCoverImagePath: groupCoverImagePath,
 				groupBio,
 				groupAdminId,
 				numOfMembers: Object.keys(members).length,

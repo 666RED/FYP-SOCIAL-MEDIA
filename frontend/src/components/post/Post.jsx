@@ -1,4 +1,4 @@
-import { React, useContext, useEffect, useReducer } from "react";
+import { React, useContext, useEffect, useReducer, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useSnackbar } from "notistack";
 import { BsThreeDots } from "react-icons/bs/index.js";
@@ -11,6 +11,7 @@ import ReportForm from "./ReportForm.jsx";
 import OptionDiv from "../OptionDiv.jsx";
 import UserPostHeader from "../../pages/profilePages/components/UserPostHeader.jsx";
 import Spinner from "../Spinner/Spinner.jsx";
+import FocusImage from "../../pages/adminPages/components/FocusImage.jsx";
 import { postReducer, INITIAL_STATE } from "./feature/postReducer.js";
 import ACTION_TYPES from "./actionTypes/userPostActionTypes.js";
 import { removePost, updatePost } from "../../features/postSlice.js";
@@ -22,9 +23,7 @@ const Post = ({ post }) => {
 	const { user, token } = useSelector((store) => store.auth);
 	const [state, dispatch] = useReducer(postReducer, INITIAL_STATE);
 	const { enqueueSnackbar } = useSnackbar();
-
-	const profileImgPath = `${serverURL}/public/images/profile/`;
-	const postImgPath = `${serverURL}/public/images/post/`;
+	const [showImage, setShowImage] = useState(false);
 
 	const previous = window.location.pathname;
 
@@ -232,9 +231,16 @@ const Post = ({ post }) => {
 					id={post._id}
 				/>
 			)}
+			{/* FOCUS IMAGE */}
+			{showImage && (
+				<FocusImage
+					imagePath={post.postImagePath}
+					setShowImage={setShowImage}
+				/>
+			)}
 			{/* HEADER */}
 			<UserPostHeader
-				imgPath={profileImgPath + post.profileImagePath}
+				imgPath={post.profileImagePath}
 				userName={post.userName}
 				frameColor={post.frameColor}
 				postTime={post.time}
@@ -252,8 +258,9 @@ const Post = ({ post }) => {
 			{post.postImagePath !== "" && (
 				<img
 					alt="Post Image"
-					src={postImgPath + post.postImagePath}
-					className="rounded-xl mx-auto w-full"
+					src={post.postImagePath}
+					className="rounded-xl mx-auto max-img-height cursor-pointer"
+					onClick={() => setShowImage(true)}
 				/>
 			)}
 			{/* LIKE AND COMMENT DIV */}
@@ -270,7 +277,9 @@ const Post = ({ post }) => {
 					>
 						<HiThumbUp />
 					</div>
-					<h6 className="justify-self-center text-sm sm:text-base">Likes</h6>
+					<h6 className="justify-self-center text-sm sm:text-base select-none">
+						Likes
+					</h6>
 					<p className="justify-self-center">{state.likesCount}</p>
 				</div>
 
@@ -282,7 +291,9 @@ const Post = ({ post }) => {
 					<div className="text-xl justify-self-center">
 						<FaCommentDots />
 					</div>
-					<h6 className="justify-self-center text-sm sm:text-base">Comments</h6>
+					<h6 className="justify-self-center text-sm sm:text-base select-none">
+						Comments
+					</h6>
 					<p className="justify-self-center">{post.postComments}</p>
 				</div>
 			</div>

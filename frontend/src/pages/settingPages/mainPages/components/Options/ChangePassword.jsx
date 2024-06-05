@@ -155,12 +155,12 @@ const ChangePassword = () => {
 				/>
 				{/* EYE ICONS */}
 				{viewPassword ? (
-					<BsEyeSlashFill
+					<BsEyeFill
 						className="absolute text-xl top-6 right-2 cursor-pointer hover:text-blue-600 icon"
 						onClick={toggleViewPassword}
 					/>
 				) : (
-					<BsEyeFill
+					<BsEyeSlashFill
 						className="absolute text-xl top-6 right-2 cursor-pointer hover:text-blue-600 icon"
 						onClick={toggleViewPassword}
 					/>

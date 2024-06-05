@@ -22,8 +22,6 @@ const EditProduct = () => {
 	const { user, token } = useSelector((store) => store.auth);
 	const [state, dispatch] = useReducer(editProductReducer, INITIAL_STATE);
 
-	const productImagePath = `${serverURL}/public/images/product/`;
-
 	// first render
 	useEffect(() => {
 		const getProduct = async () => {
@@ -203,7 +201,11 @@ const EditProduct = () => {
 	return user && token ? (
 		<div className="page-layout-with-back-arrow mb-5 relative">
 			{/* HEADER */}
-			<DirectBackArrowHeader destination="/marketplace" title="Edit Product" />
+			<DirectBackArrowHeader
+				destination="/marketplace"
+				title="Edit Product"
+				discardChanges={state.madeChanges || state.hasImagePathChanged}
+			/>
 			{state.loading && <Spinner />}
 
 			{/* FORM CONTAINER */}
@@ -217,11 +219,7 @@ const EditProduct = () => {
 					dispatch={(payload) =>
 						dispatch({ type: ACTION_TYPES.UPLOAD_IMAGE, payload })
 					}
-					imagePath={
-						state.hasImagePathChanged
-							? state.productImagePath
-							: `${productImagePath}${state.productImagePath}`
-					}
+					imagePath={state.productImagePath}
 				/>
 				{/* PRODUCT NAME */}
 				<h3 className="mt-3">Product name:</h3>

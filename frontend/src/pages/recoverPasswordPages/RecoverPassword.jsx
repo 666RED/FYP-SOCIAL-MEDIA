@@ -73,9 +73,7 @@ const RecoverPassword = () => {
 			>
 				<FormBackArrowHeader destination="/" title="Recover Password" />
 				<HorizontalRule />
-				<p className="text-base">
-					Enter your registered email to get 6-digit verification code
-				</p>
+				<p>Enter your registered email to get 6-digit verification code</p>
 				<input
 					type="email"
 					minLength={20}

@@ -10,13 +10,6 @@ const MostUseful = () => {
 			<div className="flex items-center justify-between ">
 				{/* TITLE */}
 				<h2 className="font-semibold">Most Useful </h2>
-				{/* UPLOAD NEW BUTTTON */}
-				<button
-					className="btn-green text-base"
-					onClick={() => navigate("/campus-condition/upload-condition")}
-				>
-					Upload New
-				</button>
 			</div>
 			{/* CONDITIONS */}
 			<MostUsefulConditions />

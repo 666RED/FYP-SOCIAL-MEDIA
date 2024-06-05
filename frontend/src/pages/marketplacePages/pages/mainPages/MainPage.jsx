@@ -117,7 +117,7 @@ const MainPage = () => {
 			const res = await fetch(
 				`${path}?userId=${
 					user._id
-				}&searchText=${payload.trim()}&productsArr=${JSON.stringify([])}`,
+				}&searchText=${payload.trim()}&productIds=${JSON.stringify([])}`,
 				{
 					method: "GET",
 					headers: {
@@ -191,7 +191,7 @@ const MainPage = () => {
 			const res = await fetch(
 				`${path}?userId=${
 					user._id
-				}&searchText=${payload.trim()}&servicesArr=${JSON.stringify(
+				}&searchText=${payload.trim()}&serviceIds=${JSON.stringify(
 					[]
 				)}&category=${serviceCategory}`,
 				{
@@ -267,7 +267,7 @@ const MainPage = () => {
 			const res = await fetch(
 				`${path}?userId=${
 					user._id
-				}&searchText=${payload.trim()}&eventsArr=${JSON.stringify(
+				}&searchText=${payload.trim()}&eventIds=${JSON.stringify(
 					[]
 				)}&category=${eventCategory}`,
 				{
@@ -377,103 +377,107 @@ const MainPage = () => {
 			<hr className="border-4 border-gray-400 my-3" />
 			{/* MAIN CONTENT */}
 			<div className="px-2">
-				<div className="flex items-center">
-					{/* DROP DOWN */}
-					{currentNav === "Product" ? (
-						// PRODUCT DROP DOWN
-						<select
-							className="mb-2 border border-gray-400 rounded-xl p-2"
-							onChange={handleOnChange}
-							value={category}
-						>
-							<option value="products" className="py-1">
-								Explore
-							</option>
-							<option value="my-products" className="py-1">
-								My products
-							</option>
-						</select>
-					) : currentNav === "Service" ? (
-						// SERVICE DROP DOWN
-						<div>
+				<div className="md:flex md:items-center">
+					{/* SEARCH BAR */}
+					<div className="">
+						<SearchBar
+							func={
+								currentNav === "Product"
+									? searchProducts
+									: currentNav === "Service"
+									? searchServices
+									: searchEvents
+							}
+							placeholderText="Search..."
+							text={searchText}
+							isDisabled={loading}
+						/>
+					</div>
+					<div className="flex items-center md:ml-3 md:mt-0 mt-2">
+						{/* DROP DOWN */}
+						{currentNav === "Product" ? (
+							// PRODUCT DROP DOWN
 							<select
-								className="mb-2 border border-gray-400 rounded-xl p-2"
-								value={category}
-								onChange={handleOnChange}
-							>
-								<option value="services" className="py-1">
-									Explore
-								</option>
-								<option value="my-services" className="py-1">
-									My services
-								</option>
-							</select>
-							{/* SERVICE CATEGORY */}
-							<select
-								className="ml-2 mb-2 border border-gray-400 rounded-xl p-2"
-								value={serviceCategory}
-								onChange={handleOnChangeCategory}
-							>
-								<option value="all">All</option>
-								<option value="tutoring">Tutoring</option>
-								<option value="academic-writing-assistance">
-									Academic writing assistance
-								</option>
-								<option value="graphic-design">Graphic design</option>
-								<option value="photography-/-videography">
-									Photography / Videography
-								</option>
-								<option value="it-support">IT support</option>
-								<option value="language-translation">
-									Language translation
-								</option>
-								<option value="event-planning">Event planning</option>
-								<option value="car-hire">Car hire</option>
-								<option value="food-delivery">Food delivery</option>
-								<option value="other">Other</option>
-							</select>
-						</div>
-					) : (
-						// EVENT DROP DOWN
-						<div>
-							<select
-								className="mb-2 border border-gray-400 rounded-xl p-2"
+								className=" border border-gray-400 rounded-xl p-2"
 								onChange={handleOnChange}
 								value={category}
 							>
-								<option value="events" className="py-1">
+								<option value="products" className="py-1">
 									Explore
 								</option>
-								<option value="my-events" className="py-1">
-									My events
+								<option value="my-products" className="py-1">
+									My products
 								</option>
 							</select>
-							{/* EVENT CATEGORY */}
-							<select
-								className="ml-2 mb-2 border border-gray-400 rounded-xl p-2"
-								value={eventCategory}
-								onChange={handleOnChangeEventCategory}
-							>
-								<option value="all">All</option>
-								<option value="one-day">One day</option>
-								<option value="multiple-days">Multiple days</option>
-							</select>
-						</div>
-					)}
+						) : currentNav === "Service" ? (
+							// SERVICE DROP DOWN
+							<div className=" flex items-center">
+								<select
+									className="border border-gray-400 rounded-xl p-2"
+									value={category}
+									onChange={handleOnChange}
+								>
+									<option value="services" className="py-1">
+										Explore
+									</option>
+									<option value="my-services" className="py-1">
+										My services
+									</option>
+								</select>
+								{/* SERVICE CATEGORY */}
+								<select
+									className="ml-2 border border-gray-400 rounded-xl p-2 text-sm md:text-base"
+									value={serviceCategory}
+									onChange={handleOnChangeCategory}
+								>
+									<option value="all">All</option>
+									<option value="tutoring">Tutoring</option>
+									<option value="academic-writing-assistance">
+										Academic writing assistance
+									</option>
+									<option value="graphic-design">Graphic design</option>
+									<option value="photography-/-videography">
+										Photography / Videography
+									</option>
+									<option value="it-support">IT support</option>
+									<option value="language-translation">
+										Language translation
+									</option>
+									<option value="event-planning">Event planning</option>
+									<option value="car-hire">Car hire</option>
+									<option value="food-delivery">Food delivery</option>
+									<option value="other">Other</option>
+								</select>
+							</div>
+						) : (
+							// EVENT DROP DOWN
+							<div className="flex items-center">
+								<select
+									className=" border border-gray-400 rounded-xl p-2"
+									onChange={handleOnChange}
+									value={category}
+								>
+									<option value="events" className="py-1">
+										Explore
+									</option>
+									<option value="my-events" className="py-1">
+										My events
+									</option>
+								</select>
+								{/* EVENT CATEGORY */}
+								<select
+									className="ml-2 border border-gray-400 rounded-xl p-2"
+									value={eventCategory}
+									onChange={handleOnChangeEventCategory}
+								>
+									<option value="all">All</option>
+									<option value="one-day">One day</option>
+									<option value="multiple-days">Multiple days</option>
+								</select>
+							</div>
+						)}
+					</div>
 				</div>
-				{/* SEARCH BAR */}
-				<SearchBar
-					func={
-						currentNav === "Product"
-							? searchProducts
-							: currentNav === "Service"
-							? searchServices
-							: searchEvents
-					}
-					placeholderText="Search..."
-					text={searchText}
-					isDisabled={loading}
-				/>
 				{/* CONTENT */}
 				{category === "products" ? (
 					<Products

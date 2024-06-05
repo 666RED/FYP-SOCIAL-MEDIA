@@ -2,9 +2,7 @@ import { Group } from "../models/groupModel.js";
 import { User } from "../models/userModel.js";
 import { JoinGroupRequest } from "../models/joinGroupRequestModel.js";
 import mongoose from "mongoose";
-import path from "path";
-import fs from "fs";
-import { __dirname } from "../index.js";
+import { uploadFile, deleteFile } from "../middleware/handleFile.js";
 
 export const createNewGroup = async (req, res) => {
 	try {
@@ -17,6 +15,7 @@ export const createNewGroup = async (req, res) => {
 		const membersMap = new Map();
 		membersMap.set(userId, true);
 
+		// use default group image & cover image
 		if (!groupImage && !groupCoverImage) {
 			newGroup = new Group({
 				groupName: name,
@@ -24,29 +23,36 @@ export const createNewGroup = async (req, res) => {
 				groupAdminId: userId,
 				members: membersMap,
 			});
-		} else if (!groupImage) {
+		} // only upload cover image
+		else if (!groupImage) {
+			const imageURL = await uploadFile("group/", groupCoverImage[0]);
 			newGroup = new Group({
 				groupName: name,
 				groupBio: bio,
 				groupAdminId: userId,
-				groupCoverImagePath: groupCoverImage[0].filename,
+				groupCoverImagePath: imageURL,
 				members: membersMap,
 			});
-		} else if (!groupCoverImage) {
+		} // only upload group image
+		else if (!groupCoverImage) {
+			const imageURL = await uploadFile("group/", groupImage[0]);
 			newGroup = new Group({
 				groupName: name,
 				groupBio: bio,
 				groupAdminId: userId,
-				groupImagePath: groupImage[0].filename,
+				groupImagePath: imageURL,
 				members: membersMap,
 			});
-		} else {
+		} // upload both group image & cover image
+		else {
+			const groupImageURL = await uploadFile("group/", groupImage[0]);
+			const coverImageURL = await uploadFile("group/", groupCoverImage[0]);
 			newGroup = new Group({
 				groupName: name,
 				groupBio: bio,
 				groupAdminId: userId,
-				groupImagePath: groupImage[0].filename,
-				groupCoverImagePath: groupCoverImage[0].filename,
+				groupImagePath: groupImageURL,
+				groupCoverImagePath: coverImageURL,
 				members: membersMap,
 			});
 		}
@@ -69,8 +75,6 @@ export const createNewGroup = async (req, res) => {
 
 		res.status(201).json({ msg: "Success", savedGroup });
 	} catch (err) {
-		console.log(err);
-
 		res.status(500).json({ error: err.message });
 	}
 };
@@ -79,7 +83,7 @@ export const getUserGroups = async (req, res) => {
 	try {
 		const { userId } = req.query;
 		const limit = 10;
-		const groupsArr = JSON.parse(req.query.groupsArr) || [];
+		const groupIds = JSON.parse(req.query.groupIds);
 
 		const user = await User.findById(userId);
 
@@ -93,23 +97,23 @@ export const getUserGroups = async (req, res) => {
 			return res.status(200).json({ msg: "No group" });
 		}
 
-		const excludedGroups = groupsArr.map((group) => group._id);
-
 		let userGroupsIds = Array.from(userGroups.keys())
-			.filter((groupId) => !excludedGroups.includes(groupId))
-			.slice(0, limit);
+			.filter((groupId) => !groupIds.includes(groupId))
+			.map((groupId) => new mongoose.Types.ObjectId(groupId));
 
 		const userGroupsArr = await Group.find({
 			_id: { $in: userGroupsIds },
 			removed: 0,
-		}).select({
-			groupCoverImagePath: 0,
-			groupBio: 0,
-			groupAdminId: 0,
-			createdAt: 0,
-			updatedAt: 0,
-			__v: 0,
-		});
+		})
+			.select({
+				groupCoverImagePath: 0,
+				groupBio: 0,
+				groupAdminId: 0,
+				createdAt: 0,
+				updatedAt: 0,
+				__v: 0,
+			})
+			.limit(limit);
 
 		res.status(200).json({ msg: "Success", userGroupsArr });
 	} catch (err) {
@@ -121,7 +125,7 @@ export const getUserGroupsSearch = async (req, res) => {
 	try {
 		const { userId, searchText } = req.query;
 		const limit = 10;
-		const groupsArr = JSON.parse(req.query.groupsArr) || [];
+		const groupIds = JSON.parse(req.query.groupIds);
 
 		// STOP SEARCHING
 		if (searchText === "") {
@@ -141,10 +145,8 @@ export const getUserGroupsSearch = async (req, res) => {
 			return res.status(200).json({ msg: "No group" });
 		}
 
-		const excludedGroups = groupsArr.map((group) => group._id);
-
 		let userGroupsIds = Array.from(userGroups.keys())
-			.filter((groupId) => !excludedGroups.includes(groupId))
+			.filter((groupId) => !groupIds.includes(groupId))
 			.map((groupId) => new mongoose.Types.ObjectId(groupId));
 
 		const returnUserGroupsArr = await Group.find({
@@ -172,7 +174,7 @@ export const getDiscoverGroups = async (req, res) => {
 	try {
 		const { userId } = req.query;
 		const limit = 10;
-		const randomGroupsArr = JSON.parse(req.query.randomGroupsArr) || [];
+		const randomGroupIds = JSON.parse(req.query.randomGroupIds);
 
 		const user = await User.findById(userId);
 
@@ -187,7 +189,7 @@ export const getDiscoverGroups = async (req, res) => {
 		);
 
 		excludedGroups.push(
-			...randomGroupsArr.map((group) => new mongoose.Types.ObjectId(group._id))
+			...randomGroupIds.map((id) => new mongoose.Types.ObjectId(id))
 		);
 
 		const returnRandomGroupsArr = await Group.find({
@@ -214,8 +216,6 @@ export const getDiscoverGroups = async (req, res) => {
 
 		res.status(200).json({ msg: "Success", returnRandomGroupsArr });
 	} catch (err) {
-		console.log(err);
-
 		res.status(500).json({ error: err.message });
 	}
 };
@@ -224,7 +224,7 @@ export const getDiscoverGroupsSearch = async (req, res) => {
 	try {
 		const { userId, searchText } = req.query;
 		const limit = 10;
-		const randomGroupsArr = JSON.parse(req.query.randomGroupsArr) || [];
+		const randomGroupIds = JSON.parse(req.query.randomGroupIds) || [];
 
 		// STOP SEARCHING
 		if (searchText === "") {
@@ -243,7 +243,7 @@ export const getDiscoverGroupsSearch = async (req, res) => {
 			(groupId) => new mongoose.Types.ObjectId(groupId)
 		);
 		excludedGroups.push(
-			...randomGroupsArr.map((group) => new mongoose.Types.ObjectId(group._id))
+			...randomGroupIds.map((id) => new mongoose.Types.ObjectId(id))
 		);
 
 		const returnRandomGroupsArr = await Group.find({
@@ -287,7 +287,7 @@ export const getMembers = async (req, res) => {
 	try {
 		const limit = 10;
 		const { groupId } = req.query;
-		const membersArr = JSON.parse(req.query.membersArr) || [];
+		const memberIds = JSON.parse(req.query.memberIds);
 
 		const group = await Group.findById(groupId);
 
@@ -301,7 +301,7 @@ export const getMembers = async (req, res) => {
 
 		// exclude already-picked members
 		for (let memberId of group.members.keys()) {
-			if (!membersArr.includes(memberId)) {
+			if (!memberIds.includes(memberId)) {
 				includedMembers.push(new mongoose.Types.ObjectId(memberId));
 			}
 			// limit the number of members to be returned to 10
@@ -337,7 +337,7 @@ export const getSearchedMembers = async (req, res) => {
 	try {
 		const { groupId, searchText } = req.query;
 		const limit = 10;
-		const membersArr = JSON.parse(req.query.membersArr) || [];
+		const memberIds = JSON.parse(req.query.memberIds);
 
 		if (searchText === "") {
 			return res.status(200).json({ msg: "Stop searching" });
@@ -352,9 +352,9 @@ export const getSearchedMembers = async (req, res) => {
 		const membersMap = group.members;
 
 		// GET ALL MEMBERS IDS
-		let memberIds = new Array();
+		let allMemberIds = new Array();
 		for (const [memberId] of membersMap) {
-			memberIds.push(new mongoose.Types.ObjectId(memberId));
+			allMemberIds.push(new mongoose.Types.ObjectId(memberId));
 		}
 
 		// exclude already-picked members & limit 10 members
@@ -362,10 +362,8 @@ export const getSearchedMembers = async (req, res) => {
 			{
 				$match: {
 					_id: {
-						$in: memberIds,
-						$nin: membersArr.map(
-							(memberId) => new mongoose.Types.ObjectId(memberId)
-						),
+						$in: allMemberIds,
+						$nin: memberIds.map((id) => new mongoose.Types.ObjectId(id)),
 					},
 					userName: { $regex: searchText, $options: "i" },
 				},
@@ -384,8 +382,6 @@ export const getSearchedMembers = async (req, res) => {
 
 		res.status(200).json({ msg: "Success", returnMembersArr });
 	} catch (err) {
-		console.log(err);
-
 		res.status(500).json({ error: err.message });
 	}
 };
@@ -459,8 +455,6 @@ export const leaveGroup = async (req, res) => {
 
 		res.status(200).json({ msg: "Success" });
 	} catch (err) {
-		console.log(err);
-
 		res.status(500).json({ error: err.message });
 	}
 };
@@ -510,29 +504,33 @@ export const editGroup = async (req, res) => {
 				},
 			});
 		} else if (!groupImage) {
+			const imageURL = await uploadFile("group/", groupCoverImage[0]);
 			// only update cover image
 			group = await Group.findByIdAndUpdate(groupId, {
 				$set: {
-					groupCoverImagePath: groupCoverImage[0].filename,
+					groupCoverImagePath: imageURL,
 					groupName,
 					groupBio,
 				},
 			});
 		} else if (!groupCoverImage) {
 			// only update group image
+			const imageURL = await uploadFile("group/", groupImage[0]);
 			group = await Group.findByIdAndUpdate(groupId, {
 				$set: {
-					groupImagePath: groupImage[0].filename,
+					groupImagePath: imageURL,
 					groupName,
 					groupBio,
 				},
 			});
 		} else {
 			// update both images
+			const groupImageURL = await uploadFile("group/", groupImage[0]);
+			const coverImageURL = await uploadFile("group/", groupCoverImage[0]);
 			group = await Group.findByIdAndUpdate(groupId, {
 				$set: {
-					groupImagePath: groupImage[0].filename,
-					groupCoverImagePath: groupCoverImage[0].filename,
+					groupImagePath: groupImageURL,
+					groupCoverImagePath: coverImageURL,
 					groupName,
 					groupBio,
 				},
@@ -546,29 +544,21 @@ export const editGroup = async (req, res) => {
 		// Delete original images if they exist and their name are not default
 		if (groupImage) {
 			if (
-				originalGroupImagePath !== "default-group-image.png" &&
+				originalGroupImagePath !==
+					"https://firebasestorage.googleapis.com/v0/b/final-year-project-d85b9.appspot.com/o/group%2F1717572712982-default-group-image.png?alt=media&token=f477f873-41ee-4f68-ae76-11340d7b595b" &&
 				originalGroupImagePath !== groupImage[0].filename
 			) {
-				const groupImagePath = path.join(
-					__dirname,
-					"public/images/group",
-					originalGroupImagePath
-				);
-				fs.unlinkSync(groupImagePath);
+				await deleteFile(originalGroupImagePath);
 			}
 		}
 
 		if (groupCoverImage) {
 			if (
-				originalGroupCoverImagePath !== "default-group-cover-image.jpg" &&
+				originalGroupCoverImagePath !==
+					"https://firebasestorage.googleapis.com/v0/b/final-year-project-d85b9.appspot.com/o/group%2F1717572713265-default-group-cover-image.jpg?alt=media&token=89c92422-f0e5-46e4-b603-9fd7a1ced3ff" &&
 				originalGroupCoverImagePath !== groupCoverImage[0].filename
 			) {
-				const groupCoverImagePath = path.join(
-					__dirname,
-					"public/images/group",
-					originalGroupCoverImagePath
-				);
-				fs.unlinkSync(groupCoverImagePath);
+				await deleteFile(originalGroupCoverImagePath);
 			}
 		}
 

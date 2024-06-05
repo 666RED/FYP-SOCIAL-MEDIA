@@ -32,7 +32,7 @@ const MembersList = ({ setLoading }) => {
 				sliceDispatch(setIsLoadingMembers(true));
 
 				const res = await fetch(
-					`${serverURL}/group/get-members?groupId=${groupId}&membersArr=${JSON.stringify(
+					`${serverURL}/group/get-members?groupId=${groupId}&memberIds=${JSON.stringify(
 						[]
 					)}`,
 					{
@@ -86,7 +86,7 @@ const MembersList = ({ setLoading }) => {
 		try {
 			setLoadMore(true);
 			const res = await fetch(
-				`${serverURL}/group/get-members?groupId=${groupId}&membersArr=${JSON.stringify(
+				`${serverURL}/group/get-members?groupId=${groupId}&memberIds=${JSON.stringify(
 					membersArr.map((member) => member._id)
 				)}`,
 				{
@@ -133,7 +133,7 @@ const MembersList = ({ setLoading }) => {
 		try {
 			setLoadMore(true);
 			const res = await fetch(
-				`${serverURL}/group/get-searched-members?groupId=${groupId}&searchText=${searchText}&membersArr=${JSON.stringify(
+				`${serverURL}/group/get-searched-members?groupId=${groupId}&searchText=${searchText}&memberIds=${JSON.stringify(
 					membersArr.map((member) => member._id)
 				)}`,
 				{

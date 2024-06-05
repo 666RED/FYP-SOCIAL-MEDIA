@@ -1,9 +1,7 @@
 import mongoose from "mongoose";
 import { Event } from "../models/eventModel.js";
 import { User } from "../models/userModel.js";
-import path from "path";
-import fs from "fs";
-import { __dirname } from "../index.js";
+import { uploadFile, deleteFile } from "../middleware/handleFile.js";
 
 export const createNewEvent = async (req, res) => {
 	try {
@@ -22,13 +20,15 @@ export const createNewEvent = async (req, res) => {
 
 		let newEvent;
 
+		const imageURL = await uploadFile("event/", image);
+
 		if (isOneDayEvent === "true") {
 			const { oneDate, startTime, endTime } = req.body;
 
 			newEvent = new Event({
 				eventName: name,
 				eventDescription: description,
-				eventPosterImagePath: image.filename,
+				eventPosterImagePath: imageURL,
 				eventVenue: venue,
 				isOneDayEvent: isOneDayEvent,
 				userId,
@@ -44,7 +44,7 @@ export const createNewEvent = async (req, res) => {
 			newEvent = new Event({
 				eventName: name,
 				eventDescription: description,
-				eventPosterImagePath: image.filename,
+				eventPosterImagePath: imageURL,
 				eventVenue: venue,
 				isOneDayEvent: isOneDayEvent,
 				userId,
@@ -101,9 +101,9 @@ export const getEvent = async (req, res) => {
 
 export const getEvents = async (req, res) => {
 	try {
-		const { userId, eventsArr, category } = req.query;
+		const { category } = req.query;
 
-		const eventsArray = JSON.parse(eventsArr);
+		const eventIds = JSON.parse(req.query.eventIds);
 
 		let events;
 
@@ -112,20 +112,20 @@ export const getEvents = async (req, res) => {
 				{
 					$match: {
 						$and: [
-							{ userId: { $ne: new mongoose.Types.ObjectId(userId) } },
 							{ removed: false },
 							{
 								_id: {
-									$nin: eventsArray.map(
-										(event) => new mongoose.Types.ObjectId(event._id)
-									),
+									$nin: eventIds.map((id) => new mongoose.Types.ObjectId(id)),
 								},
 							},
 						],
 					},
 				},
 				{
-					$sample: { size: 15 },
+					$limit: 15,
+				},
+				{
+					$sort: { createdAt: -1 },
 				},
 			]);
 		} else if (category === "one-day") {
@@ -133,43 +133,41 @@ export const getEvents = async (req, res) => {
 				{
 					$match: {
 						$and: [
-							{ userId: { $ne: new mongoose.Types.ObjectId(userId) } },
 							{ removed: false },
 							{ isOneDayEvent: true },
 							{
 								_id: {
-									$nin: eventsArray.map(
-										(event) => new mongoose.Types.ObjectId(event._id)
-									),
+									$nin: eventIds.map((id) => new mongoose.Types.ObjectId(id)),
 								},
 							},
 						],
 					},
 				},
 				{
-					$sample: { size: 15 },
+					$limit: 15,
 				},
+				{ $sort: { createdAt: -1 } },
 			]);
 		} else {
 			events = await Event.aggregate([
 				{
 					$match: {
 						$and: [
-							{ userId: { $ne: new mongoose.Types.ObjectId(userId) } },
 							{ removed: false },
 							{ isOneDayEvent: false },
 							{
 								_id: {
-									$nin: eventsArray.map(
-										(event) => new mongoose.Types.ObjectId(event._id)
-									),
+									$nin: eventIds.map((id) => new mongoose.Types.ObjectId(id)),
 								},
 							},
 						],
 					},
 				},
 				{
-					$sample: { size: 15 },
+					$limit: 15,
+				},
+				{
+					$sort: { createdAt: -1 },
 				},
 			]);
 		}
@@ -191,9 +189,9 @@ export const getEvents = async (req, res) => {
 
 export const getMyEvents = async (req, res) => {
 	try {
-		const { userId, eventsArr, category } = req.query;
+		const { userId, category } = req.query;
 
-		const eventsArray = JSON.parse(eventsArr);
+		const eventIds = JSON.parse(req.query.eventIds);
 
 		let events;
 
@@ -206,9 +204,7 @@ export const getMyEvents = async (req, res) => {
 							{ removed: false },
 							{
 								_id: {
-									$nin: eventsArray.map(
-										(event) => new mongoose.Types.ObjectId(event._id)
-									),
+									$nin: eventIds.map((id) => new mongoose.Types.ObjectId(id)),
 								},
 							},
 						],
@@ -216,6 +212,9 @@ export const getMyEvents = async (req, res) => {
 				},
 				{
 					$limit: 15,
+				},
+				{
+					$sort: { createdAt: -1 },
 				},
 			]);
 		} else if (category === "one-day") {
@@ -228,9 +227,7 @@ export const getMyEvents = async (req, res) => {
 							{ isOneDayEvent: true },
 							{
 								_id: {
-									$nin: eventsArray.map(
-										(event) => new mongoose.Types.ObjectId(event._id)
-									),
+									$nin: eventIds.map((id) => new mongoose.Types.ObjectId(id)),
 								},
 							},
 						],
@@ -238,6 +235,9 @@ export const getMyEvents = async (req, res) => {
 				},
 				{
 					$limit: 15,
+				},
+				{
+					$sort: { createdAt: -1 },
 				},
 			]);
 		} else {
@@ -250,9 +250,7 @@ export const getMyEvents = async (req, res) => {
 							{ isOneDayEvent: false },
 							{
 								_id: {
-									$nin: eventsArray.map(
-										(event) => new mongoose.Types.ObjectId(event._id)
-									),
+									$nin: eventIds.map((id) => new mongoose.Types.ObjectId(id)),
 								},
 							},
 						],
@@ -260,6 +258,9 @@ export const getMyEvents = async (req, res) => {
 				},
 				{
 					$limit: 15,
+				},
+				{
+					$sort: { createdAt: -1 },
 				},
 			]);
 		}
@@ -281,17 +282,17 @@ export const getMyEvents = async (req, res) => {
 
 export const getSearchedEvents = async (req, res) => {
 	try {
-		const { userId, searchText, eventsArr, category } = req.query;
+		const { searchText, category } = req.query;
 		const limit = 15;
-		const eventsArray = JSON.parse(eventsArr);
+		const eventIds = JSON.parse(req.query.eventIds);
 
 		// STOP SEARCHING
 		if (searchText === "") {
 			return res.status(200).json({ msg: "Stop searching" });
 		}
 
-		const excludedEvents = eventsArray.map(
-			(event) => new mongoose.Types.ObjectId(event._id)
+		const excludedEvents = eventIds.map(
+			(id) => new mongoose.Types.ObjectId(id)
 		);
 
 		let events;
@@ -301,7 +302,6 @@ export const getSearchedEvents = async (req, res) => {
 				{
 					$match: {
 						_id: { $nin: excludedEvents },
-						userId: { $ne: new mongoose.Types.ObjectId(userId) },
 						removed: false,
 						eventName: { $regex: searchText, $options: "i" },
 					},
@@ -309,13 +309,15 @@ export const getSearchedEvents = async (req, res) => {
 				{
 					$limit: limit,
 				},
+				{
+					$sort: { createdAt: -1 },
+				},
 			]);
 		} else if (category === "one-day") {
 			events = await Event.aggregate([
 				{
 					$match: {
 						_id: { $nin: excludedEvents },
-						userId: { $ne: new mongoose.Types.ObjectId(userId) },
 						removed: false,
 						eventName: { $regex: searchText, $options: "i" },
 						isOneDayEvent: true,
@@ -324,13 +326,15 @@ export const getSearchedEvents = async (req, res) => {
 				{
 					$limit: limit,
 				},
+				{
+					$sort: { createdAt: -1 },
+				},
 			]);
 		} else {
 			events = await Event.aggregate([
 				{
 					$match: {
 						_id: { $nin: excludedEvents },
-						userId: { $ne: new mongoose.Types.ObjectId(userId) },
 						removed: false,
 						eventName: { $regex: searchText, $options: "i" },
 						isOneDayEvent: false,
@@ -338,6 +342,9 @@ export const getSearchedEvents = async (req, res) => {
 				},
 				{
 					$limit: limit,
+				},
+				{
+					$sort: { createdAt: -1 },
 				},
 			]);
 		}
@@ -359,17 +366,17 @@ export const getSearchedEvents = async (req, res) => {
 
 export const getSearchedMyEvents = async (req, res) => {
 	try {
-		const { userId, searchText, eventsArr, category } = req.query;
+		const { userId, searchText, category } = req.query;
 		const limit = 15;
-		const eventsArray = JSON.parse(eventsArr);
+		const eventIds = JSON.parse(req.query.eventIds);
 
 		// STOP SEARCHING
 		if (searchText === "") {
 			return res.status(200).json({ msg: "Stop searching" });
 		}
 
-		const excludedEvents = eventsArray.map(
-			(event) => new mongoose.Types.ObjectId(event._id)
+		const excludedEvents = eventIds.map(
+			(id) => new mongoose.Types.ObjectId(id)
 		);
 
 		let events;
@@ -387,6 +394,9 @@ export const getSearchedMyEvents = async (req, res) => {
 				{
 					$limit: limit,
 				},
+				{
+					$sort: { createdAt: -1 },
+				},
 			]);
 		} else if (category === "one-day") {
 			events = await Event.aggregate([
@@ -402,6 +412,9 @@ export const getSearchedMyEvents = async (req, res) => {
 				{
 					$limit: limit,
 				},
+				{
+					$sort: { createdAt: -1 },
+				},
 			]);
 		} else {
 			events = await Event.aggregate([
@@ -416,6 +429,9 @@ export const getSearchedMyEvents = async (req, res) => {
 				},
 				{
 					$limit: limit,
+				},
+				{
+					$sort: { createdAt: -1 },
 				},
 			]);
 		}
@@ -447,16 +463,6 @@ export const editEvent = async (req, res) => {
 			organizer,
 		} = req.body;
 
-		console.log(
-			eventId,
-			name,
-			description,
-			venue,
-			contactNumbers,
-			isOneDayEvent,
-			organizer
-		);
-
 		const numbers = JSON.parse(contactNumbers);
 
 		const image = req.file;
@@ -468,13 +474,14 @@ export const editEvent = async (req, res) => {
 
 		// update image
 		if (image) {
+			const imageURL = await uploadFile("event/", image);
 			if (isOneDayEvent === "true") {
 				const { oneDate, startTime, endTime } = req.body;
 				updatedEvent = await Event.findByIdAndUpdate(eventId, {
 					$set: {
 						eventName: name,
 						eventDescription: description,
-						eventPosterImagePath: image.filename,
+						eventPosterImagePath: imageURL,
 						eventVenue: venue,
 						isOneDayEvent: isOneDayEvent,
 						contactNumbers: numbers,
@@ -492,7 +499,7 @@ export const editEvent = async (req, res) => {
 					$set: {
 						eventName: name,
 						eventDescription: description,
-						eventPosterImagePath: image.filename,
+						eventPosterImagePath: imageURL,
 						eventVenue: venue,
 						isOneDayEvent: isOneDayEvent,
 						contactNumbers: numbers,
@@ -549,12 +556,7 @@ export const editEvent = async (req, res) => {
 
 		// remove original image
 		if (image) {
-			const imagePath = path.join(
-				__dirname,
-				"public/images/event",
-				originalEventPosterImagePath
-			);
-			fs.unlinkSync(imagePath);
+			await deleteFile(originalEventPosterImagePath);
 		}
 
 		res.status(200).json({ msg: "Success" });
@@ -582,12 +584,7 @@ export const removeEvent = async (req, res) => {
 		}
 
 		// remove image
-		const eventPosterImagePath = path.join(
-			__dirname,
-			"public/images/event",
-			originalEvent.eventPosterImagePath
-		);
-		fs.unlinkSync(eventPosterImagePath);
+		await deleteFile(originalEvent.eventPosterImagePath);
 
 		res.status(200).json({ msg: "Success" });
 	} catch (err) {

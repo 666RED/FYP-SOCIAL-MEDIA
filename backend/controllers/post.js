@@ -1,13 +1,13 @@
 import { Post } from "../models/postModel.js";
 import { Comment } from "../models/commentModel.js";
 import { formatDateTime } from "../usefulFunction.js";
-import path from "path";
-import fs from "fs";
-import { __dirname } from "../index.js";
 import { User } from "../models/userModel.js";
 import mongoose from "mongoose";
+
 import { addDoc, collection, serverTimestamp } from "firebase/firestore";
+
 import { db } from "../firebase-config.js";
+import { uploadFile, deleteFile } from "../middleware/handleFile.js";
 
 export const addNewPost = async (req, res) => {
 	try {
@@ -24,10 +24,11 @@ export const addNewPost = async (req, res) => {
 				likesMap: new Map(),
 			});
 		} else {
+			const imageURL = await uploadFile("post/", image);
 			newPost = new Post({
 				userId,
 				postDescription: text,
-				postImagePath: image.filename,
+				postImagePath: imageURL,
 				likesMap: new Map(),
 			});
 		}
@@ -169,8 +170,6 @@ export const downLikes = async (req, res) => {
 
 		res.status(200).json({ msg: "Success" });
 	} catch (err) {
-		console.log(err);
-
 		res.status(500).json({ error: err.message });
 	}
 };
@@ -189,12 +188,13 @@ export const editPost = async (req, res) => {
 
 		if (postImage || removeImage) {
 			// update both post description and image
+			const imageURL = removeImage ? "" : await uploadFile("post/", postImage);
 			updatedPost = await Post.findByIdAndUpdate(
 				postId,
 				{
 					$set: {
 						postDescription,
-						postImagePath: removeImage ? "" : postImage.filename,
+						postImagePath: imageURL,
 					},
 				},
 				{ new: true }
@@ -241,12 +241,7 @@ export const editPost = async (req, res) => {
 
 		// delete original post image
 		if ((postImage && originalPostImagePath !== "") || removeImage) {
-			const postImagePath = path.join(
-				__dirname,
-				"public/images/post",
-				originalPostImagePath
-			);
-			fs.unlinkSync(postImagePath);
+			await deleteFile(originalPostImagePath);
 		}
 
 		res.status(200).json({ msg: "Success", updatedPost });
@@ -277,12 +272,7 @@ export const deletePost = async (req, res) => {
 
 		// delete post image if got any
 		if (post.postImagePath !== "") {
-			const postImagePath = path.join(
-				__dirname,
-				"public/images/post",
-				post.postImagePath
-			);
-			fs.unlinkSync(postImagePath);
+			await deleteFile(post.postImagePath);
 		}
 
 		res.status(200).json({ msg: "Success" });
@@ -295,9 +285,8 @@ export const getHomePosts = async (req, res) => {
 	try {
 		const limit = 10;
 		const userId = req.query.userId;
-		const postsArr = req.query.postsArr;
 
-		const postsIds = JSON.parse(postsArr);
+		const postsIds = JSON.parse(req.query.postIds);
 
 		const user = await User.findById(userId);
 

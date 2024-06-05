@@ -32,8 +32,8 @@ const JoinGroupRequestsList = () => {
 		const fetchJoinGroupRequests = async () => {
 			sliceDispatch(setIsLoadingJoinGroupRequests(true));
 			const res = await fetch(
-				`${serverURL}/join-group-request/get-join-group-requests?groupId=${groupId}&joinGroupRequestsArr=${JSON.stringify(
-					joinGroupRequestsArr
+				`${serverURL}/join-group-request/get-join-group-requests?groupId=${groupId}&joinGroupRequestIds=${JSON.stringify(
+					joinGroupRequestsArr.map((request) => request._id)
 				)}`,
 				{
 					method: "GET",
@@ -95,8 +95,8 @@ const JoinGroupRequestsList = () => {
 		try {
 			setLoadMore(true);
 			const res = await fetch(
-				`${serverURL}/join-group-request/get-join-group-requests?groupId=${groupId}&joinGroupRequestsArr=${JSON.stringify(
-					joinGroupRequestsArr
+				`${serverURL}/join-group-request/get-join-group-requests?groupId=${groupId}&joinGroupRequestIds=${JSON.stringify(
+					joinGroupRequestsArr.map((request) => request._id)
 				)}`,
 				{
 					method: "GET",

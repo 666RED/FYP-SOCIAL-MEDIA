@@ -18,8 +18,6 @@ const FramePreference = () => {
 	const [loading, setLoading] = useState(false);
 	const [selectedId, setSelectedId] = useState("");
 
-	const profileImgPath = `${serverURL}/public/images/profile/`;
-
 	const frames = [
 		{ id: 0, name: "Default", frameColor: "none" },
 		{ id: 1, name: "Blue", frameColor: "border-blue-500" },
@@ -107,7 +105,7 @@ const FramePreference = () => {
 						{/* PROFILE IMAGE */}
 						<img
 							alt="Profile image"
-							src={`${profileImgPath}${user.userProfile.profileImagePath}`}
+							src={user.userProfile.profileImagePath}
 							className={`max-w-32 rounded-full cursor-pointer hover:opacity-70 border-4 ${frame.frameColor}`}
 							onClick={() => handleOnClick(frame.id)}
 						/>

@@ -12,15 +12,13 @@ import {
 import { ServerContext } from "../../../../App.js";
 import { setSearchText } from "../../../../features/searchSlice.js";
 
-const RandomFriend = ({ randomFriend, toggleEmptyText }) => {
+const RandomFriend = ({ randomFriend }) => {
 	const navigate = useNavigate();
 	const { enqueueSnackbar } = useSnackbar();
 	const serverURL = useContext(ServerContext);
 	const { user, token } = useSelector((store) => store.auth);
 	const [loading, setLoading] = useState(false);
 	const sliceDispatch = useDispatch();
-
-	const filePath = `${serverURL}/public/images/profile/`;
 
 	const handleOnClick = () => {
 		const previousArr = JSON.parse(localStorage.getItem("previous")) || [];
@@ -53,15 +51,14 @@ const RandomFriend = ({ randomFriend, toggleEmptyText }) => {
 				return;
 			}
 
-			const response = await res.json();
+			const { msg } = await res.json();
 
-			if (response.msg === "Success") {
+			if (msg === "Success") {
 				enqueueSnackbar("Friend request sent", { variant: "success" });
 				sliceDispatch(removeRandomFriend(randomFriend._id));
 				sliceDispatch(removeOriginalRandomFriend(randomFriend._id));
 				sliceDispatch(setSearchText(""));
-				toggleEmptyText((prev) => !prev);
-			} else if (response.msg === "Friend request not created") {
+			} else if (msg === "Friend request not created") {
 				enqueueSnackbar("Fail to send friend request", { variant: "error" });
 			} else {
 				enqueueSnackbar("An error occurred", { variant: "error" });
@@ -81,7 +78,7 @@ const RandomFriend = ({ randomFriend, toggleEmptyText }) => {
 			{loading && <Spinner />}
 			{/* PROFILE IMAGE */}
 			<img
-				src={`${filePath}${randomFriend.userProfile.profileImagePath}`}
+				src={randomFriend.userProfile.profileImagePath}
 				alt="Random friend profile image"
 				className={`col-span-2 md:max-w-24 border-[2.5px] md:border-4 ${randomFriend.userProfile.profileFrameColor} rounded-full`}
 			/>

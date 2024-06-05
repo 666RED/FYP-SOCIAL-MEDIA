@@ -36,7 +36,9 @@ const DiscoverGroups = ({ setLoading }) => {
 				const res = await fetch(
 					`${serverURL}/group/get-discover-groups?userId=${
 						user._id
-					}&randomGroupsArr=${JSON.stringify(randomGroupsArr)}`,
+					}&randomGroupIds=${JSON.stringify(
+						randomGroupsArr.map((group) => group._id)
+					)}`,
 					{
 						method: "GET",
 						headers: {
@@ -112,7 +114,9 @@ const DiscoverGroups = ({ setLoading }) => {
 			const res = await fetch(
 				`${serverURL}/group/get-discover-groups?userId=${
 					user._id
-				}&randomGroupsArr=${JSON.stringify(randomGroupsArr)}`,
+				}&randomGroupIds=${JSON.stringify(
+					randomGroupsArr.map((group) => group._id)
+				)}`,
 				{
 					method: "GET",
 					headers: {
@@ -164,8 +168,8 @@ const DiscoverGroups = ({ setLoading }) => {
 			const res = await fetch(
 				`${serverURL}/group/get-discover-groups-search?userId=${
 					user._id
-				}&randomGroupsArr=${JSON.stringify(
-					randomGroupsArr
+				}&randomGroupIds=${JSON.stringify(
+					randomGroupsArr.map((group) => group._id)
 				)}&searchText=${searchText}`,
 				{
 					method: "GET",

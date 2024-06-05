@@ -32,7 +32,7 @@ const FriendRequestsList = () => {
 				const res = await fetch(
 					`${serverURL}/friend-request/get-friend-requests?receiverId=${
 						user._id
-					}&requestsArr=${JSON.stringify([])}`,
+					}&requestIds=${JSON.stringify([])}`,
 					{
 						method: "GET",
 						headers: {

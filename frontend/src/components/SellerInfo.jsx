@@ -4,7 +4,6 @@ import { ServerContext } from "../App.js";
 
 const SellerInfo = ({ state, handleOnClick, name, isAdmin = false }) => {
 	const serverURL = useContext(ServerContext);
-	const profileImagePath = `${serverURL}/public/images/profile/`;
 
 	return (
 		<div>
@@ -12,7 +11,7 @@ const SellerInfo = ({ state, handleOnClick, name, isAdmin = false }) => {
 			<div className="flex items-center">
 				{/* PROFILE IMAGE */}
 				<img
-					src={`${profileImagePath}${state.userProfileImagePath}`}
+					src={`state.userProfileImagePath`}
 					alt="Seller profile image"
 					className={`rounded-full border-[2.5px] ${state.frameColor} w-14 mr-2 md:w-20`}
 				/>

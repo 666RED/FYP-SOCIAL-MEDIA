@@ -8,16 +8,12 @@ const Friend = ({ friend }) => {
 	const navigate = useNavigate();
 	const serverURL = useContext(ServerContext);
 
-	const filePath = `${serverURL}/public/images/profile/`;
-
 	const handleOnClick = () => {
 		const previousArr = JSON.parse(localStorage.getItem("previous")) || [];
 		previousArr.push(`/profile/view-friends/${userId}`);
 		localStorage.setItem("previous", JSON.stringify(previousArr));
 		navigate(`/profile/${friend._id}`);
 	};
-
-	console.log(friend);
 
 	return (
 		<div
@@ -27,7 +23,7 @@ const Friend = ({ friend }) => {
 			<div className="flex items-center">
 				{/* PROFILE IMAGE */}
 				<img
-					src={`${filePath}${friend.userProfile.profileImagePath}`}
+					src={friend.userProfile.profileImagePath}
 					alt="Friend profile image"
 					className={`w-10 border-[2.5px] ${friend.userProfile.profileFrameColor} rounded-full`}
 				/>

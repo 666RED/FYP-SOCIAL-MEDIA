@@ -1,9 +1,7 @@
 import mongoose from "mongoose";
 import { Service } from "../models/serviceModel.js";
 import { User } from "../models/userModel.js";
-import path from "path";
-import fs from "fs";
-import { __dirname } from "../index.js";
+import { uploadFile, deleteFile } from "../middleware/handleFile.js";
 
 export const createNewService = async (req, res) => {
 	try {
@@ -11,10 +9,12 @@ export const createNewService = async (req, res) => {
 
 		const image = req.file;
 
+		const imageURL = await uploadFile("service/", image);
+
 		const newService = new Service({
 			serviceName: name,
 			serviceDescription: description,
-			servicePosterImagePath: image.filename,
+			servicePosterImagePath: imageURL,
 			userId,
 			serviceCategory: category,
 			contactNumber,
@@ -28,17 +28,15 @@ export const createNewService = async (req, res) => {
 
 		res.status(201).json({ msg: "Success" });
 	} catch (err) {
-		console.log(err);
-
 		res.status(500).json({ error: err.message });
 	}
 };
 
 export const getServices = async (req, res) => {
 	try {
-		const { userId, servicesArr, category } = req.query;
+		const { category } = req.query;
 
-		const servicesArray = JSON.parse(servicesArr);
+		const servicesIds = JSON.parse(req.query.serviceIds);
 
 		let services;
 
@@ -47,13 +45,11 @@ export const getServices = async (req, res) => {
 				{
 					$match: {
 						$and: [
-							// not equal to userId
-							{ userId: { $ne: new mongoose.Types.ObjectId(userId) } },
 							{ removed: false },
 							{
 								_id: {
-									$nin: servicesArray.map(
-										(service) => new mongoose.Types.ObjectId(service._id)
+									$nin: servicesIds.map(
+										(id) => new mongoose.Types.ObjectId(id)
 									),
 								},
 							},
@@ -69,14 +65,12 @@ export const getServices = async (req, res) => {
 				{
 					$match: {
 						$and: [
-							// not equal to userId
-							{ userId: { $ne: new mongoose.Types.ObjectId(userId) } },
 							{ removed: false },
 							{ serviceCategory: category },
 							{
 								_id: {
-									$nin: servicesArray.map(
-										(service) => new mongoose.Types.ObjectId(service._id)
+									$nin: servicesIds.map(
+										(id) => new mongoose.Types.ObjectId(id)
 									),
 								},
 							},
@@ -107,9 +101,9 @@ export const getServices = async (req, res) => {
 
 export const getMyServices = async (req, res) => {
 	try {
-		const { userId, servicesArr, category } = req.query;
+		const { userId, category } = req.query;
 
-		const servicesArray = JSON.parse(servicesArr);
+		const serviceIds = JSON.parse(req.query.serviceIds);
 
 		let services;
 
@@ -122,9 +116,7 @@ export const getMyServices = async (req, res) => {
 							{ removed: false },
 							{
 								_id: {
-									$nin: servicesArray.map(
-										(service) => new mongoose.Types.ObjectId(service._id)
-									),
+									$nin: serviceIds.map((id) => new mongoose.Types.ObjectId(id)),
 								},
 							},
 						],
@@ -144,9 +136,7 @@ export const getMyServices = async (req, res) => {
 							{ removed: false },
 							{
 								_id: {
-									$nin: servicesArray.map(
-										(service) => new mongoose.Types.ObjectId(service._id)
-									),
+									$nin: serviceIds.map((id) => new mongoose.Types.ObjectId(id)),
 								},
 							},
 						],
@@ -207,17 +197,17 @@ export const getService = async (req, res) => {
 
 export const getSearchedServices = async (req, res) => {
 	try {
-		const { userId, searchText, servicesArr, category } = req.query;
+		const { searchText, category } = req.query;
 		const limit = 15;
-		const servicesArray = JSON.parse(servicesArr);
+		const serviceIds = JSON.parse(req.query.serviceIds);
 
 		// STOP SEARCHING
 		if (searchText === "") {
 			return res.status(200).json({ msg: "Stop searching" });
 		}
 
-		const excludedServices = servicesArray.map(
-			(service) => new mongoose.Types.ObjectId(service._id)
+		const excludedServices = serviceIds.map(
+			(id) => new mongoose.Types.ObjectId(id)
 		);
 
 		let services;
@@ -227,7 +217,6 @@ export const getSearchedServices = async (req, res) => {
 				{
 					$match: {
 						_id: { $nin: excludedServices },
-						userId: { $ne: new mongoose.Types.ObjectId(userId) },
 						removed: false,
 						serviceName: { $regex: searchText, $options: "i" },
 					},
@@ -243,7 +232,6 @@ export const getSearchedServices = async (req, res) => {
 						_id: { $nin: excludedServices },
 						removed: false,
 						serviceCategory: category,
-						userId: { $ne: new mongoose.Types.ObjectId(userId) },
 						serviceName: { $regex: searchText, $options: "i" },
 					},
 				},
@@ -275,17 +263,17 @@ export const getSearchedServices = async (req, res) => {
 
 export const getSearchedMyServices = async (req, res) => {
 	try {
-		const { userId, searchText, servicesArr, category } = req.query;
+		const { userId, searchText, category } = req.query;
 		const limit = 15;
-		const servicesArray = JSON.parse(servicesArr);
+		const serviceIds = JSON.parse(req.query.servicesArr);
 
 		// STOP SEARCHING
 		if (searchText === "") {
 			return res.status(200).json({ msg: "Stop searching" });
 		}
 
-		const excludedServices = servicesArray.map(
-			(service) => new mongoose.Types.ObjectId(service._id)
+		const excludedServices = serviceIds.map(
+			(id) => new mongoose.Types.ObjectId(id)
 		);
 
 		let services;
@@ -350,12 +338,7 @@ export const removeService = async (req, res) => {
 		}
 
 		// remove image
-		const servicePosterImagePath = path.join(
-			__dirname,
-			"public/images/service",
-			removedService.servicePosterImagePath
-		);
-		fs.unlinkSync(servicePosterImagePath);
+		await deleteFile(removedService.servicePosterImagePath);
 
 		res.status(200).json({ msg: "Success" });
 	} catch (err) {
@@ -376,12 +359,13 @@ export const editService = async (req, res) => {
 
 		//update image
 		if (image) {
+			const imageURL = await uploadFile("service/", image);
 			updatedService = await Service.findByIdAndUpdate(serviceId, {
 				$set: {
 					serviceName: name,
 					serviceDescription: description,
 					serviceCategory: category,
-					servicePosterImagePath: image.filename,
+					servicePosterImagePath: imageURL,
 					contactNumber,
 				},
 			});
@@ -403,12 +387,7 @@ export const editService = async (req, res) => {
 
 		// remove original image
 		if (image) {
-			const imagePath = path.join(
-				__dirname,
-				"public/images/service",
-				originalServiceImagePath
-			);
-			fs.unlinkSync(imagePath);
+			await deleteFile(originalServiceImagePath);
 		}
 
 		res.status(200).json({ msg: "Success" });

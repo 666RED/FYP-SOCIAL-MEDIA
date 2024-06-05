@@ -5,7 +5,6 @@ import { formatDateTime } from "../../usefulFunction.js";
 const Notification = ({ notification }) => {
 	const serverURL = useContext(ServerContext);
 	const [action, setAction] = useState("");
-	const profileImgPath = `${serverURL}/public/images/profile/`;
 
 	// determine action
 	useEffect(() => {
@@ -30,7 +29,7 @@ const Notification = ({ notification }) => {
 		>
 			{/* PROFILE IMAGE */}
 			<img
-				src={`${profileImgPath}${notification.senderProfileImagePath}`}
+				src={notification.senderProfileImagePath}
 				alt="Sender profile image"
 				className="rounded-full max-w-16"
 			/>

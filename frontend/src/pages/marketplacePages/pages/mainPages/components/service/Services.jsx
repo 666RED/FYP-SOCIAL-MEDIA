@@ -28,8 +28,8 @@ const Services = ({ getServicePath, searchServicePath, setLoading }) => {
 			setLoadMore(true);
 
 			const res = await fetch(
-				`${getServicePath}?userId=${user._id}&servicesArr=${JSON.stringify(
-					servicesArr
+				`${getServicePath}?userId=${user._id}&serviceIds=${JSON.stringify(
+					servicesArr.map((service) => service._id)
 				)}&category=${serviceCategory}`,
 				{
 					method: "GET",
@@ -75,8 +75,8 @@ const Services = ({ getServicePath, searchServicePath, setLoading }) => {
 			const res = await fetch(
 				`${searchServicePath}?userId=${
 					user._id
-				}&searchText=${searchText}&servicesArr=${JSON.stringify(
-					servicesArr
+				}&searchText=${searchText}&serviceIds=${JSON.stringify(
+					servicesArr.map((service) => service._id)
 				)}&category=${serviceCategory}`,
 				{
 					method: "GET",
@@ -132,7 +132,7 @@ const Services = ({ getServicePath, searchServicePath, setLoading }) => {
 				sliceDispatch(setIsLoadingServices(true));
 
 				const res = await fetch(
-					`${getServicePath}?userId=${user._id}&servicesArr=${JSON.stringify(
+					`${getServicePath}?userId=${user._id}&serviceIds=${JSON.stringify(
 						[]
 					)}&category=${serviceCategory}`,
 					{
@@ -209,7 +209,7 @@ const Services = ({ getServicePath, searchServicePath, setLoading }) => {
 			{isLoadingServices ? (
 				<Loader />
 			) : servicesArr.length > 0 ? (
-				<div className="grid grid-cols-12 gap-2 px-2 max-h-[30rem] overflow-y-auto min-[500px]:max-h-[23.5rem] mb-2">
+				<div className="grid grid-cols-12 gap-2 px-2 max-img-height overflow-y-auto marketplace-content-height mb-2">
 					{servicesArr.map((service) => (
 						<Service key={service._id} service={service} />
 					))}
