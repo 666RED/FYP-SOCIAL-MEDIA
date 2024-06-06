@@ -1,13 +1,13 @@
-import { React, useContext, useState } from "react";
+import { React, useContext } from "react";
 import Notification from "./Notification.jsx";
-import { NotificationContext } from "../../App.js";
+// import { NotificationContext } from "../../App.js";
 import { MdCancel } from "react-icons/md";
 
 const NotificationContainer = ({
 	showNotifications,
 	toggleShowNotification,
 }) => {
-	const notifications = useContext(NotificationContext);
+	// const notifications = useContext(NotificationContext);
 
 	return (
 		<div className={`notifications ${showNotifications ? "show" : ""}`}>
@@ -21,9 +21,9 @@ const NotificationContainer = ({
 				<h2>Notifications</h2>
 			</div>
 			{/* NOTIFICATIONS */}
-			{notifications.map((notification) => (
+			{/* {notifications.map((notification) => (
 				<Notification notification={notification} key={notification.id} />
-			))}
+			))} */}
 		</div>
 	);
 };

@@ -3,7 +3,6 @@ import mongoose from "mongoose";
 import dotenv from "dotenv";
 import cors from "cors";
 import multer from "multer";
-import jwt from "jsonwebtoken";
 // ROUTES
 import authRoute from "./routes/authRoute.js";
 import recoverPasswordRoute from "./routes/recoverPasswordRoute.js";

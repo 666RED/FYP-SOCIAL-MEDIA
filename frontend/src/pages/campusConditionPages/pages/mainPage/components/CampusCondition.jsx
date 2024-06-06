@@ -42,7 +42,10 @@ const CampusCondition = ({ condition, inViewMostUseful = false }) => {
 
 	// first render
 	useEffect(() => {
-		dispatch({ type: ACTION_TYPES.FIRST_RENDER, payload: condition });
+		dispatch({
+			type: ACTION_TYPES.FIRST_RENDER,
+			payload: { condition, userId: user._id },
+		});
 	}, []);
 
 	const handleUp = async () => {
@@ -224,7 +227,7 @@ const CampusCondition = ({ condition, inViewMostUseful = false }) => {
 					{
 						method: "PATCH",
 						body: JSON.stringify({
-							condition,
+							conditionId: condition._id,
 						}),
 						headers: {
 							"Content-Type": "application/json",
@@ -293,6 +296,7 @@ const CampusCondition = ({ condition, inViewMostUseful = false }) => {
 						body: JSON.stringify({
 							campusConditionId: condition._id,
 							isConditionResolved: state.conditionResolved,
+							userId: user._id,
 						}),
 						headers: {
 							"Content-Type": "application/json",

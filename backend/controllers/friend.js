@@ -1,6 +1,7 @@
 import { User } from "../models/userModel.js";
 import { FriendRequest } from "../models/friendRequestModel.js";
 import mongoose from "mongoose";
+import { removeFriendRequest } from "../API/firestoreAPI.js";
 
 export const getFriends = async (req, res) => {
 	try {
@@ -143,12 +144,19 @@ export const removeFriend = async (req, res) => {
 		}
 
 		const deletedFriendRequest = await FriendRequest.findByIdAndDelete(
-			friendRequestId
+			friendRequestId,
+			{ new: true }
 		);
 
 		if (!deletedFriendRequest) {
 			return res.status(404).json({ msg: "Friend request not found" });
 		}
+
+		// firebase
+		await removeFriendRequest({
+			userId: deletedFriendRequest.requestorId.toString(),
+			requestId: friendRequestId,
+		});
 
 		res.status(200).json({ msg: "Success", updatedUser });
 	} catch (err) {
@@ -160,12 +168,15 @@ export const directRemoveFriend = async (req, res) => {
 	try {
 		const { requestorId, receiverId } = req.body;
 
-		const deletedFriendRequest = await FriendRequest.findOneAndDelete({
-			$or: [
-				{ requestorId: requestorId, receiverId: receiverId },
-				{ requestorId: receiverId, receiverId: requestorId },
-			],
-		});
+		const deletedFriendRequest = await FriendRequest.findOneAndDelete(
+			{
+				$or: [
+					{ requestorId: requestorId, receiverId: receiverId },
+					{ requestorId: receiverId, receiverId: requestorId },
+				],
+			},
+			{ new: true }
+		);
 
 		if (!deletedFriendRequest) {
 			return res.status(404).json({ msg: "Friend request not found" });
@@ -214,12 +225,11 @@ export const directRemoveFriend = async (req, res) => {
 			"-userPassword -verificationCode"
 		);
 
-		// for (let friendId of updatedUser.userFriendsMap.keys()) {
-		// 	const friend = await User.findById(friendId);
-		// 	friend.userPassword = undefined;
-		// 	friend.verificationCode = undefined;
-		// 	friendsArr.push(friend);
-		// }
+		// firebase
+		await removeFriendRequest({
+			userId: deletedFriendRequest.requestorId.toString(),
+			requestId: deletedFriendRequest._id.toString(),
+		});
 
 		res.status(200).json({ msg: "Success", friendsArr });
 	} catch (err) {
@@ -251,9 +261,9 @@ export const getRandomFriends = async (req, res) => {
 			],
 		});
 
-		for (let friendId of friendsMap.keys()) {
+		Array.from(friendsMap.keys()).forEach((friendId) => {
 			friendsArr.push(friendId);
-		}
+		});
 
 		const randomFriends = await User.aggregate([
 			{
@@ -261,12 +271,10 @@ export const getRandomFriends = async (req, res) => {
 					$and: [
 						// not equal to userId
 						{ _id: { $ne: new mongoose.Types.ObjectId(userId) } },
-						// not friend
 						{
+							// not friend
 							_id: {
-								$nin: randomFriendIds.map(
-									(id) => new mongoose.Types.ObjectId(id)
-								),
+								$nin: friendsArr.map((id) => new mongoose.Types.ObjectId(id)),
 							},
 						},
 						// do not pick already-picked uesrs

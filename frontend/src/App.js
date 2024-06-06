@@ -1,8 +1,6 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { createContext, useEffect, useState } from "react";
-import { useSnackbar, closeSnackbar } from "notistack";
-import { useSelector } from "react-redux";
-import { MdCancel } from "react-icons/md";
+import { createContext, useState } from "react";
+
 import Login from "./pages/loginPages/Login.jsx";
 import Homepage from "./pages/homepages/pages/Homepage.jsx";
 import RecoverPassword from "./pages/recoverPasswordPages/RecoverPassword.jsx";
@@ -49,184 +47,313 @@ import ViewYourPostsPage from "./pages/groupPages/pages/singleGroupPage/componen
 import YourConditionsPage from "./pages/campusConditionPages/pages/yourConditionsPage/YourConditionsPage.jsx";
 import ContactPage from "./pages/adminPages/loginPages/ContactPage.jsx";
 
-import { onSnapshot, query, collection, where } from "firebase/firestore";
+import { useEffect } from "react";
+import { useSelector } from "react-redux";
+import { useSnackbar, closeSnackbar } from "notistack";
+import { MdCancel } from "react-icons/md";
 import { db } from "./firebase-config.js";
+import { query, where, onSnapshot, collection } from "firebase/firestore";
 
 export const ServerContext = createContext();
-export const NotificationContext = createContext();
 
 function App() {
 	const server = "https://fyp-fsktm-connect.onrender.com";
 	// const server = "http://localhost:3001";
 
-	const { enqueueSnackbar } = useSnackbar();
 	const { user } = useSelector((store) => store.auth);
-	const [notificaitons, setNotifications] = useState([]);
+	const [notifications, setNotifications] = useState([]);
+	const { enqueueSnackbar } = useSnackbar();
 
-	// notification feature
 	useEffect(() => {
 		if (!user) {
-			return;
+			return () => {};
 		}
+
 		const notificationRef = collection(db, "notifications");
 		const queryMessages = query(
 			notificationRef,
-			where("receiver", "==", user._id.toString())
+			where("receivers", "array-contains", user._id.toString())
 		);
 
 		let first = true;
 
 		const unsubscribe = onSnapshot(queryMessages, (snapshot) => {
-			const updatedNotifications = snapshot.docs.map((doc) => ({
-				id: doc.id,
-				...doc.data(),
-			}));
-			setNotifications(updatedNotifications);
+			snapshot.docChanges().forEach((change) => {
+				if (change.type === "added") {
+					const data = change.doc.data();
+					const { id } = change.doc;
+					setNotifications((prevNotifications) => [
+						...prevNotifications,
+						{ id, ...data },
+					]);
 
-			if (!first) {
-				const data = updatedNotifications[0];
-				switch (data.action) {
-					case "Like post": {
-						enqueueSnackbar(`${data.senderName} liked your post`, {
-							autoHideDuration: null,
-							variant: "custom-snackbar",
-							action: (key) => (
-								<button onClick={() => closeSnackbar(key)}>
-									<MdCancel className="text-xl" />
-								</button>
-							),
-						});
-						break;
+					if (!first) {
+						switch (data.action) {
+							case "Like post": {
+								enqueueSnackbar(`${data.userName} liked your post`, {
+									autoHideDuration: null,
+									variant: "custom-snackbar",
+									action: (key) => (
+										<button onClick={() => closeSnackbar(key)}>
+											<MdCancel className="text-xl" />
+										</button>
+									),
+								});
+								break;
+							}
+							case "Comment post": {
+								enqueueSnackbar(`${data.userName} commented on your post`, {
+									autoHideDuration: null,
+									variant: "custom-snackbar",
+									action: (key) => (
+										<button onClick={() => closeSnackbar(key)}>
+											<MdCancel className="text-xl" />
+										</button>
+									),
+								});
+								break;
+							}
+							case "Rate up": {
+								enqueueSnackbar(
+									`${data.userName} rated up on your campus condition`,
+									{
+										autoHideDuration: null,
+										variant: "custom-snackbar",
+										action: (key) => (
+											<button onClick={() => closeSnackbar(key)}>
+												<MdCancel className="text-xl" />
+											</button>
+										),
+									}
+								);
+								break;
+							}
+							case "Rate down": {
+								enqueueSnackbar(
+									`${data.userName} rated down on your campus condition`,
+									{
+										autoHideDuration: null,
+										variant: "custom-snackbar",
+										action: (key) => (
+											<button onClick={() => closeSnackbar(key)}>
+												<MdCancel className="text-xl" />
+											</button>
+										),
+									}
+								);
+								break;
+							}
+							case "Mark resolved": {
+								enqueueSnackbar(
+									`${data.userName} mark resolved on your campus condition`,
+									{
+										autoHideDuration: null,
+										variant: "custom-snackbar",
+										action: (key) => (
+											<button onClick={() => closeSnackbar(key)}>
+												<MdCancel className="text-xl" />
+											</button>
+										),
+									}
+								);
+								break;
+							}
+							case "Add friend": {
+								enqueueSnackbar(`${data.userName} sent you a friend request`, {
+									autoHideDuration: null,
+									variant: "custom-snackbar",
+									action: (key) => (
+										<button onClick={() => closeSnackbar(key)}>
+											<MdCancel className="text-xl" />
+										</button>
+									),
+								});
+								break;
+							}
+							case "Accept friend request": {
+								enqueueSnackbar(`${data.userName} accept your friend request`, {
+									autoHideDuration: null,
+									variant: "custom-snackbar",
+									action: (key) => (
+										<button onClick={() => closeSnackbar(key)}>
+											<MdCancel className="text-xl" />
+										</button>
+									),
+								});
+								break;
+							}
+							// Add more cases for other notification actions
+						}
 					}
-					// continue here (later)
+				} else if (change.type === "modified") {
+					const data = change.doc.data();
+					const { id } = change.doc;
+					setNotifications((prevNotifications) => [
+						...prevNotifications,
+						{ id, ...data },
+					]);
+
+					if (!first) {
+						switch (data.action) {
+							case "Rate up": {
+								enqueueSnackbar(
+									`${data.userName} rated up on your campus condition`,
+									{
+										autoHideDuration: null,
+										variant: "custom-snackbar",
+										action: (key) => (
+											<button onClick={() => closeSnackbar(key)}>
+												<MdCancel className="text-xl" />
+											</button>
+										),
+									}
+								);
+								break;
+							}
+							case "Rate down": {
+								enqueueSnackbar(
+									`${data.userName} rated down on your campus condition`,
+									{
+										autoHideDuration: null,
+										variant: "custom-snackbar",
+										action: (key) => (
+											<button onClick={() => closeSnackbar(key)}>
+												<MdCancel className="text-xl" />
+											</button>
+										),
+									}
+								);
+								break;
+							}
+						}
+					}
 				}
-			}
+			});
+
 			first = false;
 		});
 
 		return () => unsubscribe();
-	}, []);
+	}, [user]);
 
 	return (
-		<NotificationContext.Provider value={notificaitons}>
-			<ServerContext.Provider value={server}>
-				<BrowserRouter>
-					<Routes>
-						<Route path="/" element={<Login />} />
-						<Route path="/home" element={<Homepage />} />
-						<Route path="/recover-password" element={<RecoverPassword />} />
-						<Route
-							path="/recover-password/auth/:userId"
-							element={<AuthVerificationCode />}
-						/>
-						<Route
-							path="/recover-password/reset-password/:userId"
-							element={<ResetPassword />}
-						/>
-						<Route path="/profile/:userId" element={<UserProfilePage />} />
-						<Route path="/profile/edit-profile" element={<EditProfile />} />
-						<Route
-							path="/profile/view-friends/:userId"
-							element={<ViewFriends />}
-						/>
-						<Route path="/campus-condition" element={<CampusCondition />} />
-						<Route
-							path="/campus-condition/upload-condition"
-							element={<UploadCondition />}
-						/>
-						<Route
-							path="/campus-condition/your-conditions"
-							element={<YourConditionsPage />}
-						/>
-						<Route
-							path="/campus-condition/view-most-useful-condition/:conditionId"
-							element={<ViewMostUsefulCondition />}
-						/>
-						<Route path="/friend" element={<FriendPage />} />
-						<Route
-							path="/friend/friend-request"
-							element={<FriendRequestPage />}
-						/>
-						<Route
-							path="/friend/explore-friend"
-							element={<ExploreFriendPage />}
-						/>
-						<Route
-							path="/friend/friend-request-pending"
-							element={<PendingPage />}
-						/>
-						<Route path="/group" element={<GroupPage />} />
-						<Route
-							path="/group/create-new-group"
-							element={<CreateNewGroupPage />}
-						/>
-						<Route path="/group/:groupId" element={<SingleGroupPage />} />
-						<Route
-							path="/group/edit-group/:groupId"
-							element={<EditGroupPage />}
-						/>
-						<Route
-							path="/group/join-request/:groupId"
-							element={<JoinRequestPage />}
-						/>
-						<Route
-							path="/group/view-members/:groupId/:groupAdminId"
-							element={<ViewMembersPage />}
-						/>
-						<Route path="/marketplace" element={<MarketplaceMainPage />} />
-						<Route
-							path="/marketplace/create-new-item"
-							element={<CreateNewItem />}
-						/>
-						<Route
-							path="/marketplace/product/view-product/:id"
-							element={<ViewProduct />}
-						/>
-						<Route
-							path="/marketplace/product/edit-product/:id"
-							element={<EditProduct />}
-						/>
-						<Route
-							path="/marketplace/service/view-service/:id"
-							element={<ViewService />}
-						/>
-						<Route
-							path="/marketplace/service/edit-service/:id"
-							element={<EditService />}
-						/>
-						<Route
-							path="/marketplace/event/edit-event/:id"
-							element={<EditEvent />}
-						/>
-						<Route
-							path="/marketplace/event/view-event/:id"
-							element={<ViewEvent />}
-						/>
-						<Route path="/setting" element={<SettingMainPage />} />
-						<Route path="/home/search" element={<SearchPage />} />
-						<Route path="/admin" element={<AdminLoginPage />} />
-						<Route path="/admin/dashboard" element={<DashboardPage />} />
-						<Route path="/admin/user" element={<UserPage />} />
-						<Route path="/admin/group" element={<AdminGroupPage />} />
-						<Route path="/admin/condition" element={<ConditionPage />} />
-						<Route path="/admin/product" element={<ProductPage />} />
-						<Route path="/admin/service" element={<ServicePage />} />
-						<Route path="/admin/event" element={<EventPage />} />
-						<Route path="/admin/report" element={<ReportPage />} />
-						<Route path="/group/:groupId/view-notes" element={<FolderPage />} />
-						<Route
-							path="/group/:groupId/view-notes/:folderId"
-							element={<NotePage />}
-						/>
-						<Route
-							path="/group/:groupId/your-posts"
-							element={<ViewYourPostsPage />}
-						/>
-						<Route path="/admin/contact" element={<ContactPage />} />
-					</Routes>
-				</BrowserRouter>
-			</ServerContext.Provider>
-		</NotificationContext.Provider>
+		<ServerContext.Provider value={server}>
+			<BrowserRouter>
+				<Routes>
+					<Route path="/" element={<Login />} />
+					<Route path="/home" element={<Homepage />} />
+					<Route path="/recover-password" element={<RecoverPassword />} />
+					<Route
+						path="/recover-password/auth/:userId"
+						element={<AuthVerificationCode />}
+					/>
+					<Route
+						path="/recover-password/reset-password/:userId"
+						element={<ResetPassword />}
+					/>
+					<Route path="/profile/:userId" element={<UserProfilePage />} />
+					<Route path="/profile/edit-profile" element={<EditProfile />} />
+					<Route
+						path="/profile/view-friends/:userId"
+						element={<ViewFriends />}
+					/>
+					<Route path="/campus-condition" element={<CampusCondition />} />
+					<Route
+						path="/campus-condition/upload-condition"
+						element={<UploadCondition />}
+					/>
+					<Route
+						path="/campus-condition/your-conditions"
+						element={<YourConditionsPage />}
+					/>
+					<Route
+						path="/campus-condition/view-most-useful-condition/:conditionId"
+						element={<ViewMostUsefulCondition />}
+					/>
+					<Route path="/friend" element={<FriendPage />} />
+					<Route
+						path="/friend/friend-request"
+						element={<FriendRequestPage />}
+					/>
+					<Route
+						path="/friend/explore-friend"
+						element={<ExploreFriendPage />}
+					/>
+					<Route
+						path="/friend/friend-request-pending"
+						element={<PendingPage />}
+					/>
+					<Route path="/group" element={<GroupPage />} />
+					<Route
+						path="/group/create-new-group"
+						element={<CreateNewGroupPage />}
+					/>
+					<Route path="/group/:groupId" element={<SingleGroupPage />} />
+					<Route
+						path="/group/edit-group/:groupId"
+						element={<EditGroupPage />}
+					/>
+					<Route
+						path="/group/join-request/:groupId"
+						element={<JoinRequestPage />}
+					/>
+					<Route
+						path="/group/view-members/:groupId/:groupAdminId"
+						element={<ViewMembersPage />}
+					/>
+					<Route path="/marketplace" element={<MarketplaceMainPage />} />
+					<Route
+						path="/marketplace/create-new-item"
+						element={<CreateNewItem />}
+					/>
+					<Route
+						path="/marketplace/product/view-product/:id"
+						element={<ViewProduct />}
+					/>
+					<Route
+						path="/marketplace/product/edit-product/:id"
+						element={<EditProduct />}
+					/>
+					<Route
+						path="/marketplace/service/view-service/:id"
+						element={<ViewService />}
+					/>
+					<Route
+						path="/marketplace/service/edit-service/:id"
+						element={<EditService />}
+					/>
+					<Route
+						path="/marketplace/event/edit-event/:id"
+						element={<EditEvent />}
+					/>
+					<Route
+						path="/marketplace/event/view-event/:id"
+						element={<ViewEvent />}
+					/>
+					<Route path="/setting" element={<SettingMainPage />} />
+					<Route path="/home/search" element={<SearchPage />} />
+					<Route path="/admin" element={<AdminLoginPage />} />
+					<Route path="/admin/dashboard" element={<DashboardPage />} />
+					<Route path="/admin/user" element={<UserPage />} />
+					<Route path="/admin/group" element={<AdminGroupPage />} />
+					<Route path="/admin/condition" element={<ConditionPage />} />
+					<Route path="/admin/product" element={<ProductPage />} />
+					<Route path="/admin/service" element={<ServicePage />} />
+					<Route path="/admin/event" element={<EventPage />} />
+					<Route path="/admin/report" element={<ReportPage />} />
+					<Route path="/group/:groupId/view-notes" element={<FolderPage />} />
+					<Route
+						path="/group/:groupId/view-notes/:folderId"
+						element={<NotePage />}
+					/>
+					<Route
+						path="/group/:groupId/your-posts"
+						element={<ViewYourPostsPage />}
+					/>
+					<Route path="/admin/contact" element={<ContactPage />} />
+				</Routes>
+			</BrowserRouter>
+		</ServerContext.Provider>
 	);
 }
 

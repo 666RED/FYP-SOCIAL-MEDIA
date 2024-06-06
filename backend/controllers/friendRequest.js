@@ -1,6 +1,11 @@
 import mongoose from "mongoose";
 import { FriendRequest } from "../models/friendRequestModel.js";
 import { User } from "../models/userModel.js";
+import {
+	addFriendRequest,
+	removeFriendRequest,
+	updateFriendRequest,
+} from "../API/firestoreAPI.js";
 
 export const sendFriendRequest = async (req, res) => {
 	try {
@@ -15,6 +20,19 @@ export const sendFriendRequest = async (req, res) => {
 		if (!savedFriendRequest) {
 			return res.status(400).json({ msg: "Friend request not created" });
 		}
+
+		const user = await User.findById(requestorId);
+
+		const userName = user.userName;
+		const profileImagePath = user.userProfile.profileImagePath;
+
+		await addFriendRequest({
+			userId: requestorId,
+			requestId: savedFriendRequest._id.toString(),
+			userName,
+			profileImagePath,
+			receiverId,
+		});
 
 		res.status(201).json({ msg: "Success", savedFriendRequest });
 	} catch (err) {
@@ -85,15 +103,24 @@ export const cancelFriendRequest = async (req, res) => {
 		const { friendRequestId } = req.body;
 
 		const deletedFriendRequest = await FriendRequest.findByIdAndDelete(
-			friendRequestId
+			friendRequestId,
+			{ new: true }
 		);
 
 		if (!deletedFriendRequest) {
 			return res.status(404).json({ msg: "Friend request not found" });
 		}
 
+		const userId = deletedFriendRequest.requestorId.toString();
+		const requestId = deletedFriendRequest._id.toString();
+
+		// firebase
+		await removeFriendRequest({ userId, requestId });
+
 		res.status(200).json({ msg: "Success" });
 	} catch (err) {
+		console.log(err);
+
 		res.status(500).json({ error: err.message });
 	}
 };
@@ -149,6 +176,20 @@ export const acceptFriendRequest = async (req, res) => {
 				.json({ msg: "Friend request not found or already accepted" });
 		}
 
+		// firebase
+		const userId = requestorId;
+		const requestId = updatedFriendRequest._id.toString();
+		const userName = friend.userName;
+		const profileImagePath = friend.userProfile.profileImagePath;
+
+		await updateFriendRequest({
+			userId,
+			requestId,
+			userName,
+			profileImagePath,
+			receiverId,
+		});
+
 		res.status(200).json({ msg: "Success", updatedFriendRequest, updatedUser });
 	} catch (err) {
 		res.status(500).json({ error: err.message });
@@ -160,12 +201,18 @@ export const rejectFriendRequest = async (req, res) => {
 		const { friendRequestId } = req.body;
 
 		const rejectedFriendRequest = await FriendRequest.findByIdAndDelete(
-			friendRequestId
+			friendRequestId,
+			{ new: true }
 		);
 
 		if (!rejectedFriendRequest) {
 			return res.status(404).json({ msg: "Friend request not found" });
 		}
+
+		// firebase
+		const userId = rejectedFriendRequest.requestorId.toString();
+		const requestId = friendRequestId;
+		await removeFriendRequest({ userId, requestId });
 
 		res.status(200).json({ msg: "Success" });
 	} catch (err) {

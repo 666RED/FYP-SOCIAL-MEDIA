@@ -28,7 +28,11 @@ const Comment = ({ comment, post }) => {
 				dispatch({ type: ACTION_TYPES.SET_LOADING, payload: true });
 				const res = await fetch(`${serverURL}/comment/delete-comment`, {
 					method: "DELETE",
-					body: JSON.stringify({ commentId: comment._id, postId: post._id }),
+					body: JSON.stringify({
+						commentId: comment._id,
+						postId: post._id,
+						userId: user._id,
+					}),
 					headers: {
 						"Content-Type": "application/json",
 						Authorization: `Bearer ${token}`,

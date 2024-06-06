@@ -29,6 +29,7 @@ const CommentInput = ({ post }) => {
 			const res = await fetch(`${serverURL}/comment/add-comment`, {
 				method: "POST",
 				body: JSON.stringify({
+					postUserId: post.userId,
 					postId: post._id,
 					userId: user._id,
 					comment: state.comment,

@@ -2,6 +2,10 @@ import { JoinGroupRequest } from "../models/joinGroupRequestModel.js";
 import { Group } from "../models/groupModel.js";
 import { User } from "../models/userModel.js";
 import mongoose from "mongoose";
+import {
+	addJoinGroupRequest,
+	removeJoinGroupRequest,
+} from "../API/firestoreAPI.js";
 
 export const sendJoinGroupRequest = async (req, res) => {
 	try {
@@ -18,8 +22,25 @@ export const sendJoinGroupRequest = async (req, res) => {
 			return res.status(400).json({ msg: "Join group request not created" });
 		}
 
+		// firebase
+		const group = await Group.findById(groupId);
+		const groupAdminId = group.groupAdminId.toString();
+		const user = await User.findById(requestorId);
+		const userName = user.userName;
+		const profileImagePath = user.userProfile.profileImagePath;
+
+		await addJoinGroupRequest({
+			userId: requestorId,
+			requestId: savedJoinGroupRequest._id.toString(),
+			userName,
+			profileImagePath,
+			groupAdminId,
+		});
+
 		res.status(201).json({ msg: "Success", savedJoinGroupRequest });
 	} catch (err) {
+		console.log(err);
+
 		res.status(500).json({ error: err.message });
 	}
 };
@@ -86,14 +107,23 @@ export const cancelJoinGroupRequest = async (req, res) => {
 	try {
 		const { requestorId, groupId } = req.body;
 
-		const deletedJoinGroupRequest = await JoinGroupRequest.findOneAndDelete({
-			requestorId: requestorId,
-			groupId: groupId,
-		});
+		const deletedJoinGroupRequest = await JoinGroupRequest.findOneAndDelete(
+			{
+				requestorId: requestorId,
+				groupId: groupId,
+			},
+			{ new: true }
+		);
 
 		if (!deletedJoinGroupRequest) {
 			return res.status(400).json({ msg: "Fail to remove join group request" });
 		}
+
+		// firebase
+		await removeJoinGroupRequest({
+			userId: requestorId,
+			requestId: deletedJoinGroupRequest._id.toString(),
+		});
 
 		res.status(200).json({ msg: "Success" });
 	} catch (err) {
@@ -146,10 +176,13 @@ export const rejectJoinGroupRequest = async (req, res) => {
 	try {
 		const { requestorId, groupId } = req.body;
 
-		const deletedJoinGroupRequest = await JoinGroupRequest.findOneAndDelete({
-			requestorId: requestorId,
-			groupId: groupId,
-		});
+		const deletedJoinGroupRequest = await JoinGroupRequest.findOneAndDelete(
+			{
+				requestorId: requestorId,
+				groupId: groupId,
+			},
+			{ new: true }
+		);
 
 		if (!deletedJoinGroupRequest) {
 			return res.status(400).json({ msg: "Fail to reject join group request" });
@@ -158,6 +191,12 @@ export const rejectJoinGroupRequest = async (req, res) => {
 		res.status(200).json({
 			msg: "Success",
 			joinGroupRequestId: deletedJoinGroupRequest._id,
+		});
+
+		// firebase
+		await removeJoinGroupRequest({
+			userId: requestorId,
+			requestId: deletedJoinGroupRequest._id.toString(),
 		});
 	} catch (err) {
 		res.status(500).json({ error: err.message });

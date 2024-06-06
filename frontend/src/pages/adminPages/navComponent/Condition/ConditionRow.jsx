@@ -12,7 +12,7 @@ import { ServerContext } from "../../../../App.js";
 const ConditionRow = ({ condition, count }) => {
 	const { enqueueSnackbar } = useSnackbar();
 	const serverURL = useContext(ServerContext);
-	const { token } = useSelector((store) => store.admin);
+	const { user, token } = useSelector((store) => store.admin);
 	const [loading, setLoading] = useState(false);
 	const [conditionResolved, setConditionResolved] = useState(
 		condition.resolved
@@ -31,6 +31,7 @@ const ConditionRow = ({ condition, count }) => {
 						body: JSON.stringify({
 							campusConditionId: condition._id,
 							isConditionResolved: conditionResolved,
+							userId: user._id,
 						}),
 						headers: {
 							"Content-Type": "application/json",

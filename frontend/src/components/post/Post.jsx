@@ -126,7 +126,7 @@ const Post = ({ post }) => {
 				dispatch({ type: ACTION_TYPES.SET_LOADING, payload: true });
 				const res = await fetch(`${serverURL}/post/delete-post`, {
 					method: "DELETE",
-					body: JSON.stringify({ post: post }),
+					body: JSON.stringify({ postId: post._id }),
 					headers: {
 						"Content-Type": "application/json",
 						Authorization: `Bearer ${token}`,

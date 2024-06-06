@@ -3,6 +3,12 @@ import { User } from "../models/userModel.js";
 import mongoose from "mongoose";
 import { formatDateTime } from "../usefulFunction.js";
 import { uploadFile, deleteFile } from "../middleware/handleFile.js";
+import {
+	deleteRate,
+	deleteRates,
+	markCondition,
+	rateCondition,
+} from "../API/firestoreAPI.js";
 
 export const addNewCampusCondition = async (req, res) => {
 	try {
@@ -210,8 +216,30 @@ export const handleUp = async (req, res) => {
 			return res.status(404).json({ msg: "Condition not updated" });
 		}
 
+		// firebase
+		if (userId !== updatedCondition.userId) {
+			const isEdit = isDown;
+			const rateUp = true;
+			const postUserId = condition.userId.toString();
+			const user = await User.findById(userId);
+			const userName = user.userName;
+			const profileImagePath = user.userProfile.profileImagePath;
+
+			await rateCondition(
+				userId,
+				conditionId,
+				postUserId,
+				isEdit,
+				rateUp,
+				userName,
+				profileImagePath
+			);
+		}
+
 		res.status(200).json({ msg: "Success" });
 	} catch (err) {
+		console.log(err);
+
 		res.status(500).json({ error: err.message });
 	}
 };
@@ -239,6 +267,11 @@ export const cancelUp = async (req, res) => {
 
 		if (!updatedCondition) {
 			return res.status(404).json({ msg: "Condition not found" });
+		}
+
+		// firebase
+		if (userId !== updatedCondition.userId) {
+			await deleteRate(userId, conditionId);
 		}
 
 		res.status(200).json({ msg: "Success" });
@@ -278,8 +311,30 @@ export const handleDown = async (req, res) => {
 			return res.status(404).json({ msg: "Condition not found" });
 		}
 
+		// firebase
+		if (userId !== updatedCondition.userId) {
+			const isEdit = isUp;
+			const rateUp = false;
+			const postUserId = condition.userId.toString();
+			const user = await User.findById(userId);
+			const userName = user.userName;
+			const profileImagePath = user.userProfile.profileImagePath;
+
+			await rateCondition(
+				userId,
+				conditionId,
+				postUserId,
+				isEdit,
+				rateUp,
+				userName,
+				profileImagePath
+			);
+		}
+
 		res.status(200).json({ msg: "Success" });
 	} catch (err) {
+		console.log(err);
+
 		res.status(500).json({ error: err.message });
 	}
 };
@@ -307,6 +362,11 @@ export const cancelDown = async (req, res) => {
 
 		if (!updatedCondition) {
 			return res.status(404).json({ msg: "Condition not found" });
+		}
+
+		// firebase
+		if (userId !== updatedCondition.userId) {
+			await deleteRate(userId, conditionId);
 		}
 
 		res.status(200).json({ msg: "Success" });
@@ -410,10 +470,10 @@ export const editCondition = async (req, res) => {
 
 export const deleteCondition = async (req, res) => {
 	try {
-		const { condition } = req.body;
+		const { conditionId } = req.body;
 
 		const deletedCondition = await CampusCondition.findByIdAndUpdate(
-			condition._id,
+			conditionId,
 			{
 				$set: { removed: true },
 			}
@@ -424,9 +484,20 @@ export const deleteCondition = async (req, res) => {
 		}
 
 		// remove image if got any
-		if (condition.conditionImagePath !== "") {
-			await deleteFile(condition.conditionImagePath);
+		if (deletedCondition.conditionImagePath !== "") {
+			await deleteFile(deletedCondition.conditionImagePath);
 		}
+
+		// firebase
+		const upMapIds = Array.from(deletedCondition.conditionUpMaps.keys()).map(
+			(id) => id.toString()
+		);
+		const downMapIds = Array.from(
+			deletedCondition.conditionDownMaps.keys()
+		).map((id) => id.toString());
+		const userIds = [...upMapIds, ...downMapIds];
+
+		await deleteRates(userIds, conditionId);
 
 		res.status(200).json({ msg: "Success", deletedCondition });
 	} catch (err) {
@@ -436,7 +507,7 @@ export const deleteCondition = async (req, res) => {
 
 export const updateConditionResolved = async (req, res) => {
 	try {
-		const { campusConditionId, isConditionResolved } = req.body;
+		const { userId, campusConditionId, isConditionResolved } = req.body;
 
 		const updatedCondition = await CampusCondition.findByIdAndUpdate(
 			campusConditionId,
@@ -452,8 +523,17 @@ export const updateConditionResolved = async (req, res) => {
 			return res.status(404).json({ msg: "Fail to update condition" });
 		}
 
+		// firebase (for admin)
+		if (updatedCondition.userId !== userId) {
+			const conditionId = campusConditionId;
+			const postUserId = updatedCondition.userId.toString();
+			await markCondition(userId, conditionId, postUserId);
+		}
+
 		res.status(200).json({ msg: "Success" });
 	} catch (err) {
+		console.log(err);
+
 		res.status(500).json({ error: err.message });
 	}
 };

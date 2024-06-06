@@ -2,6 +2,7 @@ import { Post } from "../models/postModel.js";
 import { Comment } from "../models/commentModel.js";
 import { formatDateTime } from "../usefulFunction.js";
 import { User } from "../models/userModel.js";
+import { commentPost, deletePostComment } from "../API/firestoreAPI.js";
 
 export const getComments = async (req, res) => {
 	try {
@@ -69,7 +70,7 @@ export const getComments = async (req, res) => {
 
 export const addComment = async (req, res) => {
 	try {
-		const { postId, userId, comment } = req.body;
+		const { postId, postUserId, userId, comment } = req.body;
 
 		const newComment = new Comment({
 			postId,
@@ -96,6 +97,19 @@ export const addComment = async (req, res) => {
 			frameColor = user.userProfile.profileFrameColor;
 		}
 
+		// firebase
+		if (userId !== postUserId) {
+			const commentId = savedComment._id.toString();
+			await commentPost(
+				userId,
+				userName,
+				profileImagePath,
+				postId,
+				commentId,
+				postUserId
+			);
+		}
+
 		const temp = {
 			...savedComment._doc,
 			userName,
@@ -116,7 +130,7 @@ export const addComment = async (req, res) => {
 
 export const deleteComment = async (req, res) => {
 	try {
-		const { commentId, postId } = req.body;
+		let { commentId, postId, userId } = req.body;
 
 		const deletedComment = await Comment.findByIdAndDelete(commentId);
 
@@ -125,10 +139,19 @@ export const deleteComment = async (req, res) => {
 		}
 
 		await Post.findByIdAndUpdate(postId, { $inc: { postComments: -1 } });
+
+		// firebase
+		commentId = commentId.toString();
+		const post = await Post.findById(postId);
+
+		await deletePostComment(commentId, userId);
+
 		res
 			.status(200)
 			.json({ msg: "Success", deletedCommentId: deletedComment._id });
 	} catch (err) {
+		console.log(err);
+
 		res.status(500).json({ error: err.message });
 	}
 };

@@ -20,9 +20,10 @@ export const CampusConditionReducer = (state, action) => {
 				conditionDownMaps,
 				conditionUp,
 				conditionDown,
-				userId,
 				conditionResolved,
-			} = action.payload;
+			} = action.payload.condition;
+
+			const userId = action.payload.userId;
 
 			return {
 				...state,

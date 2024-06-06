@@ -4,10 +4,12 @@ import { formatDateTime } from "../usefulFunction.js";
 import { User } from "../models/userModel.js";
 import mongoose from "mongoose";
 
-import { addDoc, collection, serverTimestamp } from "firebase/firestore";
-
-import { db } from "../firebase-config.js";
 import { uploadFile, deleteFile } from "../middleware/handleFile.js";
+import {
+	cancelPostLike,
+	deletePostLikesAndComments,
+	likePost,
+} from "../API/firestoreAPI.js";
 
 export const addNewPost = async (req, res) => {
 	try {
@@ -117,8 +119,7 @@ export const getPosts = async (req, res) => {
 
 export const upLikes = async (req, res) => {
 	try {
-		const { postId, userId } = req.body;
-		const notificationRef = collection(db, "notifications");
+		let { postId, userId } = req.body;
 
 		const updatedPost = await Post.findOneAndUpdate(
 			{ _id: postId },
@@ -134,20 +135,18 @@ export const upLikes = async (req, res) => {
 
 		if (updatedPost.userId.toString() !== userId) {
 			const user = await User.findById(userId);
+			userId = userId.toString();
+			const userName = user.userName;
+			const profileImagePath = user.userProfile.profileImagePath;
+			const postUserId = updatedPost.userId.toString();
 
-			await addDoc(notificationRef, {
-				createdAt: serverTimestamp(),
-				senderName: user.userName,
-				senderProfileImagePath: user.userProfile.profileImagePath,
-				postId: postId,
-				receiver: updatedPost.userId.toString(),
-				action: "Like post",
-				viewed: false,
-			});
+			await likePost(userId, userName, profileImagePath, postId, postUserId);
 		}
 
 		res.status(200).json({ msg: "Success" });
 	} catch (err) {
+		console.log(err);
+
 		res.status(500).json({ error: err.message });
 	}
 };
@@ -167,6 +166,10 @@ export const downLikes = async (req, res) => {
 		if (!updatedPost) {
 			return res.status(400).json({ msg: "Fail to update post" });
 		}
+
+		const postUserId = updatedPost.userId.toString();
+
+		await cancelPostLike(postId, userId);
 
 		res.status(200).json({ msg: "Success" });
 	} catch (err) {
@@ -252,31 +255,46 @@ export const editPost = async (req, res) => {
 
 export const deletePost = async (req, res) => {
 	try {
-		const { post } = req.body;
-
-		// delete all comments in the post
-		const deletedComments = await Comment.deleteMany({ postId: post._id });
-
-		if (!deletedComments) {
-			return res.status(400).json({ msg: "Fail to delete comments" });
-		}
+		const { postId } = req.body;
 
 		// delete post
-		const deletedPost = await Post.findByIdAndUpdate(post._id, {
-			$set: { removed: 1 },
-		});
+		const deletedPost = await Post.findByIdAndUpdate(
+			postId,
+			{
+				$set: { removed: 1 },
+			},
+			{ new: true }
+		);
 
 		if (!deletedPost) {
 			return res.status(400).json({ msg: "Fail to delete post" });
 		}
 
 		// delete post image if got any
-		if (post.postImagePath !== "") {
-			await deleteFile(post.postImagePath);
+		if (deletedPost.postImagePath !== "") {
+			await deleteFile(deletedPost.postImagePath);
+		}
+
+		// delete notificaitons
+		const userIds = Array.from(deletedPost.likesMap.keys()).map((id) =>
+			id.toString()
+		);
+		const comments = await Comment.find({ postId });
+		const commentIds = comments.map((comment) => comment._id.toString());
+
+		await deletePostLikesAndComments(postId, userIds, commentIds);
+
+		// delete all comments in the post
+		const deletedComments = await Comment.deleteMany({ postId });
+
+		if (!deletedComments) {
+			return res.status(400).json({ msg: "Fail to delete comments" });
 		}
 
 		res.status(200).json({ msg: "Success" });
 	} catch (err) {
+		console.log(err);
+
 		res.status(500).json({ err: err.message });
 	}
 };
