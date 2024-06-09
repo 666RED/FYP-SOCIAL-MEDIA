@@ -17,8 +17,6 @@ import { ServerContext } from "../../../../../App.js";
 import {
 	loadCurrentLocation,
 	setHasConditionLocationChanged,
-	updateCampusCondition,
-	updateMostUsefulCondition,
 } from "../../../features/campusConditionSlice.js";
 
 const EditConditionForm = ({
@@ -26,6 +24,8 @@ const EditConditionForm = ({
 	toggleShowEditConditionForm,
 	condition,
 	inViewMostUseful,
+	updateCampusCondition,
+	updateMostUsefulCondition = null,
 }) => {
 	const navigate = useNavigate();
 	const serverURL = useContext(ServerContext);
@@ -122,7 +122,9 @@ const EditConditionForm = ({
 
 			if (msg === "Success") {
 				sliceDispatch(updateCampusCondition(returnCondition));
-				sliceDispatch(updateMostUsefulCondition(returnCondition));
+				if (updateMostUsefulCondition !== null) {
+					sliceDispatch(updateMostUsefulCondition(returnCondition));
+				}
 				toggleShowOptionDiv();
 				toggleShowEditConditionForm();
 				enqueueSnackbar("Condition updated", {
@@ -139,6 +141,8 @@ const EditConditionForm = ({
 
 			dispatch({ type: ACTION_TYPES.SET_LOADING, payload: false });
 		} catch (err) {
+			console.log(err);
+
 			enqueueSnackbar("Could not connect to the server", {
 				variant: "error",
 			});

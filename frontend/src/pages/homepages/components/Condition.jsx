@@ -20,7 +20,11 @@ import {
 } from "../../campusConditionPages/pages/mainPage/features/campusConditionReducer.js";
 import ACTION_TYPES from "../../campusConditionPages/pages/mainPage/actionTypes/campusConditionActionTypes.js";
 import { loadMap } from "../../campusConditionPages/features/campusConditionSlice.js";
-import { setHasPosts, removePost } from "../../../features/homeSlice.js";
+import {
+	setHasPosts,
+	removePost,
+	updatePost,
+} from "../../../features/homeSlice.js";
 import { ServerContext } from "../../../App.js";
 
 const Condition = ({
@@ -252,8 +256,8 @@ const Condition = ({
 					if (posts.length < 15) {
 						setHasPosts(true);
 					}
-					sliceDispatch(removePost(deletedCondition));
-					sliceDispatch(removePost(deletedCondition));
+
+					sliceDispatch(removePost(deletedCondition._id));
 					enqueueSnackbar("Condition deleted", { variant: "success" });
 					if (inViewMostUseful) {
 						navigate("/campus-condition");
@@ -398,6 +402,7 @@ const Condition = ({
 					}
 					condition={condition}
 					inViewMostUseful={inViewMostUseful}
+					updateCampusCondition={updatePost}
 				/>
 			)}
 

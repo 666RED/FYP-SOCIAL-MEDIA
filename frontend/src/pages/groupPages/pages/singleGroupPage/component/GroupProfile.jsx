@@ -486,7 +486,7 @@ const GroupProfile = () => {
 			<hr />
 			{/* GROUP BIO */}
 			{state.groupBio !== "" && (
-				<p className="shadow-2xl bg-white p-2 rounded-xl text-black md:w-7/12 w-full mx-auto">
+				<p className="shadow-2xl bg-white p-2 rounded-xl text-black component-layout mx-auto">
 					{state.groupBio}
 				</p>
 			)}

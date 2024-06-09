@@ -471,16 +471,19 @@ export const deleteCondition = async (req, res) => {
 	try {
 		const { conditionId } = req.body;
 
-		const deletedCondition = await CampusCondition.findByIdAndUpdate(
+		let deletedCondition = await CampusCondition.findByIdAndUpdate(
 			conditionId,
 			{
 				$set: { removed: true },
-			}
+			},
+			{ new: true }
 		);
 
 		if (!deletedCondition) {
 			return res.status(400).json({ msg: "Fail to delete condition" });
 		}
+
+		deletedCondition = { ...deletedCondition._doc, type: "Condition" };
 
 		// remove image if got any
 		if (deletedCondition.conditionImagePath !== "") {

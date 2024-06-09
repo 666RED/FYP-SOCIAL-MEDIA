@@ -24,6 +24,8 @@ import {
 	removeCampusCondition,
 	removeMostUsefulCondition,
 	setHasConditions,
+	updateCampusCondition,
+	updateMostUsefulCondition,
 } from "../../../features/campusConditionSlice.js";
 import { ServerContext } from "../../../../../App.js";
 
@@ -402,6 +404,8 @@ const CampusCondition = ({
 					}
 					condition={condition}
 					inViewMostUseful={inViewMostUseful}
+					updateCampusCondition={updateCampusCondition}
+					updateMostUsefulCondition={updateMostUsefulCondition}
 				/>
 			)}
 
