@@ -51,6 +51,11 @@ const Condition = ({
 		try {
 			dispatch({ type: ACTION_TYPES.SET_IS_PROCESSING, payload: true });
 			if (!state.isUp) {
+				if (state.isDown) {
+					dispatch({ type: ACTION_TYPES.UP_POST_AND_CANCEL_DOWN });
+				} else {
+					dispatch({ type: ACTION_TYPES.UP_POST });
+				}
 				const res = await fetch(`${serverURL}/campus-condition/handle-up`, {
 					method: "PATCH",
 					body: JSON.stringify({
@@ -73,11 +78,6 @@ const Condition = ({
 				const { msg } = await res.json();
 
 				if (msg === "Success") {
-					if (state.isDown) {
-						dispatch({ type: ACTION_TYPES.UP_POST_AND_CANCEL_DOWN });
-					} else {
-						dispatch({ type: ACTION_TYPES.UP_POST });
-					}
 				} else if (msg === "Condition not found") {
 					enqueueSnackbar("Condition not found", { variant: "error" });
 				} else if (msg === "Condition not updated") {
@@ -90,6 +90,8 @@ const Condition = ({
 					});
 				}
 			} else {
+				dispatch({ type: ACTION_TYPES.CANCEL_UP });
+
 				const res = await fetch(`${serverURL}/campus-condition/cancel-up`, {
 					method: "PATCH",
 					body: JSON.stringify({
@@ -111,7 +113,6 @@ const Condition = ({
 				const { msg } = await res.json();
 
 				if (msg === "Success") {
-					dispatch({ type: ACTION_TYPES.CANCEL_UP });
 				} else if (msg === "Condition not found") {
 					enqueueSnackbar("Fail to update condition", { variant: "error" });
 				} else {
@@ -134,6 +135,11 @@ const Condition = ({
 		try {
 			dispatch({ type: ACTION_TYPES.SET_IS_PROCESSING, payload: true });
 			if (!state.isDown) {
+				if (state.isUp) {
+					dispatch({ type: ACTION_TYPES.DOWN_POST_AND_CANCEL_UP });
+				} else {
+					dispatch({ type: ACTION_TYPES.DOWN_POST });
+				}
 				const res = await fetch(`${serverURL}/campus-condition/handle-down`, {
 					method: "PATCH",
 					body: JSON.stringify({
@@ -156,17 +162,14 @@ const Condition = ({
 				const { msg } = await res.json();
 
 				if (msg === "Success") {
-					if (state.isUp) {
-						dispatch({ type: ACTION_TYPES.DOWN_POST_AND_CANCEL_UP });
-					} else {
-						dispatch({ type: ACTION_TYPES.DOWN_POST });
-					}
 				} else if (msg === "Condition not found") {
 					enqueueSnackbar("Fail to update condition", { variant: "error" });
 				} else {
 					enqueueSnackbar("An error occurred", { variant: "error" });
 				}
 			} else {
+				dispatch({ type: ACTION_TYPES.CANCEL_DOWN });
+
 				const res = await fetch(`${serverURL}/campus-condition/cancel-down`, {
 					method: "PATCH",
 					body: JSON.stringify({
@@ -188,7 +191,6 @@ const Condition = ({
 				const { msg } = await res.json();
 
 				if (msg === "Success") {
-					dispatch({ type: ACTION_TYPES.CANCEL_DOWN });
 				} else if (msg === "Condition not found") {
 					enqueueSnackbar("Fail to update condition", { variant: "error" });
 				} else {
@@ -515,7 +517,7 @@ const Condition = ({
 					<h6 className="justify-self-center text-sm sm:text-base select-none">
 						Up
 					</h6>
-					<p className="justify-self-center">{state.conditionUp}</p>
+					<p className="justify-self-center select-none">{state.conditionUp}</p>
 				</div>
 
 				{/* DOWN */}
@@ -533,7 +535,9 @@ const Condition = ({
 					<h6 className="justify-self-center text-sm sm:text-base select-none">
 						Down
 					</h6>
-					<p className="justify-self-center">{state.conditionDown}</p>
+					<p className="justify-self-center select-none">
+						{state.conditionDown}
+					</p>
 				</div>
 			</div>
 		</div>

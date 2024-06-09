@@ -5,6 +5,7 @@ import { BsThreeDots } from "react-icons/bs/index.js";
 import { HiThumbUp } from "react-icons/hi/index.js";
 import { FaCommentDots } from "react-icons/fa/index.js";
 import { MdDeleteForever, MdEdit, MdReportProblem } from "react-icons/md";
+import Loader from "../Spinner/Loader.jsx";
 import Comments from "../comment/Comments.jsx";
 import EditPostForm from "./EditPostForm.jsx";
 import ReportForm from "./ReportForm.jsx";
@@ -42,6 +43,9 @@ const Post = ({ post, view = 0 }) => {
 		try {
 			dispatch({ type: ACTION_TYPES.SET_PROCESSING, payload: true });
 			if (!state.isLiked) {
+				dispatch({
+					type: ACTION_TYPES.LIKE_POST,
+				});
 				const res = await fetch(`${serverURL}/post/up-likes`, {
 					method: "PATCH",
 					headers: {
@@ -63,17 +67,20 @@ const Post = ({ post, view = 0 }) => {
 				const { msg } = await res.json();
 
 				if (msg === "Success") {
-					dispatch({
-						type: ACTION_TYPES.LIKE_POST,
-					});
 				} else if (msg === "Post not found") {
+					dispatch({ type: ACTION_TYPES.SET_IS_LIKED, payload: false });
 					enqueueSnackbar("Post not found", { variant: "error" });
 				} else if (msg === "Fail to update post") {
+					dispatch({ type: ACTION_TYPES.SET_IS_LIKED, payload: false });
 					enqueueSnackbar("Fail to like the post", { variant: "error" });
 				} else {
+					dispatch({ type: ACTION_TYPES.SET_IS_LIKED, payload: false });
 					enqueueSnackbar("An error occurred", { variant: "error" });
 				}
 			} else {
+				dispatch({
+					type: ACTION_TYPES.DISLIKE_POST,
+				});
 				const res = await fetch(`${serverURL}/post/down-likes`, {
 					method: "PATCH",
 					headers: {
@@ -95,18 +102,18 @@ const Post = ({ post, view = 0 }) => {
 				const { msg } = await res.json();
 
 				if (msg === "Success") {
-					dispatch({
-						type: ACTION_TYPES.DISLIKE_POST,
-					});
 				} else if (msg === "Post not found") {
+					dispatch({ type: ACTION_TYPES.SET_IS_LIKED, payload: true });
 					enqueueSnackbar("Post not found", {
 						variant: "error",
 					});
 				} else if (msg === "Fail to update post") {
+					dispatch({ type: ACTION_TYPES.SET_IS_LIKED, payload: true });
 					enqueueSnackbar("Fail to remove the like", {
 						variant: "error",
 					});
 				} else {
+					dispatch({ type: ACTION_TYPES.SET_IS_LIKED, payload: true });
 					enqueueSnackbar("An error occurred", { variant: "error" });
 				}
 			}
@@ -273,7 +280,7 @@ const Post = ({ post, view = 0 }) => {
 				<div className="grid grid-cols-11 mt-3">
 					{/* LIKE */}
 					<div
-						className="col-span-5 border border-black rounded-xl cursor-pointer grid grid-cols-3 py-2 hover:bg-gray-200"
+						className="col-span-5 border border-black rounded-xl cursor-pointer hover:bg-gray-200 grid grid-cols-3 py-2"
 						onClick={() => !state.processing && handleLikes()}
 					>
 						<div

@@ -55,6 +55,9 @@ const GroupPost = ({ post, isAdmin = false, viewPost = false }) => {
 		try {
 			dispatch({ type: ACTION_TYPES.SET_PROCESSING, payload: true });
 			if (!state.isLiked) {
+				dispatch({
+					type: ACTION_TYPES.LIKE_POST,
+				});
 				const res = await fetch(`${serverURL}/group-post/up-likes`, {
 					method: "PATCH",
 					headers: {
@@ -77,15 +80,23 @@ const GroupPost = ({ post, isAdmin = false, viewPost = false }) => {
 				const { msg } = await res.json();
 
 				if (msg === "Success") {
-					dispatch({
-						type: ACTION_TYPES.LIKE_POST,
-					});
 				} else if (msg === "Fail to update post") {
+					dispatch({
+						type: ACTION_TYPES.SET_IS_LIKED,
+						payload: false,
+					});
 					enqueueSnackbar("Fail to like the post", { variant: "error" });
 				} else {
+					dispatch({
+						type: ACTION_TYPES.SET_IS_LIKED,
+						payload: false,
+					});
 					enqueueSnackbar("An error occurred", { variant: "error" });
 				}
 			} else {
+				dispatch({
+					type: ACTION_TYPES.DISLIKE_POST,
+				});
 				const res = await fetch(`${serverURL}/group-post/down-likes`, {
 					method: "PATCH",
 					headers: {
@@ -108,14 +119,19 @@ const GroupPost = ({ post, isAdmin = false, viewPost = false }) => {
 				const { msg } = await res.json();
 
 				if (msg === "Success") {
-					dispatch({
-						type: ACTION_TYPES.DISLIKE_POST,
-					});
 				} else if (msg === "Fail to update post") {
+					dispatch({
+						type: ACTION_TYPES.SET_IS_LIKED,
+						payload: true,
+					});
 					enqueueSnackbar("Fail to remove the like", {
 						variant: "error",
 					});
 				} else {
+					dispatch({
+						type: ACTION_TYPES.SET_IS_LIKED,
+						payload: true,
+					});
 					enqueueSnackbar("An error occurred", { variant: "error" });
 				}
 			}
