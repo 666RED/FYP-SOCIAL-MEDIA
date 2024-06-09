@@ -21,7 +21,7 @@ const CampusConditions = ({ currentTime, yourCondition = false }) => {
 	const getPath = yourCondition
 		? `${serverURL}/campus-condition/get-your-campus-conditions?currentTime=${currentTime}&userId=${
 				user._id
-		  }&conditions=${JSON.stringify([])}`
+		  }&conditionIds=${JSON.stringify([])}`
 		: `${serverURL}/campus-condition/get-campus-conditions?currentTime=${currentTime}&conditionIds=${JSON.stringify(
 				[]
 		  )}`;

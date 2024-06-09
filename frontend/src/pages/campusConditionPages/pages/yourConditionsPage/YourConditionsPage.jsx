@@ -39,7 +39,9 @@ const YourConditionsPage = () => {
 			const res = await fetch(
 				`${serverURL}/campus-condition/get-your-campus-conditions?currentTime=${updatedTime}&userId=${
 					user._id
-				}&conditions=${JSON.stringify(campusConditions)}`,
+				}&conditionIds=${JSON.stringify(
+					campusConditions.map((condition) => condition._id)
+				)}`,
 				{
 					method: "GET",
 					headers: {
