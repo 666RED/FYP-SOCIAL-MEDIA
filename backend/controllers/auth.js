@@ -155,6 +155,7 @@ export const login = async (req, res) => {
 		const numberOfUser = await User.countDocuments();
 
 		if (user.firstLogin) {
+			// for early user reward
 			if (numberOfUser <= 100) {
 				const updatedUser = await User.findOneAndUpdate(
 					{ userEmailAddress },

@@ -34,7 +34,7 @@ export const editProfile = async (req, res) => {
 
 		let user;
 
-		// without updating images
+		// update profile image and cover image
 		if (!profileImage && !coverImage) {
 			user = await User.findByIdAndUpdate(
 				userId,

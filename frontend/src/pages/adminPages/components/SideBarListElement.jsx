@@ -5,7 +5,7 @@ const SideBarListelement = ({ element, selectedSection }) => {
 		<li
 			className={`${
 				selectedSection == element.component && "bg-gray-400 text-white"
-			} w-full px-1 py-3 rounded-md cursor-pointer hover:bg-gray-500`}
+			} w-full px-1 py-3 rounded-md cursor-pointer hover:bg-gray-500 text-nowrap`}
 			onClick={element.action}
 		>
 			{element.component}

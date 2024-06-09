@@ -57,9 +57,7 @@ export const createNewGroup = async (req, res) => {
 				members: membersMap,
 			});
 		}
-
 		const savedGroup = await newGroup.save();
-
 		if (!savedGroup) {
 			return res.status(400).json({ msg: "Fail to create new group" });
 		}
