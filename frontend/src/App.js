@@ -67,8 +67,8 @@ export const ServerContext = createContext();
 export const NotificationContext = createContext([]);
 
 function App() {
-	// const server = "https://fyp-fsktm-connect.onrender.com";
-	const server = "http://localhost:3001";
+	const server = "https://fyp-fsktm-connect.onrender.com";
+	// const server = "http://localhost:3001";
 
 	const { user } = useSelector((store) => store.auth);
 	const [notifications, setNotifications] = useState([]);
