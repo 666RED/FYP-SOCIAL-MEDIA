@@ -8,7 +8,7 @@ import { ServerContext } from "../../../../App.js";
 import { reportContext } from "./ReportPage.jsx";
 
 const ReportRow = ({ report, count }) => {
-	const { token } = useSelector((store) => store.admin);
+	const { user, token } = useSelector((store) => store.admin);
 	const { enqueueSnackbar } = useSnackbar();
 	const serverURL = useContext(ServerContext);
 	const [showReport, setShowReport] = useState(false);
@@ -26,6 +26,7 @@ const ReportRow = ({ report, count }) => {
 					method: "PATCH",
 					body: JSON.stringify({
 						id: report._id,
+						adminId: user._id,
 					}),
 					headers: {
 						"Content-Type": "application/json",
@@ -77,6 +78,7 @@ const ReportRow = ({ report, count }) => {
 						id: report._id,
 						type: report.type,
 						targetId: report.targetId,
+						adminId: user._id,
 					}),
 					headers: {
 						"Content-Type": "application/json",

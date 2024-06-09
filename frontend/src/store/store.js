@@ -12,7 +12,6 @@ import {
 import authReducer from "../features/authSlice.js";
 import loginReducer from "../pages/loginPages/reducers/loginSlice.js";
 import searchReducer from "../features/searchSlice.js";
-import homepageReducer from "../features/homepageSlice.js";
 import commentReducer from "../components/comment/feature/commentSlice.js";
 import userPostReducer from "../features/postSlice.js";
 import campusConditionReducer from "../pages/campusConditionPages/features/campusConditionSlice.js";
@@ -24,6 +23,7 @@ import productReducer from "../features/productSlice.js";
 import serviceReducer from "../features/serviceSlice.js";
 import eventReducer from "../features/eventSlice.js";
 import adminReducer from "../features/adminSlice.js";
+import homeReducer from "../features/homeSlice.js";
 
 import storage from "redux-persist/lib/storage";
 
@@ -37,7 +37,6 @@ const rootReducer = combineReducers({
 	auth: persistedAuthReducer,
 	admin: persistedAdminReducer,
 	login: loginReducer,
-	home: homepageReducer,
 	comment: commentReducer,
 	post: userPostReducer,
 	campusCondition: campusConditionReducer,
@@ -49,6 +48,7 @@ const rootReducer = combineReducers({
 	product: productReducer,
 	service: serviceReducer,
 	event: eventReducer,
+	home: homeReducer,
 });
 
 export const store = configureStore({

@@ -5,6 +5,7 @@ import mongoose from "mongoose";
 import {
 	addJoinGroupRequest,
 	removeJoinGroupRequest,
+	updateJoinGroupRequest,
 } from "../API/firestoreAPI.js";
 
 export const sendJoinGroupRequest = async (req, res) => {
@@ -27,14 +28,13 @@ export const sendJoinGroupRequest = async (req, res) => {
 		const groupAdminId = group.groupAdminId.toString();
 		const user = await User.findById(requestorId);
 		const userName = user.userName;
-		const profileImagePath = user.userProfile.profileImagePath;
 
 		await addJoinGroupRequest({
 			userId: requestorId,
 			requestId: savedJoinGroupRequest._id.toString(),
 			userName,
-			profileImagePath,
 			groupAdminId,
+			groupId,
 		});
 
 		res.status(201).json({ msg: "Success", savedJoinGroupRequest });
@@ -155,19 +155,34 @@ export const acceptJoinGroupRequest = async (req, res) => {
 			return res.status(400).json({ msg: "Fail to accept join group request" });
 		}
 
-		const updatedGroup = await Group.findByIdAndUpdate(groupId, {
-			$set: { [`members.${requestorId}`]: true },
-		});
+		const updatedGroup = await Group.findByIdAndUpdate(
+			groupId,
+			{
+				$set: { [`members.${requestorId}`]: true },
+			},
+			{ new: true }
+		);
 
 		if (!updatedGroup) {
 			return res.status(400).json({ msg: "Fail to accept join group request" });
 		}
+
+		// firebase
+		await updateJoinGroupRequest({
+			userId: requestorId,
+			requestId: updatedJoinGroupRequest._id.toString(),
+			groupName: updatedGroup.groupName,
+			groupAdminId: updatedGroup.groupAdminId.toString(),
+			groupId,
+		});
 
 		res.status(200).json({
 			msg: "Success",
 			joinGroupRequestId: updatedJoinGroupRequest._id,
 		});
 	} catch (err) {
+		console.log(err);
+
 		res.status(500).json({ error: err.message });
 	}
 };

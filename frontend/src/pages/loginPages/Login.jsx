@@ -1,7 +1,8 @@
 import { React, useContext, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import { useSnackbar } from "notistack";
+import { useSnackbar, closeSnackbar } from "notistack";
+import { MdCancel } from "react-icons/md";
 import { BsEyeFill, BsEyeSlashFill } from "react-icons/bs/index.js";
 import RegisterForm from "./RegisterForm.jsx";
 import Spinner from "../../components/Spinner/Spinner.jsx";
@@ -60,6 +61,39 @@ const Login = () => {
 				dispatch(successLogin());
 				enqueueSnackbar("Login", { variant: "success" });
 				navigate("/home");
+			} else if (data.msg === "Early user") {
+				authDispatch(setUser({ token: data.token, user: data.user }));
+				dispatch(successLogin());
+				enqueueSnackbar(
+					"Congratulations! You are among the first 100 registered users. Enjoy your reward of a colorful frame.",
+					{
+						variant: "success",
+						autoHideDuration: null,
+						action: (key) => (
+							<button onClick={() => closeSnackbar(key)}>
+								<MdCancel className="text-xl" />
+							</button>
+						),
+					}
+				);
+				navigate("/setting/1");
+			} else if (data.msg === "Not activated yet") {
+				enqueueSnackbar(
+					"Please click the link in your email to activate your account",
+					{
+						autoHideDuration: null,
+						variant: "custom-snackbar",
+						action: (key) => (
+							<button onClick={() => closeSnackbar(key)}>
+								<MdCancel className="text-xl" />
+							</button>
+						),
+					}
+				);
+			} else if (data.msg === "Fail to login") {
+				enqueueSnackbar("Fail to login, please try again", {
+					variant: "error",
+				});
 			} else {
 				enqueueSnackbar("An error occurred", { variant: "error" });
 			}
@@ -76,11 +110,10 @@ const Login = () => {
 			{loading && <Spinner />}
 			{displayRegForm && <RegisterForm setDisplayRegForm={setDisplayRegForm} />}
 			<div className="mt-5 w-1/2 mx-auto min-w-80 max-w-96 text-center">
-				{/* change to logo later */}
-				<h1 className="text-2xl">Logo</h1>
+				<img src="/logo.png" alt="Logo" className="w-full" />
 				<form
 					onSubmit={handleSubmit}
-					className="p-3 border-gray-400 border rounded-lg mt-16 sm:mt-10"
+					className="p-3 border-gray-400 border rounded-lg mt-4"
 				>
 					<h1 className="text-center title mb-2">User Login</h1>
 					<HorizontalRule />

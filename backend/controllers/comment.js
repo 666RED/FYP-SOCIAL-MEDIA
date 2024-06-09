@@ -100,14 +100,13 @@ export const addComment = async (req, res) => {
 		// firebase
 		if (userId !== postUserId) {
 			const commentId = savedComment._id.toString();
-			await commentPost(
+			await commentPost({
 				userId,
 				userName,
-				profileImagePath,
 				postId,
 				commentId,
-				postUserId
-			);
+				postUserId,
+			});
 		}
 
 		const temp = {
@@ -132,6 +131,11 @@ export const deleteComment = async (req, res) => {
 	try {
 		let { commentId, postId, userId } = req.body;
 
+		// firebase
+		commentId = commentId.toString();
+		const comment = await Comment.findById(commentId);
+		await deletePostComment({ commentId, userId });
+
 		const deletedComment = await Comment.findByIdAndDelete(commentId);
 
 		if (!deletedComment) {
@@ -139,12 +143,6 @@ export const deleteComment = async (req, res) => {
 		}
 
 		await Post.findByIdAndUpdate(postId, { $inc: { postComments: -1 } });
-
-		// firebase
-		commentId = commentId.toString();
-		const post = await Post.findById(postId);
-
-		await deletePostComment(commentId, userId);
 
 		res
 			.status(200)

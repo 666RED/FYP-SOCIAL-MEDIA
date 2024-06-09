@@ -1,8 +1,14 @@
 import { GroupPost } from "../models/groupPostModel.js";
+import { Group } from "../models/groupModel.js";
 import { User } from "../models/userModel.js";
 import { formatDateTime } from "../usefulFunction.js";
 import { GroupPostComment } from "../models/groupPostCommentModel.js";
 import { uploadFile, deleteFile } from "../middleware/handleFile.js";
+import {
+	cancelGroupPostLike,
+	deleteGroupPostLikesAndComments,
+	likeGroupPost,
+} from "../API/firestoreAPI.js";
 
 export const addNewGroupPost = async (req, res) => {
 	try {
@@ -128,6 +134,35 @@ export const getGroupPosts = async (req, res) => {
 	}
 };
 
+export const getGroupPost = async (req, res) => {
+	try {
+		const { postId } = req.query;
+
+		const post = await GroupPost.findById(postId);
+
+		if (!post) {
+			return res.status(400).json({ msg: "Fail to get post" });
+		}
+
+		const group = await Group.findById(post.groupId);
+		const user = await User.findById(post.userId);
+
+		const returnGroupPost = {
+			...post._doc,
+			userName: user.userName,
+			profileImagePath: user.userProfile.profileImagePath,
+			time: formatDateTime(post.createdAt),
+			frameColor: user.userProfile.profileFrameColor,
+			groupName: group.groupName,
+			groupImagePath: group.groupImagePath,
+		};
+
+		res.status(200).json({ msg: "Success", returnGroupPost });
+	} catch (err) {
+		res.status(500).json({ error: err.message });
+	}
+};
+
 export const getYourGroupPosts = async (req, res) => {
 	try {
 		const limit = 10;
@@ -192,15 +227,31 @@ export const upLikes = async (req, res) => {
 			{
 				$inc: { postLikes: 1 },
 				$set: { [`likesMap.${userId}`]: true },
-			}
+			},
+			{ new: true }
 		);
 
 		if (!updatedPost) {
 			return res.status(400).json({ msg: "Fail to update post" });
 		}
 
+		// firebase
+		if (userId !== updatedPost.userId.toString()) {
+			const user = await User.findById(userId);
+			const userName = user.userName;
+
+			await likeGroupPost({
+				userId,
+				userName,
+				postId,
+				postUserId: updatedPost.userId.toString(),
+			});
+		}
+
 		res.status(200).json({ msg: "Success" });
 	} catch (err) {
+		console.log(err);
+
 		res.status(500).json({ error: err.message });
 	}
 };
@@ -221,6 +272,11 @@ export const downLikes = async (req, res) => {
 			return res.status(400).json({ msg: "Fail to update post" });
 		}
 
+		// firebase
+		if (userId !== updatedPost.userId.toString()) {
+			await cancelGroupPostLike({ userId, postId });
+		}
+
 		res.status(200).json({ msg: "Success" });
 	} catch (err) {
 		res.status(500).json({ error: err.message });
@@ -231,6 +287,31 @@ export const deletePost = async (req, res) => {
 	try {
 		const { postId, postImagePath, postFilePath } = req.body;
 
+		// delete post
+		const deletedPost = await GroupPost.findByIdAndUpdate(
+			postId,
+			{
+				$set: { removed: 1 },
+			},
+			{ new: true }
+		);
+
+		if (!deletedPost) {
+			return res.status(400).json({ msg: "Fail to delete post" });
+		}
+
+		// firebase
+		const userIds = Array.from(deletedPost.likesMap.keys()).map((id) =>
+			id.toString()
+		);
+		let comments = await GroupPostComment.find({ groupPostId: postId });
+		comments = comments.map((comment) => ({
+			commentId: comment._id.toString(),
+			userId: comment.userId.toString(),
+		}));
+
+		await deleteGroupPostLikesAndComments({ postId, userIds, comments });
+
 		// delete all comments in the group post
 		const deletedComments = await GroupPostComment.deleteMany({
 			groupPostId: postId,
@@ -238,15 +319,6 @@ export const deletePost = async (req, res) => {
 
 		if (!deletedComments) {
 			return res.status(400).json({ msg: "Fail to delete comments" });
-		}
-
-		// delete post
-		const deletedPost = await GroupPost.findByIdAndUpdate(postId, {
-			$set: { removed: 1 },
-		});
-
-		if (!deletedPost) {
-			return res.status(400).json({ msg: "Fail to delete post" });
 		}
 
 		// delete group post image if got any
@@ -261,6 +333,8 @@ export const deletePost = async (req, res) => {
 
 		res.status(200).json({ msg: "Success" });
 	} catch (err) {
+		console.log(err);
+
 		res.status(500).json({ err: err.message });
 	}
 };
@@ -365,14 +439,22 @@ export const editGroupPost = async (req, res) => {
 		}
 
 		const user = await User.findById(userId);
+		const group = await Group.findById(originalPost.groupId);
 		let profileImagePath = "";
 		let userName = "";
 		let frameColor = "";
+		let groupName = "";
+		let groupImagePath = "";
 
 		if (user) {
 			userName = user.userName;
 			profileImagePath = user.userProfile.profileImagePath;
 			frameColor = user.userProfile.profileFrameColor;
+		}
+
+		if (group) {
+			groupName = group.groupName;
+			groupImagePath = group.groupImagePath;
 		}
 
 		const { createdAt, updatedAt, __v, ...rest } = updatedPost._doc;
@@ -389,9 +471,19 @@ export const editGroupPost = async (req, res) => {
 
 		res.status(200).json({
 			msg: "Success",
-			returnGroupPost: { ...rest, userName, profileImagePath, frameColor },
+			returnGroupPost: {
+				...rest,
+				userName,
+				profileImagePath,
+				frameColor,
+				groupName,
+				groupImagePath,
+				type: "Group",
+			},
 		});
 	} catch (err) {
+		console.log(err);
+
 		res.status(500).json({ err: err.message });
 	}
 };

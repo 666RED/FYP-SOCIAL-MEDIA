@@ -1,6 +1,7 @@
 import express from "express";
 import {
 	getPosts,
+	getPost,
 	upLikes,
 	downLikes,
 	deletePost,
@@ -11,6 +12,7 @@ import { verifyToken } from "../middleware/auth.js";
 const router = express.Router();
 
 router.get("/get-posts", verifyToken, getPosts);
+router.get("/get-post", verifyToken, getPost);
 router.patch("/up-likes", verifyToken, upLikes);
 router.patch("/down-likes", verifyToken, downLikes);
 router.delete("/delete-post", verifyToken, deletePost);

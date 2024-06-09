@@ -31,7 +31,11 @@ const Comment = ({ comment, post }) => {
 					`${serverURL}/group-post-comment/delete-comment`,
 					{
 						method: "DELETE",
-						body: JSON.stringify({ commentId: comment._id, postId: post._id }),
+						body: JSON.stringify({
+							commentId: comment._id,
+							postId: post._id,
+							userId: user._id,
+						}),
 						headers: {
 							"Content-Type": "application/json",
 							Authorization: `Bearer ${token}`,

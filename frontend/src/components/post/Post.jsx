@@ -17,7 +17,7 @@ import ACTION_TYPES from "./actionTypes/userPostActionTypes.js";
 import { removePost, updatePost } from "../../features/postSlice.js";
 import { ServerContext } from "../../App.js";
 
-const Post = ({ post }) => {
+const Post = ({ post, view = 0 }) => {
 	const sliceDispatch = useDispatch();
 	const serverURL = useContext(ServerContext);
 	const { user, token } = useSelector((store) => store.auth);
@@ -248,10 +248,15 @@ const Post = ({ post }) => {
 				previous={previous}
 			/>
 			{/* THREE DOTS */}
-			<BsThreeDots
-				className="absolute cursor-pointer top-6 right-3"
-				onClick={() => dispatch({ type: ACTION_TYPES.TOGGLE_SHOW_OPTION_DIV })}
-			/>
+			{view == 0 && (
+				<BsThreeDots
+					className="absolute cursor-pointer top-6 right-3"
+					onClick={() =>
+						dispatch({ type: ACTION_TYPES.TOGGLE_SHOW_OPTION_DIV })
+					}
+				/>
+			)}
+
 			{/* POST DESCRIPTION */}
 			<p className="my-3">{post.postDescription}</p>
 			{/* POST IMAGE */}
@@ -264,41 +269,48 @@ const Post = ({ post }) => {
 				/>
 			)}
 			{/* LIKE AND COMMENT DIV */}
-			<div className="grid grid-cols-11 mt-3">
-				{/* LIKE */}
-				<div
-					className="col-span-5 border border-black rounded-xl cursor-pointer grid grid-cols-3 py-2 hover:bg-gray-200"
-					onClick={() => !state.processing && handleLikes()}
-				>
+			{view == 0 && (
+				<div className="grid grid-cols-11 mt-3">
+					{/* LIKE */}
 					<div
-						className={`justify-self-center text-xl ${
-							state.isLiked && "text-blue-600"
-						}`}
+						className="col-span-5 border border-black rounded-xl cursor-pointer grid grid-cols-3 py-2 hover:bg-gray-200"
+						onClick={() => !state.processing && handleLikes()}
 					>
-						<HiThumbUp />
+						<div
+							className={`justify-self-center text-xl select-none ${
+								state.isLiked && "text-blue-600"
+							}`}
+						>
+							<HiThumbUp />
+						</div>
+						<h6 className="justify-self-center text-sm sm:text-base select-none">
+							Likes
+						</h6>
+						<p className="justify-self-center select-none">
+							{state.likesCount}
+						</p>
 					</div>
-					<h6 className="justify-self-center text-sm sm:text-base select-none">
-						Likes
-					</h6>
-					<p className="justify-self-center">{state.likesCount}</p>
-				</div>
 
-				{/* COMMENT */}
-				<div
-					className="col-span-5 col-start-7 border border-black rounded-xl grid grid-cols-3 py-2 cursor-pointer hover:bg-gray-200"
-					onClick={() => dispatch({ type: ACTION_TYPES.TOGGLE_COMMENT })}
-				>
-					<div className="text-xl justify-self-center">
-						<FaCommentDots />
+					{/* COMMENT */}
+					<div
+						className="col-span-5 col-start-7 border border-black rounded-xl grid grid-cols-3 py-2 cursor-pointer hover:bg-gray-200"
+						onClick={() => dispatch({ type: ACTION_TYPES.TOGGLE_COMMENT })}
+					>
+						<div className="text-xl justify-self-center select-none">
+							<FaCommentDots />
+						</div>
+						<h6 className="justify-self-center text-sm sm:text-base select-none">
+							Comments
+						</h6>
+						<p className="justify-self-center select-none">
+							{post.postComments}
+						</p>
 					</div>
-					<h6 className="justify-self-center text-sm sm:text-base select-none">
-						Comments
-					</h6>
-					<p className="justify-self-center">{post.postComments}</p>
 				</div>
-			</div>
+			)}
+
 			{/* COMMENTS SECTION */}
-			{state.showComment && <Comments post={post} />}
+			{view == 0 && state.showComment && <Comments post={post} />}
 		</div>
 	);
 };

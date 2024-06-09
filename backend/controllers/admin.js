@@ -12,6 +12,7 @@ import { GroupPost } from "../models/groupPostModel.js";
 import { Post } from "../models/postModel.js";
 import { formatDateTime } from "../usefulFunction.js";
 import { GroupPostComment } from "../models/groupPostCommentModel.js";
+import { Comment } from "../models/commentModel.js";
 
 export const makeReport = async (req, res) => {
 	try {
@@ -796,7 +797,7 @@ export const retrieveReports = async (req, res) => {
 
 export const dismissReport = async (req, res) => {
 	try {
-		const { id } = req.body;
+		const { id, adminId } = req.body;
 
 		const returnedReport = await Report.findByIdAndUpdate(id, {
 			$set: { status: "Dismissed" },
@@ -808,13 +809,15 @@ export const dismissReport = async (req, res) => {
 
 		res.status(200).json({ msg: "Success", returnedReport });
 	} catch (err) {
+		console.log(err);
+
 		res.status(500).json({ error: err.message });
 	}
 };
 
 export const removeReport = async (req, res) => {
 	try {
-		const { id, type, targetId } = req.body;
+		const { id, type, targetId, adminId } = req.body;
 
 		const returnedReport = await Report.findByIdAndUpdate(id, {
 			$set: { status: "Removed" },
@@ -872,7 +875,9 @@ export const removeReport = async (req, res) => {
 				if (!post) {
 					return res.status(400).json({ msg: "Fail to remove report" });
 				}
+
 				await Comment.deleteMany({ postId: targetId });
+
 				break;
 			}
 			case "Condition": {
@@ -917,7 +922,7 @@ export const removeReport = async (req, res) => {
 			}
 		}
 
-		res.status(200).json({ msg: "Success", returnedReport });
+		res.status(200).json({ msg: "Success" });
 	} catch (err) {
 		res.status(500).json({ error: err.message });
 	}

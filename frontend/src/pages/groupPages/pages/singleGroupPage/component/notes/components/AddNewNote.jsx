@@ -17,7 +17,7 @@ const AddNewNote = ({ setShowAddNewNoteDiv }) => {
 	const [filePath, setFilePath] = useState("");
 	const [file, setFile] = useState({});
 	const [discardChanges, setDiscardChanges] = useState(false);
-	const { folderId } = useParams();
+	const { folderId, groupId } = useParams();
 	const { token } = useSelector((store) => store.auth);
 	const { notes, setNotes } = useContext(noteContext);
 
@@ -47,6 +47,7 @@ const AddNewNote = ({ setShowAddNewNoteDiv }) => {
 			const formdata = new FormData();
 
 			formdata.append("folderId", folderId);
+			formdata.append("groupId", groupId);
 			formdata.append("file", file);
 
 			const res = await fetch(`${serverURL}/note/create-new-note`, {

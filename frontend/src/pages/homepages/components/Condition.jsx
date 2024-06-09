@@ -7,27 +7,23 @@ import { FaMapMarkerAlt } from "react-icons/fa";
 import { HiThumbUp, HiThumbDown } from "react-icons/hi";
 import { MdEdit, MdDeleteForever, MdReportProblem } from "react-icons/md";
 import { IoIosCheckmarkCircle, IoIosCloseCircle } from "react-icons/io";
-import UserPostHeader from "../../../../profilePages/components/UserPostHeader.jsx";
-import ViewLocation from "./ViewLocation.jsx";
-import EditConditionForm from "./EditConditionForm.jsx";
-import OptionDiv from "../../../../../components/OptionDiv.jsx";
-import Spinner from "../../../../../components/Spinner/Spinner.jsx";
-import ReportForm from "../../../../../components/post/ReportForm.jsx";
-import FocusImage from "../../../../adminPages/components/FocusImage.jsx";
+import UserPostHeader from "../../profilePages/components/UserPostHeader.jsx";
+import ViewLocation from "../../campusConditionPages/pages/mainPage/components/ViewLocation.jsx";
+import EditConditionForm from "../../campusConditionPages/pages/mainPage/components/EditConditionForm.jsx";
+import OptionDiv from "../../../components/OptionDiv.jsx";
+import Spinner from "../../../components/Spinner/Spinner.jsx";
+import ReportForm from "../../../components/post/ReportForm.jsx";
+import FocusImage from "../../adminPages/components/FocusImage.jsx";
 import {
 	CampusConditionReducer,
 	INITIAL_STATE,
-} from "../features/campusConditionReducer.js";
-import ACTION_TYPES from "../actionTypes/campusConditionActionTypes.js";
-import {
-	loadMap,
-	removeCampusCondition,
-	removeMostUsefulCondition,
-	setHasConditions,
-} from "../../../features/campusConditionSlice.js";
-import { ServerContext } from "../../../../../App.js";
+} from "../../campusConditionPages/pages/mainPage/features/campusConditionReducer.js";
+import ACTION_TYPES from "../../campusConditionPages/pages/mainPage/actionTypes/campusConditionActionTypes.js";
+import { loadMap } from "../../campusConditionPages/features/campusConditionSlice.js";
+import { setHasPosts, removePost } from "../../../features/homeSlice.js";
+import { ServerContext } from "../../../App.js";
 
-const CampusCondition = ({
+const Condition = ({
 	condition,
 	inViewMostUseful = false,
 	homePost = false,
@@ -38,7 +34,7 @@ const CampusCondition = ({
 	const { user, token } = useSelector((store) => store.auth);
 	const { enqueueSnackbar } = useSnackbar();
 	const [state, dispatch] = useReducer(CampusConditionReducer, INITIAL_STATE);
-	const { campusConditions } = useSelector((store) => store.campusCondition);
+	const { posts } = useSelector((store) => store.home);
 	const [showImage, setShowImage] = useState(false);
 
 	const previous = window.location.pathname;
@@ -251,11 +247,11 @@ const CampusCondition = ({
 				const { msg, deletedCondition } = await res.json();
 
 				if (msg === "Success") {
-					if (campusConditions.length === 10) {
-						sliceDispatch(setHasConditions(true));
+					if (posts.length < 15) {
+						setHasPosts(true);
 					}
-					sliceDispatch(removeCampusCondition(deletedCondition));
-					sliceDispatch(removeMostUsefulCondition(deletedCondition));
+					sliceDispatch(removePost(deletedCondition));
+					sliceDispatch(removePost(deletedCondition));
 					enqueueSnackbar("Condition deleted", { variant: "success" });
 					if (inViewMostUseful) {
 						navigate("/campus-condition");
@@ -544,4 +540,4 @@ const CampusCondition = ({
 	);
 };
 
-export default CampusCondition;
+export default Condition;

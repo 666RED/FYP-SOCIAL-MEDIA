@@ -1,6 +1,12 @@
 import { Folder } from "../models/folderModel.js";
+import { Group } from "../models/groupModel.js";
 import { Note } from "../models/noteModel.js";
 import { uploadFile, deleteFile } from "../middleware/handleFile.js";
+import {
+	addNewNote,
+	removeNoteNotification,
+	removeNoteNotifications,
+} from "../API/firestoreAPI.js";
 
 export const createNewFolder = async (req, res) => {
 	try {
@@ -71,7 +77,7 @@ export const retrieveFolders = async (req, res) => {
 
 export const createNewNote = async (req, res) => {
 	try {
-		const { folderId } = req.body;
+		const { folderId, groupId } = req.body;
 
 		const file = req.file;
 
@@ -96,8 +102,28 @@ export const createNewNote = async (req, res) => {
 			uploaded: new Date(savedNote.createdAt).toLocaleString(),
 		};
 
+		const group = await Group.findById(groupId);
+		const groupAdminId = group.groupAdminId.toString();
+
+		// firebase
+		const memberIds = Array.from(group.members.keys())
+			.filter((id) => id !== groupAdminId)
+			.map((id) => id.toString());
+		const groupName = group.groupName;
+
+		await addNewNote({
+			noteId: savedNote._id.toString(),
+			groupAdminId,
+			memberIds,
+			groupName,
+			folderId,
+			groupId,
+		});
+
 		res.status(200).json({ msg: "Success", returnedNote });
 	} catch (err) {
+		console.log(err);
+
 		res.status(500).json({ error: err.message });
 	}
 };
@@ -129,7 +155,15 @@ export const retrieveNotes = async (req, res) => {
 
 export const removeNote = async (req, res) => {
 	try {
-		const { noteId, filePath } = req.body;
+		const { noteId, filePath, groupId } = req.body;
+
+		// firebase
+		const group = await Group.findById(groupId);
+		const groupAdminId = group.groupAdminId.toString();
+		const memberIds = Array.from(group.members.keys())
+			.filter((id) => id !== groupAdminId)
+			.map((id) => id.toString());
+		await removeNoteNotification({ noteId, memberIds });
 
 		const deletedNote = await Note.findByIdAndDelete(noteId);
 
@@ -142,22 +176,36 @@ export const removeNote = async (req, res) => {
 
 		res.status(200).json({ msg: "Success", noteId });
 	} catch (err) {
+		console.log(err);
+
 		res.status(500).json({ err: err.message });
 	}
 };
 
 export const removeFolder = async (req, res) => {
 	try {
-		const { folderId } = req.body;
+		const { folderId, groupId } = req.body;
+
+		// firebase
+		const notes = await Note.find({ folderId: folderId });
+		const noteIds = notes.map((note) => note._id.toString());
+		const group = await Group.findById(groupId);
+		const groupAdminId = group.groupAdminId.toString();
+		const memberIds = Array.from(group.members.keys())
+			.filter((id) => id !== groupAdminId)
+			.map((id) => id.toString());
+
+		await removeNoteNotifications({ memberIds, noteIds });
+
+		// delete notes in firebase
+		for (const note of notes) {
+			await deleteFile(note.filePath);
+		}
 
 		const deletedNotes = await Note.deleteMany({ folderId });
 
 		if (!deletedNotes) {
 			return res.status(400).json({ msg: "Fail to remove notes" });
-		}
-
-		for (const note of deletedNotes) {
-			await deleteFile(note.filePath);
 		}
 
 		const deletedFolder = await Folder.findByIdAndDelete(folderId);
@@ -168,6 +216,8 @@ export const removeFolder = async (req, res) => {
 
 		res.status(200).json({ msg: "Success", folderId });
 	} catch (err) {
+		console.log(err);
+
 		res.status(500).json({ error: err.message });
 	}
 };

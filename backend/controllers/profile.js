@@ -62,7 +62,7 @@ export const editProfile = async (req, res) => {
 			);
 		} else if (!coverImage) {
 			// only update profile image
-			const imageURL = await uploadFile("profile", profileImage[0]);
+			const imageURL = await uploadFile("profile/", profileImage[0]);
 			user = await User.findByIdAndUpdate(
 				userId,
 				{

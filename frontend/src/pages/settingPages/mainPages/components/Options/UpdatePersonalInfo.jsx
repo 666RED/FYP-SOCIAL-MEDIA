@@ -157,7 +157,7 @@ const UpdatePersonalInfo = () => {
 			<input
 				type="email"
 				className="w-full  mt-1 mb-3 border rounded-lg border-gray-500 text-gray-500"
-				placeholder="Student / Stuff Email Address"
+				placeholder="Student / Staff Email Address"
 				value={state.email}
 				readOnly
 				disabled

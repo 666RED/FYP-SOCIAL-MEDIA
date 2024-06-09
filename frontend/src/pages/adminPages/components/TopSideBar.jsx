@@ -1,5 +1,5 @@
-import React from "react";
-import { useDispatch, useSelector } from "react-redux";
+import { React } from "react";
+import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router";
 import { MdCancel } from "react-icons/md";
 import TopSideBarListElement from "./TopSideBarListelement.jsx";
@@ -70,8 +70,8 @@ const TopSideBar = ({ setExtendSideBar, extendSideBar, selectedSection }) => {
 				}`}
 			>
 				{/* LOGO & CLOSE BUTTON */}
-				<div className="flex items-center justify-between px-1">
-					<p className="indent-1">Logo</p>
+				<div className="flex items-center justify-between px-1 pt-1">
+					<img src="/sidebar-logo.png" alt="Logo" className="w-32" />
 					<MdCancel
 						className="icon text-red-600 hover:text-red-500"
 						onClick={() => setExtendSideBar(false)}

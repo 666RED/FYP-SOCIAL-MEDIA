@@ -14,7 +14,7 @@ export const noteContext = createContext(null);
 const NotePage = () => {
 	const { enqueueSnackbar } = useSnackbar();
 	const serverURL = useContext(ServerContext);
-	const { groupId, folderId } = useParams();
+	const { groupId, folderId, view } = useParams();
 	const [showAddNewNoteDiv, setShowAddNewNoteDiv] = useState(false);
 	const [loading, setLoading] = useState(true);
 	const { user, token } = useSelector((store) => store.auth);
@@ -113,7 +113,7 @@ const NotePage = () => {
 			<div className="page-layout-with-back-arrow relative">
 				{/* HEADER */}
 				<DirectBackArrowHeader
-					destination={`/group/${groupId}/view-notes`}
+					destination={view == 1 ? "/home" : `/group/${groupId}/view-notes`}
 					title="View Notes"
 				/>
 				{/* NOTES */}

@@ -24,7 +24,7 @@ const Folder = ({ folder }) => {
 
 	const handleNavigate = (e) => {
 		if (!e.target.closest(".folder-action")) {
-			navigate(`/group/${groupId}/view-notes/${folder._id}`);
+			navigate(`/group/${groupId}/view-notes/${folder._id}/0`);
 		}
 	};
 
@@ -42,7 +42,7 @@ const Folder = ({ folder }) => {
 				setLoading(true);
 				const res = await fetch(`${serverURL}/note/remove-folder`, {
 					method: "DELETE",
-					body: JSON.stringify({ folderId: folder._id }),
+					body: JSON.stringify({ folderId: folder._id, groupId }),
 					headers: {
 						"Content-Type": "application/json",
 						Authorization: `Bearer ${token}`,

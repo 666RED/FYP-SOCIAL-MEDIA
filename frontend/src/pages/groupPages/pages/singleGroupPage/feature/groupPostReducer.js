@@ -38,8 +38,7 @@ export const groupPostReducer = (state, action) => {
 			};
 		}
 		case "FIRST_RENDER": {
-			const { likesMap, postLikes, postFilePath, postImagePath } =
-				action.payload.post;
+			const { likesMap, postLikes } = action.payload.post;
 
 			return {
 				...state,

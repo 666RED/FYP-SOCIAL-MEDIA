@@ -11,6 +11,9 @@ const UserPostHeader = ({
 	destination = "",
 	previous = "",
 	frameColor,
+	groupName = "",
+	groupImagePath = "",
+	isGroup = false,
 }) => {
 	const navigate = useNavigate();
 
@@ -27,14 +30,34 @@ const UserPostHeader = ({
 	return (
 		<div className="flex items-center">
 			{/* PROFILE IMAGE */}
-			<img
-				src={imgPath}
-				alt="Profile image"
-				className={`rounded-full mr-2 border-[2.5px] ${frameColor}  ${
-					isPost ? "md:w-14 w-12" : "md:w-12 w-8"
-				}`}
-			/>
+			{isGroup ? (
+				<div className="relative">
+					<img
+						src={groupImagePath}
+						alt="Group image"
+						className={`rounded-full md:w-14 w-12 mr-2`}
+					/>
+					<img
+						src={imgPath}
+						alt="Profile image"
+						className={`rounded-full mr-2 border-[2.5px] absolute ${frameColor} md:w-9 w-7 -right-1 top-6 bg-gray-200
+						`}
+					/>
+				</div>
+			) : (
+				<img
+					src={imgPath}
+					alt="Profile image"
+					className={`rounded-full mr-2 border-[2.5px] ${frameColor}  ${
+						isPost ? "md:w-14 w-12" : "md:w-12 w-8"
+					}`}
+				/>
+			)}
+
 			<div>
+				{isGroup && (
+					<p className={`${!isPost && "text-sm md:text-base"}`}>{groupName}</p>
+				)}
 				{/* USER NAME */}
 				<p
 					className={`cursor-pointer hover:opacity-80 ${

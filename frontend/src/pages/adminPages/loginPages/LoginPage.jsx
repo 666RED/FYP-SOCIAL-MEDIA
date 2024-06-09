@@ -59,11 +59,10 @@ const LoginPage = () => {
 		<div>
 			{loading && <Spinner />}
 			<div className="mt-5 w-1/2 mx-auto min-w-80 max-w-96 text-center">
-				{/* change to logo later */}
-				<h1 className="text-2xl">Logo</h1>
+				<img src="/logo.png" alt="Logo" className="w-full" />
 				<form
 					onSubmit={handleSubmit}
-					className="p-3 border-gray-400 border rounded-lg mt-16 sm:mt-10"
+					className="p-3 border-gray-400 border rounded-lg mt-4"
 				>
 					{/* TITLE */}
 					<h1 className="text-center title mb-2">Admin Login</h1>

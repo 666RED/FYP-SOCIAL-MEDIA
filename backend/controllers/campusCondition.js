@@ -217,23 +217,21 @@ export const handleUp = async (req, res) => {
 		}
 
 		// firebase
-		if (userId !== updatedCondition.userId) {
+		if (userId !== updatedCondition.userId.toString()) {
 			const isEdit = isDown;
 			const rateUp = true;
 			const postUserId = condition.userId.toString();
 			const user = await User.findById(userId);
 			const userName = user.userName;
-			const profileImagePath = user.userProfile.profileImagePath;
 
-			await rateCondition(
+			await rateCondition({
 				userId,
 				conditionId,
 				postUserId,
 				isEdit,
 				rateUp,
 				userName,
-				profileImagePath
-			);
+			});
 		}
 
 		res.status(200).json({ msg: "Success" });
@@ -270,8 +268,8 @@ export const cancelUp = async (req, res) => {
 		}
 
 		// firebase
-		if (userId !== updatedCondition.userId) {
-			await deleteRate(userId, conditionId);
+		if (userId !== updatedCondition.userId.toString()) {
+			await deleteRate({ userId, conditionId });
 		}
 
 		res.status(200).json({ msg: "Success" });
@@ -312,23 +310,21 @@ export const handleDown = async (req, res) => {
 		}
 
 		// firebase
-		if (userId !== updatedCondition.userId) {
+		if (userId !== updatedCondition.userId.toString()) {
 			const isEdit = isUp;
 			const rateUp = false;
 			const postUserId = condition.userId.toString();
 			const user = await User.findById(userId);
 			const userName = user.userName;
-			const profileImagePath = user.userProfile.profileImagePath;
 
-			await rateCondition(
+			await rateCondition({
 				userId,
 				conditionId,
 				postUserId,
 				isEdit,
 				rateUp,
 				userName,
-				profileImagePath
-			);
+			});
 		}
 
 		res.status(200).json({ msg: "Success" });
@@ -365,8 +361,8 @@ export const cancelDown = async (req, res) => {
 		}
 
 		// firebase
-		if (userId !== updatedCondition.userId) {
-			await deleteRate(userId, conditionId);
+		if (userId !== updatedCondition.userId.toString()) {
+			await deleteRate({ userId, conditionId });
 		}
 
 		res.status(200).json({ msg: "Success" });
@@ -461,6 +457,7 @@ export const editCondition = async (req, res) => {
 				userName,
 				time: formatDateTime(updatedCondition.createdAt),
 				frameColor,
+				type: "Condition",
 			},
 		});
 	} catch (err) {
@@ -497,7 +494,7 @@ export const deleteCondition = async (req, res) => {
 		).map((id) => id.toString());
 		const userIds = [...upMapIds, ...downMapIds];
 
-		await deleteRates(userIds, conditionId);
+		await deleteRates({ userIds, conditionId });
 
 		res.status(200).json({ msg: "Success", deletedCondition });
 	} catch (err) {
@@ -524,10 +521,10 @@ export const updateConditionResolved = async (req, res) => {
 		}
 
 		// firebase (for admin)
-		if (updatedCondition.userId !== userId) {
+		if (updatedCondition.userId.toString() !== userId) {
 			const conditionId = campusConditionId;
 			const postUserId = updatedCondition.userId.toString();
-			await markCondition(userId, conditionId, postUserId);
+			await markCondition({ userId, conditionId, postUserId });
 		}
 
 		res.status(200).json({ msg: "Success" });

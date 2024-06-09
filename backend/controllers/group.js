@@ -3,6 +3,7 @@ import { User } from "../models/userModel.js";
 import { JoinGroupRequest } from "../models/joinGroupRequestModel.js";
 import mongoose from "mongoose";
 import { uploadFile, deleteFile } from "../middleware/handleFile.js";
+import { removeJoinGroupRequest } from "../API/firestoreAPI.js";
 
 export const createNewGroup = async (req, res) => {
 	try {
@@ -410,6 +411,20 @@ export const removeMember = async (req, res) => {
 			return res.status(404).json({ msg: "Fail to remove member" });
 		}
 
+		const deletedJoinGroupRequest = await JoinGroupRequest.findOneAndDelete(
+			{
+				requestorId: userId,
+				groupId: groupId,
+			},
+			{ new: true }
+		);
+
+		// firebase
+		await removeJoinGroupRequest({
+			userId: userId,
+			requestId: deletedJoinGroupRequest._id.toString(),
+		});
+
 		res.status(200).json({
 			msg: "Success",
 			userId: updatedUser._id,
@@ -444,14 +459,23 @@ export const leaveGroup = async (req, res) => {
 			return res.status(404).json({ msg: "Fail to remove member" });
 		}
 
-		const deletedJoinGroupRequest = await JoinGroupRequest.findOneAndDelete({
-			requestorId: userId,
-			groupId: groupId,
-		});
+		const deletedJoinGroupRequest = await JoinGroupRequest.findOneAndDelete(
+			{
+				requestorId: userId,
+				groupId: groupId,
+			},
+			{ new: true }
+		);
 
 		if (!deletedJoinGroupRequest) {
 			return res.status(404).json({ error: "Fail to remove memeber" });
 		}
+
+		// firebase
+		await removeJoinGroupRequest({
+			userId: userId,
+			requestId: deletedJoinGroupRequest._id.toString(),
+		});
 
 		res.status(200).json({ msg: "Success" });
 	} catch (err) {
@@ -582,6 +606,8 @@ export const getGroupAdminId = async (req, res) => {
 			.status(200)
 			.json({ msg: "Success", returnGroupAdminId: group.groupAdminId });
 	} catch (err) {
+		console.log(err);
+
 		res.status(500).json({ error: err.message });
 	}
 };

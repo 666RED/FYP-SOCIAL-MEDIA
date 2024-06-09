@@ -1,11 +1,9 @@
 import { React, useContext, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
 import { useSnackbar } from "notistack";
 import { GiHamburgerMenu } from "react-icons/gi/index.js";
 import { GoBellFill } from "react-icons/go";
 import NotificationContainer from "../../../components/notification/NotificationContainer.jsx";
-import { FaSearch } from "react-icons/fa/index.js";
 import { ServerContext } from "../../../App.js";
 import SideBar from "../../../components/Sidebar/SideBar.jsx";
 import Error from "../../../components/Error.jsx";
@@ -15,10 +13,11 @@ import {
 	resetState,
 	setHasPosts,
 	loadPosts,
-} from "../../../features/postSlice.js";
+} from "../../../features/homeSlice.js";
+import { NotificationContext } from "../../../App.js";
 
 const Homepage = () => {
-	const navigate = useNavigate();
+	const notifications = useContext(NotificationContext);
 	const serverURL = useContext(ServerContext);
 	const [extendSideBar, setExtendSideBar] = useState(false);
 	const [loadMore, setLoadMore] = useState(false);
@@ -27,7 +26,7 @@ const Homepage = () => {
 	const sliceDispatch = useDispatch();
 	const { user, token } = useSelector((store) => store.auth);
 	const { hasPosts, isLoadingPosts, posts } = useSelector(
-		(store) => store.post
+		(store) => store.home
 	);
 	const [showNotifications, setShowNotifications] = useState(false);
 
@@ -38,7 +37,9 @@ const Homepage = () => {
 			const res = await fetch(
 				`${serverURL}/post/get-home-posts?userId=${
 					user._id
-				}&postIds=${JSON.stringify(posts.map((post) => post._id))}`,
+				}&posts=${JSON.stringify(
+					posts.map((post) => ({ id: post._id, type: post.type }))
+				)}`,
 				{
 					method: "GET",
 					headers: {
@@ -59,7 +60,7 @@ const Homepage = () => {
 			if (msg === "Success") {
 				sliceDispatch(loadPosts(returnedPosts));
 
-				if (returnedPosts.length < 10) {
+				if (returnedPosts.length < 15) {
 					sliceDispatch(setHasPosts(false));
 				} else {
 					sliceDispatch(setHasPosts(true));
@@ -95,7 +96,7 @@ const Homepage = () => {
 	};
 
 	return user && token ? (
-		<div className={`${showNotifications && "h-screen overflow-hidden"} py-2`}>
+		<div className="py-2" id="example">
 			{/* NOTIFICATION CONTAINER */}
 			<NotificationContainer
 				showNotifications={showNotifications}
@@ -122,10 +123,15 @@ const Homepage = () => {
 				{/* RIGHT HAND SIDE */}
 				<div className="flex items-center">
 					{/* NOTIFICATION ICON*/}
-					<GoBellFill className="icon mr-3" onClick={toggleShowNotification} />
-					{/* SEARCH ICON */}
-					<div>
-						<FaSearch className="icon" onClick={() => navigate("search")} />
+					<div className="relative">
+						<GoBellFill
+							className="icon mr-3"
+							onClick={toggleShowNotification}
+						/>
+						<p className="absolute bg-red-600 rounded-full text-white px-1 text-xs right-1 -top-1">
+							{notifications.filter((noti) => !noti.viewed).length !== 0 &&
+								notifications.filter((noti) => !noti.viewed).length}
+						</p>
 					</div>
 				</div>
 			</div>

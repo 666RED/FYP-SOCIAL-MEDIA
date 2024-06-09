@@ -7,31 +7,25 @@ import { FaFile } from "react-icons/fa/index.js";
 import { HiThumbUp } from "react-icons/hi/index.js";
 import { FaCommentDots } from "react-icons/fa/index.js";
 import { MdDeleteForever, MdEdit, MdReportProblem } from "react-icons/md";
-import Comments from "../comments/Comments.jsx";
-import EditPostForm from "../posts/EditPostForm.jsx";
-import OptionDiv from "../../../../../../components/OptionDiv.jsx";
-import UserPostHeader from "../../../../../profilePages/components/UserPostHeader.jsx";
-import ReportForm from "../../../../../../components/post/ReportForm.jsx";
-import Spinner from "../../../../../../components/Spinner/Spinner.jsx";
-import FocusImage from "../../../../../adminPages/components/FocusImage.jsx";
+import Comments from "../../groupPages/pages/singleGroupPage/component/comments/Comments.jsx";
+import EditPostForm from "../../groupPages/pages/singleGroupPage/component/posts/EditPostForm.jsx";
+import OptionDiv from "../../../components/OptionDiv.jsx";
+import UserPostHeader from "../../profilePages/components/UserPostHeader.jsx";
+import ReportForm from "../../../components/post/ReportForm.jsx";
+import Spinner from "../../../components/Spinner/Spinner.jsx";
+import FocusImage from "../../adminPages/components/FocusImage.jsx";
 import {
 	groupPostReducer,
 	INITIAL_STATE,
-} from "../../feature/groupPostReducer.js";
-import ACTION_TYPES from "../../actionTypes/groupPostActionTypes.js";
-import {
-	updatePost,
-	removePost,
-} from "../../../../../../features/groupPostSlice.js";
-import { ServerContext } from "../../../../../../App.js";
+} from "../../groupPages/pages/singleGroupPage/feature/groupPostReducer.js";
+import ACTION_TYPES from "../../groupPages/pages/singleGroupPage/actionTypes/groupPostActionTypes.js";
+import { updatePost, removePost } from "../../../features/homeSlice.js";
+import { ServerContext } from "../../../App.js";
 
 const GroupPost = ({ post, isAdmin = false, viewPost = false }) => {
-	const { groupId } = useParams();
-
 	const sliceDispatch = useDispatch();
 	const serverURL = useContext(ServerContext);
 	const { user, token } = useSelector((store) => store.auth);
-	const { isMember } = useSelector((store) => store.group);
 	const [state, dispatch] = useReducer(groupPostReducer, INITIAL_STATE);
 	const { enqueueSnackbar } = useSnackbar();
 
@@ -62,7 +56,7 @@ const GroupPost = ({ post, isAdmin = false, viewPost = false }) => {
 						Authorization: `Bearer ${token}`,
 					},
 					body: JSON.stringify({
-						groupId: groupId,
+						groupId: post.groupId,
 						postId: post._id,
 						userId: user._id,
 					}),
@@ -93,7 +87,7 @@ const GroupPost = ({ post, isAdmin = false, viewPost = false }) => {
 						Authorization: `Bearer ${token}`,
 					},
 					body: JSON.stringify({
-						groupId: groupId,
+						groupId: post.groupId,
 						postId: post._id,
 						userId: user._id,
 					}),
@@ -253,7 +247,7 @@ const GroupPost = ({ post, isAdmin = false, viewPost = false }) => {
 				imgPath={post.profileImagePath}
 				postTime={post.time}
 				userName={post.userName}
-				destination={viewPost ? "/home" : `/profile/${post.userId}`}
+				destination={`/profile/${post.userId}`}
 				previous={previous}
 				frameColor={post.frameColor}
 				isGroup={viewPost}

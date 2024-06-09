@@ -11,13 +11,7 @@ import { db } from "../firebase-config.js";
 const notificationRef = collection(db, "notifications");
 
 /* POST AND COMMENT */
-export const likePost = async (
-	userId,
-	userName,
-	profileImagePath,
-	postId,
-	postUserId
-) => {
+export const likePost = async ({ userId, userName, postId, postUserId }) => {
 	try {
 		const docToNotify = doc(notificationRef, `${userId}_${postId}`);
 
@@ -25,8 +19,7 @@ export const likePost = async (
 			createdAt: serverTimestamp(),
 			sender: userId,
 			userName,
-			profileImagePath,
-			receivers: [postUserId],
+			receiver: postUserId,
 			postId: postId,
 			action: "Like post",
 			viewed: false,
@@ -40,7 +33,7 @@ export const likePost = async (
 	}
 };
 
-export const cancelPostLike = async (postId, userId) => {
+export const cancelPostLike = async ({ postId, userId }) => {
 	try {
 		const docToNotify = doc(notificationRef, `${userId}_${postId}`);
 
@@ -50,37 +43,36 @@ export const cancelPostLike = async (postId, userId) => {
 	}
 };
 
-export const deletePostLikesAndComments = async (
+export const deletePostLikesAndComments = async ({
 	postId,
 	userIds,
-	commentIds
-) => {
+	comments,
+}) => {
 	try {
 		for (const userId of userIds) {
 			const docToNotifyPost = doc(notificationRef, `${userId}_${postId}`);
-			for (const commentId of commentIds) {
-				const docToNotifyComment = doc(
-					notificationRef,
-					`${userId}_${commentId}`
-				);
+			await deleteDoc(docToNotifyPost);
+		}
 
-				await deleteDoc(docToNotifyPost);
-				await deleteDoc(docToNotifyComment);
-			}
+		for (const { commentId, userId } of comments) {
+			const docToNotifyComment = doc(notificationRef, `${userId}_${commentId}`);
+
+			await deleteDoc(docToNotifyComment);
 		}
 	} catch (err) {
+		console.log(err);
+
 		throw new Error("Failed to delete post");
 	}
 };
 
-export const commentPost = async (
+export const commentPost = async ({
 	userId,
 	userName,
-	profileImagePath,
 	postId,
 	commentId,
-	postUserId
-) => {
+	postUserId,
+}) => {
 	try {
 		const docToNotify = doc(notificationRef, `${userId}_${commentId}`);
 
@@ -88,8 +80,7 @@ export const commentPost = async (
 			createdAt: serverTimestamp(),
 			sender: userId,
 			userName,
-			profileImagePath,
-			receivers: [postUserId],
+			receiver: postUserId,
 			postId: postId,
 			action: "Comment post",
 			viewed: false,
@@ -101,7 +92,7 @@ export const commentPost = async (
 	}
 };
 
-export const deletePostComment = async (commentId, userId) => {
+export const deletePostComment = async ({ commentId, userId }) => {
 	try {
 		const docToNotify = doc(notificationRef, `${userId}_${commentId}`);
 
@@ -114,16 +105,14 @@ export const deletePostComment = async (commentId, userId) => {
 };
 
 /* CAMPUS CONDITION */
-
-export const rateCondition = async (
+export const rateCondition = async ({
 	userId,
 	conditionId,
 	postUserId,
 	isEdit,
 	rateUp,
 	userName,
-	profileImagePath
-) => {
+}) => {
 	try {
 		const docToNotify = doc(notificationRef, `${userId}_${conditionId}`);
 
@@ -136,8 +125,7 @@ export const rateCondition = async (
 				createdAt: serverTimestamp(),
 				sender: userId,
 				userName,
-				profileImagePath,
-				receivers: [postUserId],
+				receiver: postUserId,
 				conditionId: conditionId,
 				action: rateUp ? "Rate up" : "Rate down",
 				viewed: false,
@@ -151,7 +139,7 @@ export const rateCondition = async (
 	}
 };
 
-export const deleteRate = async (userId, conditionId) => {
+export const deleteRate = async ({ userId, conditionId }) => {
 	try {
 		const docToNotify = doc(notificationRef, `${userId}_${conditionId}`);
 
@@ -163,7 +151,7 @@ export const deleteRate = async (userId, conditionId) => {
 	}
 };
 
-export const deleteRates = async (userIds, conditionId) => {
+export const deleteRates = async ({ userIds, conditionId }) => {
 	try {
 		for (const userId of userIds) {
 			const docToNotify = doc(notificationRef, `${userId}_${conditionId}`);
@@ -177,16 +165,15 @@ export const deleteRates = async (userIds, conditionId) => {
 	}
 };
 
-export const markCondition = async (userId, conditionId, postUserId) => {
+export const markCondition = async ({ userId, conditionId, postUserId }) => {
 	try {
 		const docToNotify = doc(notificationRef, `${userId}_${conditionId}`);
 
 		const notificationData = {
 			createdAt: serverTimestamp(),
 			sender: userId,
-			userName: "Admin",
-			profileImagePath: "",
-			receivers: [postUserId],
+			userName: "System admin",
+			receiver: postUserId,
 			conditionId: conditionId,
 			action: "Mark resolved",
 			viewed: false,
@@ -205,7 +192,6 @@ export const addFriendRequest = async ({
 	userId,
 	requestId,
 	userName,
-	profileImagePath,
 	receiverId,
 }) => {
 	try {
@@ -215,8 +201,7 @@ export const addFriendRequest = async ({
 			createdAt: serverTimestamp(),
 			sender: userId,
 			userName,
-			profileImagePath,
-			receivers: [receiverId],
+			receiver: receiverId,
 			action: "Add friend",
 			viewed: false,
 		};
@@ -245,7 +230,6 @@ export const updateFriendRequest = async ({
 	userId,
 	requestId,
 	userName,
-	profileImagePath,
 	receiverId,
 }) => {
 	try {
@@ -255,8 +239,7 @@ export const updateFriendRequest = async ({
 			createdAt: serverTimestamp(),
 			sender: receiverId,
 			userName,
-			profileImagePath,
-			receivers: [userId],
+			receiver: userId,
 			action: "Accept friend request",
 			acceptUserId: receiverId,
 			viewed: false,
@@ -275,8 +258,8 @@ export const addJoinGroupRequest = async ({
 	userId,
 	requestId,
 	userName,
-	profileImagePath,
 	groupAdminId,
+	groupId,
 }) => {
 	try {
 		const docToNotify = doc(notificationRef, `${userId}_${requestId}`);
@@ -285,9 +268,9 @@ export const addJoinGroupRequest = async ({
 			createdAt: serverTimestamp(),
 			sender: userId,
 			userName,
-			profileImagePath,
-			receivers: [groupAdminId],
+			receiver: groupAdminId,
 			action: "Join group",
+			groupId,
 			viewed: false,
 		};
 
@@ -308,5 +291,206 @@ export const removeJoinGroupRequest = async ({ userId, requestId }) => {
 		console.log(err);
 
 		throw new Error("Failed to remove join group request");
+	}
+};
+
+export const updateJoinGroupRequest = async ({
+	userId,
+	requestId,
+	groupName,
+	groupAdminId,
+	groupId,
+}) => {
+	try {
+		const docToNotify = doc(notificationRef, `${userId}_${requestId}`);
+
+		const notificationData = {
+			createdAt: serverTimestamp(),
+			sender: groupAdminId,
+			groupName,
+			receiver: userId,
+			action: "Accept join group",
+			acceptGroupId: groupId,
+			viewed: false,
+		};
+
+		await setDoc(docToNotify, notificationData);
+	} catch (err) {
+		console.log(err);
+		throw new Error("Failed to update join group request");
+	}
+};
+
+/* GROUP POST */
+export const likeGroupPost = async ({
+	userId,
+	userName,
+	postId,
+	postUserId,
+}) => {
+	try {
+		const docToNotify = doc(notificationRef, `${userId}_${postId}`);
+
+		const notificationData = {
+			createdAt: serverTimestamp(),
+			sender: userId,
+			userName,
+			receiver: postUserId,
+			postId: postId,
+			action: "Like group post",
+			viewed: false,
+		};
+
+		await setDoc(docToNotify, notificationData);
+	} catch (err) {
+		console.log(err);
+
+		throw new Error("Failed to like group post");
+	}
+};
+
+export const cancelGroupPostLike = async ({ userId, postId }) => {
+	try {
+		const docToNotify = doc(notificationRef, `${userId}_${postId}`);
+
+		await deleteDoc(docToNotify);
+	} catch (err) {
+		throw new Error("Failed to cancel group post like");
+	}
+};
+
+export const commentGroupPost = async ({
+	userId,
+	userName,
+	postId,
+	commentId,
+	postUserId,
+}) => {
+	try {
+		const docToNotify = doc(notificationRef, `${userId}_${commentId}`);
+
+		const notificationData = {
+			createdAt: serverTimestamp(),
+			sender: userId,
+			userName,
+			receiver: postUserId,
+			postId: postId,
+			action: "Comment group post",
+			viewed: false,
+		};
+
+		await setDoc(docToNotify, notificationData);
+	} catch (err) {
+		console.log(err);
+
+		throw new Error("Failed to leave comment");
+	}
+};
+
+export const deleteGroupPostComment = async ({ commentId, userId }) => {
+	try {
+		const docToNotify = doc(notificationRef, `${userId}_${commentId}`);
+
+		await deleteDoc(docToNotify);
+	} catch (err) {
+		console.log(err);
+
+		throw new Error("Failed to delete comment");
+	}
+};
+
+export const deleteGroupPostLikesAndComments = async ({
+	postId,
+	userIds,
+	comments,
+}) => {
+	try {
+		for (const userId of userIds) {
+			const docToNotifyPost = doc(notificationRef, `${userId}_${postId}`);
+			await deleteDoc(docToNotifyPost);
+		}
+
+		for (const { commentId, userId } of comments) {
+			const docToNotifyComment = doc(notificationRef, `${userId}_${commentId}`);
+
+			await deleteDoc(docToNotifyComment);
+		}
+	} catch (err) {
+		console.log(err);
+
+		throw new Error("Failed to delete group post");
+	}
+};
+
+/* NOTE */
+export const addNewNote = async ({
+	noteId,
+	groupAdminId,
+	memberIds,
+	groupName,
+	folderId,
+	groupId,
+}) => {
+	try {
+		for (const memberId of memberIds) {
+			const docToNotify = doc(notificationRef, `${memberId}_${noteId}`);
+			const notificationData = {
+				createdAt: serverTimestamp(),
+				sender: groupAdminId,
+				groupName,
+				receiver: memberId,
+				folderId: folderId,
+				action: "Add note",
+				viewed: false,
+				acceptGroupId: groupId,
+			};
+
+			await setDoc(docToNotify, notificationData);
+		}
+	} catch (err) {
+		console.log(err);
+
+		throw new Error("Failed to add new notes");
+	}
+};
+
+export const removeNoteNotification = async ({ memberIds, noteId }) => {
+	try {
+		for (const memberId of memberIds) {
+			const docToNotify = doc(notificationRef, `${memberId}_${noteId}`);
+
+			await deleteDoc(docToNotify);
+		}
+	} catch (err) {
+		console.log(err);
+
+		throw new Error("Failed to remove note");
+	}
+};
+
+export const removeNoteNotifications = async ({ memberIds, noteIds }) => {
+	try {
+		for (const memberId of memberIds) {
+			for (const noteId of noteIds) {
+				const docToNotify = doc(notificationRef, `${memberId}_${noteId}`);
+				await deleteDoc(docToNotify);
+			}
+		}
+	} catch (err) {
+		console.log(err);
+
+		throw new Error("Failed to remove note notifications");
+	}
+};
+
+export const updateViewedValue = async ({ id }) => {
+	try {
+		let docToNotify = doc(notificationRef, id);
+
+		await updateDoc(docToNotify, { viewed: true });
+	} catch (err) {
+		console.log(err);
+
+		throw new Error("Failed to update viewed values");
 	}
 };

@@ -1,5 +1,6 @@
 import { React, useContext, useState } from "react";
 import { useSelector } from "react-redux";
+import { useParams } from "react-router-dom";
 import { useSnackbar } from "notistack";
 import { MdDeleteForever } from "react-icons/md";
 import Spinner from "../../../../../../../components/Spinner/Spinner.jsx";
@@ -12,6 +13,7 @@ const Note = ({ note, count }) => {
 	const { token } = useSelector((store) => store.auth);
 	const { enqueueSnackbar } = useSnackbar();
 	const { isGroupAdmin, notes, setNotes } = useContext(noteContext);
+	const { groupId } = useParams();
 
 	const handleDownload = () => {
 		window.open(note.filePath, "_blank");
@@ -26,7 +28,11 @@ const Note = ({ note, count }) => {
 
 				const res = await fetch(`${serverURL}/note/remove-note`, {
 					method: "DELETE",
-					body: JSON.stringify({ noteId: note._id, filePath: note.filePath }),
+					body: JSON.stringify({
+						noteId: note._id,
+						filePath: note.filePath,
+						groupId: groupId,
+					}),
 					headers: {
 						"Content-Type": "application/json",
 						Authorization: `Bearer ${token}`,

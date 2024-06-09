@@ -1,40 +1,31 @@
 import { React, useContext, useEffect, useReducer, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { useParams } from "react-router-dom";
 import { useSnackbar } from "notistack";
 import { BsThreeDots } from "react-icons/bs/index.js";
-import { FaFile } from "react-icons/fa/index.js";
 import { HiThumbUp } from "react-icons/hi/index.js";
 import { FaCommentDots } from "react-icons/fa/index.js";
 import { MdDeleteForever, MdEdit, MdReportProblem } from "react-icons/md";
-import Comments from "../comments/Comments.jsx";
-import EditPostForm from "../posts/EditPostForm.jsx";
-import OptionDiv from "../../../../../../components/OptionDiv.jsx";
-import UserPostHeader from "../../../../../profilePages/components/UserPostHeader.jsx";
-import ReportForm from "../../../../../../components/post/ReportForm.jsx";
-import Spinner from "../../../../../../components/Spinner/Spinner.jsx";
-import FocusImage from "../../../../../adminPages/components/FocusImage.jsx";
+import Comments from "../../../components/comment/Comments.jsx";
+import EditPostForm from "../../../components/post/EditPostForm.jsx";
+import ReportForm from "../../../components/post/ReportForm.jsx";
+import OptionDiv from "../../../components/OptionDiv.jsx";
+import UserPostHeader from "../../profilePages/components/UserPostHeader.jsx";
+import Spinner from "../../../components/Spinner/Spinner.jsx";
+import FocusImage from "../../adminPages/components/FocusImage.jsx";
 import {
-	groupPostReducer,
+	postReducer,
 	INITIAL_STATE,
-} from "../../feature/groupPostReducer.js";
-import ACTION_TYPES from "../../actionTypes/groupPostActionTypes.js";
-import {
-	updatePost,
-	removePost,
-} from "../../../../../../features/groupPostSlice.js";
-import { ServerContext } from "../../../../../../App.js";
+} from "../../../components/post/feature/postReducer.js";
+import ACTION_TYPES from "../../../components/post/actionTypes/userPostActionTypes.js";
+import { removePost, updatePost } from "../../../features/homeSlice.js";
+import { ServerContext } from "../../../App.js";
 
-const GroupPost = ({ post, isAdmin = false, viewPost = false }) => {
-	const { groupId } = useParams();
-
+const Post = ({ post, view = 0 }) => {
 	const sliceDispatch = useDispatch();
 	const serverURL = useContext(ServerContext);
 	const { user, token } = useSelector((store) => store.auth);
-	const { isMember } = useSelector((store) => store.group);
-	const [state, dispatch] = useReducer(groupPostReducer, INITIAL_STATE);
+	const [state, dispatch] = useReducer(postReducer, INITIAL_STATE);
 	const { enqueueSnackbar } = useSnackbar();
-
 	const [showImage, setShowImage] = useState(false);
 
 	const previous = window.location.pathname;
@@ -43,26 +34,24 @@ const GroupPost = ({ post, isAdmin = false, viewPost = false }) => {
 	useEffect(() => {
 		dispatch({
 			type: ACTION_TYPES.FIRST_RENDER,
-			payload: { post, userId: user._id },
+			payload: {
+				post,
+				userId: user._id,
+			},
 		});
 	}, []);
-
-	const handleDownload = () => {
-		window.open(post.postFilePath, "_blank");
-	};
 
 	const handleLikes = async () => {
 		try {
 			dispatch({ type: ACTION_TYPES.SET_PROCESSING, payload: true });
 			if (!state.isLiked) {
-				const res = await fetch(`${serverURL}/group-post/up-likes`, {
+				const res = await fetch(`${serverURL}/post/up-likes`, {
 					method: "PATCH",
 					headers: {
 						"Content-Type": "application/json",
 						Authorization: `Bearer ${token}`,
 					},
 					body: JSON.stringify({
-						groupId: groupId,
 						postId: post._id,
 						userId: user._id,
 					}),
@@ -80,20 +69,21 @@ const GroupPost = ({ post, isAdmin = false, viewPost = false }) => {
 					dispatch({
 						type: ACTION_TYPES.LIKE_POST,
 					});
+				} else if (msg === "Post not found") {
+					enqueueSnackbar("Post not found", { variant: "error" });
 				} else if (msg === "Fail to update post") {
 					enqueueSnackbar("Fail to like the post", { variant: "error" });
 				} else {
 					enqueueSnackbar("An error occurred", { variant: "error" });
 				}
 			} else {
-				const res = await fetch(`${serverURL}/group-post/down-likes`, {
+				const res = await fetch(`${serverURL}/post/down-likes`, {
 					method: "PATCH",
 					headers: {
 						"Content-Type": "application/json",
 						Authorization: `Bearer ${token}`,
 					},
 					body: JSON.stringify({
-						groupId: groupId,
 						postId: post._id,
 						userId: user._id,
 					}),
@@ -110,6 +100,10 @@ const GroupPost = ({ post, isAdmin = false, viewPost = false }) => {
 				if (msg === "Success") {
 					dispatch({
 						type: ACTION_TYPES.DISLIKE_POST,
+					});
+				} else if (msg === "Post not found") {
+					enqueueSnackbar("Post not found", {
+						variant: "error",
 					});
 				} else if (msg === "Fail to update post") {
 					enqueueSnackbar("Fail to remove the like", {
@@ -133,13 +127,9 @@ const GroupPost = ({ post, isAdmin = false, viewPost = false }) => {
 			const answer = window.confirm("Delete post?");
 			if (answer) {
 				dispatch({ type: ACTION_TYPES.SET_LOADING, payload: true });
-				const res = await fetch(`${serverURL}/group-post/delete-post`, {
+				const res = await fetch(`${serverURL}/post/delete-post`, {
 					method: "DELETE",
-					body: JSON.stringify({
-						postId: post._id,
-						postImagePath: post.postImagePath,
-						postFilePath: post.postFilePath,
-					}),
+					body: JSON.stringify({ postId: post._id }),
 					headers: {
 						"Content-Type": "application/json",
 						Authorization: `Bearer ${token}`,
@@ -172,6 +162,7 @@ const GroupPost = ({ post, isAdmin = false, viewPost = false }) => {
 
 				dispatch({ type: ACTION_TYPES.SET_LOADING, payload: false });
 			}
+			dispatch({ type: ACTION_TYPES.SET_LOADING, payload: false });
 		} catch (err) {
 			enqueueSnackbar("Could not connect to the server", {
 				variant: "error",
@@ -181,32 +172,15 @@ const GroupPost = ({ post, isAdmin = false, viewPost = false }) => {
 	};
 
 	const handleReport = () => {
-		dispatch({ type: ACTION_TYPES.TOGGLE_SHOW_REPORT_FORM });
+		dispatch({ type: ACTION_TYPES.TOGGLE_SHOW_REPORT_POST_FORM });
 	};
 
 	return (
-		<div
-			className={`relative my-3 bg-white rounded-xl shadow-2xl py-4 px-2 mx-auto ${
-				!isAdmin ? "component-layout" : "md:w-11/12"
-			}`}
-		>
+		<div className="relative my-3 bg-white rounded-xl shadow-2xl py-4 px-2 component-layout">
 			{state.loading && <Spinner />}
-			{/* REPORT FORM */}
-			{state.showReportForm && (
-				<ReportForm
-					type="Group Post"
-					id={post._id}
-					toggleShowReportForm={() =>
-						dispatch({ type: ACTION_TYPES.TOGGLE_SHOW_REPORT_FORM })
-					}
-					toggleShowOptionDiv={() =>
-						dispatch({ type: ACTION_TYPES.TOGGLE_SHOW_OPTION_DIV })
-					}
-				/>
-			)}
 			{/* OPTION DIV */}
 			{state.showOptionDiv && (
-				<div className="option-div-container">
+				<div className="absolute right-3 top-10 border border-gray-600 bg-gray-200">
 					{/* EDIT */}
 					{post.userId === user._id && (
 						<OptionDiv
@@ -238,35 +212,26 @@ const GroupPost = ({ post, isAdmin = false, viewPost = false }) => {
 			{/* EDIT POST FORM */}
 			{state.showEditPostForm && (
 				<EditPostForm
-					post={post}
 					toggleShowEditPostForm={() =>
 						dispatch({ type: ACTION_TYPES.TOGGLE_SHOW_EDIT_POST_FORM })
 					}
 					toggleShowOptionDiv={() =>
 						dispatch({ type: ACTION_TYPES.TOGGLE_SHOW_OPTION_DIV })
 					}
+					post={post}
 					updatePost={updatePost}
 				/>
 			)}
-			{/* HEADER */}
-			<UserPostHeader
-				imgPath={post.profileImagePath}
-				postTime={post.time}
-				userName={post.userName}
-				destination={viewPost ? "/home" : `/profile/${post.userId}`}
-				previous={previous}
-				frameColor={post.frameColor}
-				isGroup={viewPost}
-				groupName={post.groupName}
-				groupImagePath={post.groupImagePath}
-			/>
-			{/* THREE DOTS */}
-			{!isAdmin && (
-				<BsThreeDots
-					className="absolute cursor-pointer top-6 right-3"
-					onClick={() =>
+			{/* REPORT FORM */}
+			{state.showReportPostForm && (
+				<ReportForm
+					toggleShowOptionDiv={() =>
 						dispatch({ type: ACTION_TYPES.TOGGLE_SHOW_OPTION_DIV })
 					}
+					toggleShowReportForm={() =>
+						dispatch({ type: ACTION_TYPES.TOGGLE_SHOW_REPORT_POST_FORM })
+					}
+					id={post._id}
 				/>
 			)}
 			{/* FOCUS IMAGE */}
@@ -276,27 +241,38 @@ const GroupPost = ({ post, isAdmin = false, viewPost = false }) => {
 					setShowImage={setShowImage}
 				/>
 			)}
+			{/* HEADER */}
+			<UserPostHeader
+				imgPath={post.profileImagePath}
+				userName={post.userName}
+				frameColor={post.frameColor}
+				postTime={post.time}
+				destination={`/profile/${post.userId}`}
+				previous={previous}
+			/>
+			{/* THREE DOTS */}
+			{view == 0 && (
+				<BsThreeDots
+					className="absolute cursor-pointer top-6 right-3"
+					onClick={() =>
+						dispatch({ type: ACTION_TYPES.TOGGLE_SHOW_OPTION_DIV })
+					}
+				/>
+			)}
+
 			{/* POST DESCRIPTION */}
 			<p className="my-3">{post.postDescription}</p>
-			{/* POST IMAGE / FILE */}
-			{post.postImagePath !== "" ? (
+			{/* POST IMAGE */}
+			{post.postImagePath !== "" && (
 				<img
+					alt="Post Image"
 					src={post.postImagePath}
 					className="rounded-xl mx-auto max-img-height cursor-pointer"
 					onClick={() => setShowImage(true)}
 				/>
-			) : post.postFilePath !== "" ? (
-				<div
-					className="items-center  hover:bg-gray-200 cursor-pointer p-2 inline-flex border border-gray-400 rounded-xl"
-					onClick={handleDownload}
-				>
-					<FaFile className="mr-2" />
-					<p>{post.postFileOriginalName}</p>
-				</div>
-			) : null}
-
+			)}
 			{/* LIKE AND COMMENT DIV */}
-			{!isAdmin && (
+			{view == 0 && (
 				<div className="grid grid-cols-11 mt-3">
 					{/* LIKE */}
 					<div
@@ -337,9 +313,9 @@ const GroupPost = ({ post, isAdmin = false, viewPost = false }) => {
 			)}
 
 			{/* COMMENTS SECTION */}
-			{state.showComment && <Comments post={post} />}
+			{view == 0 && state.showComment && <Comments post={post} />}
 		</div>
 	);
 };
 
-export default GroupPost;
+export default Post;

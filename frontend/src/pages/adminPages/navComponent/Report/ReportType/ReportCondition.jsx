@@ -52,7 +52,7 @@ const ReportCondition = ({ target }) => {
 				onClick={() => handleViewLocation()}
 			>
 				<FaMapMarkerAlt className="text-lg mr-1" />
-				<p>View location</p>
+				<p className="select-none">View location</p>
 			</div>
 		</div>
 	);

@@ -11,7 +11,7 @@ import { SettingContext } from "../../SettingMainPage.jsx";
 const FramePreference = () => {
 	const { user, token } = useSelector((store) => store.auth);
 	const sliceDispatch = useDispatch();
-	const { setOption, setDiscardChanges } = useContext(SettingContext);
+	const { setOption } = useContext(SettingContext);
 	const serverURL = useContext(ServerContext);
 	const { enqueueSnackbar } = useSnackbar();
 
@@ -22,10 +22,31 @@ const FramePreference = () => {
 		{ id: 0, name: "Default", frameColor: "none" },
 		{ id: 1, name: "Blue", frameColor: "border-blue-500" },
 		{ id: 2, name: "Green", frameColor: "border-green-500" },
-		{ id: 3, name: "Yellow", frameColor: "border-yellow-500" },
-		{ id: 4, name: "Pink", frameColor: "border-pink-500" },
-		{ id: 5, name: "Purple", frameColor: "border-purple-500" },
+
 	];
+
+	if (user.isEarlyUser) {
+		frames.push(
+			{ id: 3, name: "Yellow", frameColor: "border-yellow-500" },
+			{ id: 4, name: "Pink", frameColor: "border-pink-500" },
+			{ id: 5, name: "Purple", frameColor: "border-purple-500" },
+			{
+				id: 6,
+				name: "Cyan",
+				frameColor: "border-cyan-200",
+			},
+			{
+				id: 7,
+				name: "Rose",
+				frameColor: "border-rose-600",
+			},
+			{
+				id: 8,
+				name: "Orange",
+				frameColor: "border-orange-600",
+			}
+		);
+	}
 
 	// first render
 	useEffect(() => {

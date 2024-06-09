@@ -1,4 +1,5 @@
 import { React, useEffect, useState, createContext, useRef } from "react";
+import { useParams } from "react-router-dom";
 import { useSelector } from "react-redux";
 import SettingList from "./components/SettingList.jsx";
 import Error from "../../../components/Error.jsx";
@@ -14,6 +15,7 @@ import VersionAndUpdate from "./components/Options/VersionAndUpdate.jsx";
 export const SettingContext = createContext(null);
 
 const SettingMainPage = () => {
+	const { earlyUser } = useParams();
 	const { user, token } = useSelector((store) => store.auth);
 	const [extendSideBar, setExtendSideBar] = useState(false);
 	const [option, setOption] = useState("");
@@ -29,6 +31,12 @@ const SettingMainPage = () => {
 			});
 		}
 	}, [option]);
+
+	useEffect(() => {
+		if (earlyUser == 1) {
+			setOption("Frame preference");
+		}
+	}, []);
 
 	return user && token ? (
 		<div className="pt-2 pb-5">

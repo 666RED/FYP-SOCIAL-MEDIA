@@ -63,7 +63,7 @@ const SideBar = ({ selectedSection }) => {
 		<div className="hidden lg:block col-span-2 relative h-screen border-e-2 bg-gray-700 text-white">
 			{/* LOGO */}
 			<div className="flex items-center justify-between">
-				<p className="indent-1">Logo</p>
+				<img src="/sidebar-logo.png" alt="Logo" className="w-32 mt-1 ml-1" />
 			</div>
 			{/* LIST ELEMENTS */}
 			<ul className="indent-1 mt-3 grid">

@@ -24,13 +24,11 @@ export const sendFriendRequest = async (req, res) => {
 		const user = await User.findById(requestorId);
 
 		const userName = user.userName;
-		const profileImagePath = user.userProfile.profileImagePath;
 
 		await addFriendRequest({
 			userId: requestorId,
 			requestId: savedFriendRequest._id.toString(),
 			userName,
-			profileImagePath,
 			receiverId,
 		});
 
@@ -180,13 +178,11 @@ export const acceptFriendRequest = async (req, res) => {
 		const userId = requestorId;
 		const requestId = updatedFriendRequest._id.toString();
 		const userName = friend.userName;
-		const profileImagePath = friend.userProfile.profileImagePath;
 
 		await updateFriendRequest({
 			userId,
 			requestId,
 			userName,
-			profileImagePath,
 			receiverId,
 		});
 

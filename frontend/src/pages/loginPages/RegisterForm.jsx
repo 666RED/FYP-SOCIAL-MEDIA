@@ -87,6 +87,10 @@ const RegisterForm = ({ setDisplayRegForm }) => {
 					loginDispatch(clearState());
 					dispatch({ type: ACTION_TYPES.SUGGESS_REGISTER });
 					setDisplayRegForm(false);
+				} else if (msg === "Fail to register user") {
+					enqueueSnackbar("Fail to register user", {
+						variant: "error",
+					});
 				} else {
 					enqueueSnackbar("An error occurred", {
 						variant: "error",
@@ -178,7 +182,7 @@ const RegisterForm = ({ setDisplayRegForm }) => {
 						className={`w-full  mt-1 mb-3 border rounded-lg ${
 							state.validEmail ? "border-gray-500" : "border-red-500"
 						}`}
-						placeholder="Student / Stuff Email Address"
+						placeholder="Student / Staff Email Address"
 						value={state.email}
 						minLength={20}
 						maxLength={50}

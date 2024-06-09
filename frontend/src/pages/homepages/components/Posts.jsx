@@ -2,14 +2,16 @@ import { React, useEffect, useContext } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { useSnackbar } from "notistack";
 import Loader from "../../../components/Spinner/Loader.jsx";
-import Post from "../../../components/post/Post.jsx";
+import Post from "./Post.jsx";
+import GroupPost from "./GroupPost.jsx";
+import Condition from "./Condition.jsx";
 import { ServerContext } from "../../../App.js";
 import {
 	setPosts,
 	setHasPosts,
 	setIsLoadingPosts,
 	resetState,
-} from "../../../features/postSlice.js";
+} from "../../../features/homeSlice.js";
 
 const Posts = () => {
 	const serverURL = useContext(ServerContext);
@@ -17,7 +19,7 @@ const Posts = () => {
 	const { enqueueSnackbar } = useSnackbar();
 	const sliceDispatch = useDispatch();
 	const { isLoadingPosts, hasPosts, posts } = useSelector(
-		(store) => store.post
+		(store) => store.home
 	);
 
 	// get home posts
@@ -29,7 +31,7 @@ const Posts = () => {
 				const res = await fetch(
 					`${serverURL}/post/get-home-posts?userId=${
 						user._id
-					}&postIds=${JSON.stringify([])}`,
+					}&posts=${JSON.stringify([])}`,
 					{
 						method: "GET",
 						headers: {
@@ -51,7 +53,7 @@ const Posts = () => {
 				if (msg === "Success") {
 					sliceDispatch(setPosts(returnedPosts));
 
-					if (returnedPosts.length < 10) {
+					if (returnedPosts.length < 15) {
 						sliceDispatch(setHasPosts(false));
 					} else {
 						sliceDispatch(setHasPosts(true));
@@ -92,7 +94,17 @@ const Posts = () => {
 			) : (
 				<div className="bg-gray-200 w-full py-1 px-3">
 					{hasPosts || posts.length > 0 ? (
-						posts.map((post) => <Post key={post._id} post={post} />)
+						posts.map((post) => {
+							if (post.type === "Post") {
+								return <Post key={post._id} post={post} />;
+							} else if (post.type === "Group") {
+								return <GroupPost key={post._id} post={post} viewPost={true} />;
+							} else if (post.type === "Condition") {
+								return (
+									<Condition condition={post} key={post._id} homePost={true} />
+								);
+							}
+						})
 					) : (
 						<h2 className="text-center my-2">No post</h2>
 					)}

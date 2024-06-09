@@ -13,11 +13,11 @@ import {
 } from "../../feature/editPostFormReducer.js";
 import ACTION_TYPES from "../../actionTypes/editPostFormActionTypes.js";
 import { ServerContext } from "../../../../../../App.js";
-import { updatePost } from "../../../../../../features/groupPostSlice.js";
 
 const EditPostForm = ({
 	toggleShowEditPostForm,
 	toggleShowOptionDiv,
+	updatePost,
 	post,
 }) => {
 	const sliceDispatch = useDispatch();

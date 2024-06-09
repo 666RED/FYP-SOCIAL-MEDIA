@@ -1,7 +1,10 @@
 import { Post } from "../models/postModel.js";
 import { Comment } from "../models/commentModel.js";
-import { formatDateTime } from "../usefulFunction.js";
 import { User } from "../models/userModel.js";
+import { GroupPost } from "../models/groupPostModel.js";
+import { CampusCondition } from "../models/campusConditionModel.js";
+import { Group } from "../models/groupModel.js";
+import { formatDateTime } from "../usefulFunction.js";
 import mongoose from "mongoose";
 
 import { uploadFile, deleteFile } from "../middleware/handleFile.js";
@@ -62,7 +65,7 @@ export const addNewPost = async (req, res) => {
 
 		const { createdAt, updatedAt, __v, ...rest } = savedPost;
 
-		const returnPost = rest;
+		const returnPost = { ...rest, type: "Post" };
 
 		if (!returnPost) {
 			return res.status(404).json({ msg: "Post not found" });
@@ -117,6 +120,33 @@ export const getPosts = async (req, res) => {
 	}
 };
 
+export const getPost = async (req, res) => {
+	try {
+		const { userId, postId } = req.query;
+
+		const post = await Post.findById(postId);
+
+		if (!post) {
+			return res.status(400).json({ msg: "Fail to get post" });
+		}
+
+		const user = await User.findById(userId);
+
+		const { createdAt, updatedAt, __v, ...rest } = post._doc;
+		const returnedPost = {
+			...rest,
+			time: formatDateTime(createdAt),
+			userName: user ? user.userName : "",
+			profileImagePath: user ? user.userProfile.profileImagePath : "",
+			frameColor: user ? user.userProfile.profileFrameColor : "",
+		};
+
+		res.status(200).json({ msg: "Success", returnedPost });
+	} catch (err) {
+		res.status(500).json({ error: err.message });
+	}
+};
+
 export const upLikes = async (req, res) => {
 	try {
 		let { postId, userId } = req.body;
@@ -133,14 +163,19 @@ export const upLikes = async (req, res) => {
 			return res.status(400).json({ msg: "Fail to update post" });
 		}
 
+		// firebase
 		if (updatedPost.userId.toString() !== userId) {
 			const user = await User.findById(userId);
 			userId = userId.toString();
 			const userName = user.userName;
-			const profileImagePath = user.userProfile.profileImagePath;
 			const postUserId = updatedPost.userId.toString();
 
-			await likePost(userId, userName, profileImagePath, postId, postUserId);
+			await likePost({
+				userId,
+				userName,
+				postId,
+				postUserId,
+			});
 		}
 
 		res.status(200).json({ msg: "Success" });
@@ -167,9 +202,10 @@ export const downLikes = async (req, res) => {
 			return res.status(400).json({ msg: "Fail to update post" });
 		}
 
-		const postUserId = updatedPost.userId.toString();
-
-		await cancelPostLike(postId, userId);
+		// firebase
+		if (updatedPost.userId.toString() !== userId) {
+			await cancelPostLike({ postId, userId });
+		}
 
 		res.status(200).json({ msg: "Success" });
 	} catch (err) {
@@ -240,7 +276,7 @@ export const editPost = async (req, res) => {
 
 		const { createdAt, updatedAt, __v, ...rest } = temp;
 
-		updatedPost = rest;
+		updatedPost = { ...rest, type: "Post" };
 
 		// delete original post image
 		if ((postImage && originalPostImagePath !== "") || removeImage) {
@@ -279,10 +315,17 @@ export const deletePost = async (req, res) => {
 		const userIds = Array.from(deletedPost.likesMap.keys()).map((id) =>
 			id.toString()
 		);
-		const comments = await Comment.find({ postId });
-		const commentIds = comments.map((comment) => comment._id.toString());
+		let comments = await Comment.find({ postId });
+		comments = comments.map((comment) => ({
+			commentId: comment._id.toString(),
+			userId: comment.userId.toString(),
+		}));
 
-		await deletePostLikesAndComments(postId, userIds, commentIds);
+		await deletePostLikesAndComments({
+			postId,
+			userIds,
+			comments,
+		});
 
 		// delete all comments in the post
 		const deletedComments = await Comment.deleteMany({ postId });
@@ -302,9 +345,20 @@ export const deletePost = async (req, res) => {
 export const getHomePosts = async (req, res) => {
 	try {
 		const limit = 10;
+		const returnLimit = 15;
 		const userId = req.query.userId;
 
-		const postsIds = JSON.parse(req.query.postIds);
+		const posts = JSON.parse(req.query.posts);
+
+		const excludedFriendPostIds = posts
+			.filter((post) => post.type === "Friend")
+			.map((post) => new mongoose.Types.ObjectId(post.id));
+		const excludedGroupPostIds = posts
+			.filter((post) => post.type === "Group")
+			.map((post) => new mongoose.Types.ObjectId(post.id));
+		const excludedConditionIds = posts
+			.filter((post) => post.type === "Condition")
+			.map((post) => new mongoose.Types.ObjectId(post.ic));
 
 		const user = await User.findById(userId);
 
@@ -312,40 +366,112 @@ export const getHomePosts = async (req, res) => {
 			return res.status(400).json({ msg: "Fail to retrieve posts" });
 		}
 
-		const friendsIds = Array.from(user.userFriendsMap.keys());
+		const friendsIds = Array.from(user.userFriendsMap.keys()).map(
+			(id) => new mongoose.Types.ObjectId(id)
+		);
 
-		let posts = await Post.find({
-			userId: {
-				$in: [
-					...friendsIds.map((id) => new mongoose.Types.ObjectId(id)),
-					new mongoose.Types.ObjectId(userId),
-				],
+		const groupIds = Array.from(user.groups.keys()).map(
+			(id) => new mongoose.Types.ObjectId(id)
+		);
+
+		const friendPosts = await Post.aggregate([
+			{
+				$match: {
+					userId: { $in: [...friendsIds, new mongoose.Types.ObjectId(userId)] },
+					_id: { $nin: excludedFriendPostIds },
+					removed: false,
+				},
 			},
-			_id: { $nin: postsIds.map((id) => new mongoose.Types.ObjectId(id)) },
-			removed: 0,
-		})
-			.limit(limit)
-			.sort({
-				createdAt: -1,
-			});
-
-		if (!posts) {
+			{ $sample: { size: limit } },
+			{ $addFields: { type: "Post" } },
+		]);
+		if (!friendPosts) {
 			return res.status(400).json({ msg: "Fail to retrieve posts" });
 		}
 
-		if (posts.length === 0) {
+		const groupPosts = await GroupPost.aggregate([
+			{
+				$match: {
+					_id: { $in: groupIds.map((id) => new mongoose.Types.ObjectId(id)) },
+					_id: {
+						$nin: excludedGroupPostIds.map(
+							(id) => new mongoose.Types.ObjectId(id)
+						),
+					},
+					removed: false,
+				},
+			},
+			{ $sample: { size: limit } },
+			{
+				$lookup: {
+					from: "groups", // The name of the Group collection
+					localField: "groupId", // The field in GroupPost that matches the Group _id
+					foreignField: "_id",
+					as: "groupInfo",
+				},
+			},
+			{
+				$project: {
+					groupName: { $arrayElemAt: ["$groupInfo.groupName", 0] },
+					groupImagePath: { $arrayElemAt: ["$groupInfo.groupImagePath", 0] },
+					type: { $literal: "Group" }, // Add the type field
+					_id: 1,
+					groupId: 1,
+					userId: 1,
+					postLikes: 1,
+					postComments: 1,
+					likesMap: 1,
+					postDescription: 1,
+					postImagePath: 1,
+					postFilePath: 1,
+					postFileOriginalName: 1,
+					removed: 1,
+					createdAt: 1,
+					updatedAt: 1,
+					__v: 1,
+				},
+			},
+		]);
+		if (!groupPosts) {
+			return res.status(400).json({ msg: "Fail to retrieve posts" });
+		}
+
+		const conditionPosts = await CampusCondition.aggregate([
+			{
+				$match: {
+					_id: { $nin: excludedConditionIds },
+					removed: false,
+				},
+			},
+			{ $sample: { size: limit } },
+			{ $addFields: { type: "Condition" } },
+		]);
+		if (!conditionPosts) {
+			return res.status(400).json({ msg: "Fail to retrieve posts" });
+		}
+
+		let combinedPosts = [...friendPosts, ...groupPosts, ...conditionPosts];
+
+		// randomly pick
+		combinedPosts = combinedPosts
+			.sort(() => 0.5 - Math.random())
+			.slice(0, returnLimit);
+
+		if (!combinedPosts.length) {
 			return res.status(200).json({ msg: "No post" });
 		}
 
-		const userIds = posts.map((post) => post.userId);
+		const userIds = combinedPosts.map((post) => post.userId);
 
 		const users = await User.find({ _id: { $in: userIds } });
 
-		posts = posts.map((post) => {
+		combinedPosts = combinedPosts.map((post) => {
 			const user = users.find(
 				(user) => user._id.toString() === post.userId.toString()
 			);
-			const { createdAt, updatedAt, __v, ...rest } = post._doc;
+			let group;
+
+			const { createdAt, updatedAt, __v, ...rest } = post;
 			return {
 				...rest,
 				time: formatDateTime(createdAt),
@@ -355,8 +481,10 @@ export const getHomePosts = async (req, res) => {
 			};
 		});
 
-		res.status(200).json({ msg: "Success", returnedPosts: posts });
+		res.status(200).json({ msg: "Success", returnedPosts: combinedPosts });
 	} catch (err) {
+		console.log(err);
+
 		res.status(500).json({ error: err.message });
 	}
 };

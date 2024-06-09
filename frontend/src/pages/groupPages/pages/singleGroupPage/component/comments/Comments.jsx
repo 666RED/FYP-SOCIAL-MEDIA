@@ -17,7 +17,6 @@ const Comments = ({ post }) => {
 	const sliceDispatch = useDispatch();
 	const serverURL = useContext(ServerContext);
 	const { token } = useSelector((store) => store.auth);
-	const { isMember } = useSelector((store) => store.group);
 	const { commentsArray } = useSelector((store) => store.groupPost);
 	const { enqueueSnackbar } = useSnackbar();
 	const [hasComment, setHasComment] = useState(false);
@@ -161,7 +160,7 @@ const Comments = ({ post }) => {
 					</div>
 					<hr className="border-2 border-gray-700 my-3" />
 					{/* COMMENT INPUT */}
-					{isMember && <CommentInput post={post} />}
+					{<CommentInput post={post} />}
 				</div>
 			)}
 		</div>

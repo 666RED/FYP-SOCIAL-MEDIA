@@ -2,6 +2,10 @@ import { GroupPost } from "../models/groupPostModel.js";
 import { GroupPostComment } from "../models/groupPostCommentModel.js";
 import { formatDateTime } from "../usefulFunction.js";
 import { User } from "../models/userModel.js";
+import {
+	commentGroupPost,
+	deleteGroupPostComment,
+} from "../API/firestoreAPI.js";
 
 export const addGroupPostComment = async (req, res) => {
 	try {
@@ -20,9 +24,13 @@ export const addGroupPostComment = async (req, res) => {
 		}
 
 		// increase amount of comment for a post
-		await GroupPost.findByIdAndUpdate(groupPostId, {
-			$inc: { postComments: 1 },
-		});
+		const updatedGroupPost = await GroupPost.findByIdAndUpdate(
+			groupPostId,
+			{
+				$inc: { postComments: 1 },
+			},
+			{ new: true }
+		);
 
 		const user = await User.findById(userId);
 		let profileImagePath = "";
@@ -37,6 +45,17 @@ export const addGroupPostComment = async (req, res) => {
 
 		const { createdAt, updatedAt, __v, ...rest } = savedComment._doc;
 
+		// firebase
+		if (userId !== updatedGroupPost.userId.toString()) {
+			await commentGroupPost({
+				userId,
+				userName,
+				postId: groupPostId,
+				commentId: savedComment._id.toString(),
+				postUserId: updatedGroupPost.userId.toString(),
+			});
+		}
+
 		res.status(200).json({
 			msg: "Success",
 			returnComment: {
@@ -48,6 +67,8 @@ export const addGroupPostComment = async (req, res) => {
 			},
 		});
 	} catch (err) {
+		console.log(err);
+
 		res.status(500).json({ error: err.message });
 	}
 };
@@ -157,15 +178,24 @@ export const editComment = async (req, res) => {
 
 export const deleteComment = async (req, res) => {
 	try {
-		const { commentId, postId } = req.body;
+		const { commentId, postId, userId } = req.body;
 
-		const deletedComment = await GroupPostComment.findByIdAndDelete(commentId);
+		const deletedComment = await GroupPostComment.findByIdAndDelete(commentId, {
+			new: true,
+		});
 
 		if (!deleteComment) {
 			return res.status(400).json({ msg: "Fail to delete comment" });
 		}
 
 		await GroupPost.findByIdAndUpdate(postId, { $inc: { postComments: -1 } });
+
+		// firebase
+		if (deletedComment.userId.toString() !== userId)
+			await deleteGroupPostComment({
+				commentId,
+				userId,
+			});
 
 		res
 			.status(200)
