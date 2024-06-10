@@ -12,7 +12,7 @@ const userSchema = mongoose.Schema(
 			type: String,
 			required: true,
 			min: 4, // Male
-			max: 6, // emale
+			max: 6, // Female
 		},
 		userEmailAddress: {
 			type: String,

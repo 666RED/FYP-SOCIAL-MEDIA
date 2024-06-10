@@ -16,7 +16,7 @@ const postSchema = mongoose.Schema(
 			default: 0,
 		},
 		likesMap: {
-			type: Map, // more efficient than using array to store the user ids
+			type: Map,
 			of: Boolean,
 			default: new Map(),
 		},
