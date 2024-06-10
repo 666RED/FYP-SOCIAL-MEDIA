@@ -26,7 +26,7 @@ const PageTemplate = ({ component, selectedSection }) => {
 					setExtendSideBar={setExtendSideBar}
 				/>
 				{/* TABLE (RIGHT HAND SIDE) */}
-				<div className="lg:col-span-10 col-span-12 px-2 lg:mt-5">
+				<div className="lg:col-span-10 col-span-12 px-2">
 					{/* COMPONENETS */}
 					{component}
 				</div>

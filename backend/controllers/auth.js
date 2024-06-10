@@ -74,7 +74,7 @@ export const register = async (req, res) => {
 			user = savedUser;
 		}
 
-		// await sign(user, userEmailAddress);
+		await sign(user, userEmailAddress);
 
 		delete user.password;
 
