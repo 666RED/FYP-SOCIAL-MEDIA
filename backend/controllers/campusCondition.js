@@ -544,7 +544,7 @@ export const getMostUsefulConditions = async (req, res) => {
 	try {
 		const limit = 5;
 		const sevenDaysAgo = new Date(
-			new Date().getTime() - 7 * 24 * 60 * 60 * 1000
+			new Date().getTime() - 7 * 24 * 60 * 60 * 1000 // 7 days
 		);
 
 		let mostUsefulConditions = await CampusCondition.aggregate([

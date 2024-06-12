@@ -397,11 +397,11 @@ export const getHomePosts = async (req, res) => {
 			{
 				$match: {
 					_id: {
-						$in: groupIds.map((id) => new mongoose.Types.ObjectId(id)),
 						$nin: excludedGroupPostIds.map(
 							(id) => new mongoose.Types.ObjectId(id)
 						),
 					},
+					groupId: { $in: groupIds },
 					removed: false,
 				},
 			},
