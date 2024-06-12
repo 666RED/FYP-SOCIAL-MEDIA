@@ -18,15 +18,15 @@ const PageTemplate = ({ component, selectedSection }) => {
 				/>
 			</div>
 			{/* MAIN CONTENT */}
-			<div className="grid grid-cols-12">
-				{/* LEFT SIDE BAR */}
+			<div className="">
+				{/* SIDE BAR */}
 				<SideBar
 					selectedSection={selectedSection}
 					extendSideBar={extendSideBar}
 					setExtendSideBar={setExtendSideBar}
 				/>
 				{/* TABLE (RIGHT HAND SIDE) */}
-				<div className="lg:col-span-10 col-span-12 px-2">
+				<div className="px-2">
 					{/* COMPONENETS */}
 					{component}
 				</div>
