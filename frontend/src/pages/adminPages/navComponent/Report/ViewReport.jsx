@@ -9,7 +9,7 @@ import ReportEvent from "./ReportType/ReportEvent.jsx";
 
 const ViewReport = ({ setShowReport, report }) => {
 	return (
-		<div className="center-container items-center flex-col md:flex-row py-2 px-2 bg-black bg-opacity-75">
+		<div className="center-container flex-col md:flex-row py-2 px-2 bg-black bg-opacity-75">
 			<div className="bg-white rounded-xl relative p-2 overflow-auto md:w-1/2 w-full">
 				{/* TITLE */}
 				<p className="text-center text-3xl font-semibold">View {report.type}</p>
