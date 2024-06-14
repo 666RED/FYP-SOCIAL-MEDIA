@@ -25,7 +25,7 @@ export const authEmail = async (req, res) => {
 			service: "gmail",
 			auth: {
 				user: "fsktmconnect@gmail.com",
-				pass: "thpd fawn tbgy nalr",
+				pass: process.env.MAILER_SECRET,
 			},
 		});
 
@@ -138,7 +138,7 @@ export const resendCode = async (req, res) => {
 			service: "gmail",
 			auth: {
 				user: "fsktmconnect@gmail.com",
-				pass: "thpd fawn tbgy nalr",
+				pass: process.env.MAILER_SECRET,
 			},
 		});
 

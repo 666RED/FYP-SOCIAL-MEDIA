@@ -1,17 +1,14 @@
-import { React, useContext } from "react";
+import { React } from "react";
 import { FaPhoneAlt } from "react-icons/fa";
-import { ServerContext } from "../App.js";
 
 const SellerInfo = ({ state, handleOnClick, name, isAdmin = false }) => {
-	const serverURL = useContext(ServerContext);
-
 	return (
 		<div>
 			<h3 className="mb-2">{name}</h3>
 			<div className="flex items-center">
 				{/* PROFILE IMAGE */}
 				<img
-					src={`state.userProfileImagePath`}
+					src={state.userProfileImagePath}
 					alt="Seller profile image"
 					className={`rounded-full border-[2.5px] ${state.frameColor} w-14 mr-2 md:w-20`}
 				/>

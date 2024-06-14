@@ -108,7 +108,7 @@ const sign = async (savedUser, userEmailAddress) => {
 				service: "gmail",
 				auth: {
 					user: "fsktmconnect@gmail.com",
-					pass: "thpd fawn tbgy nalr",
+					pass: process.env.MAILER_SECRET,
 				},
 			});
 
