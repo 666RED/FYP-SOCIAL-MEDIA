@@ -352,6 +352,8 @@ export const getHomePosts = async (req, res) => {
 
 		const posts = JSON.parse(req.query.posts);
 
+		console.log(posts);
+
 		const excludedFriendPostIds = posts
 			.filter((post) => post.type === "Friend")
 			.map((post) => new mongoose.Types.ObjectId(post.id));
@@ -362,7 +364,7 @@ export const getHomePosts = async (req, res) => {
 
 		const excludedConditionIds = posts
 			.filter((post) => post.type === "Condition")
-			.map((post) => new mongoose.Types.ObjectId(post.ic));
+			.map((post) => new mongoose.Types.ObjectId(post.id));
 
 		const user = await User.findById(userId);
 
@@ -397,9 +399,7 @@ export const getHomePosts = async (req, res) => {
 			{
 				$match: {
 					_id: {
-						$nin: excludedGroupPostIds.map(
-							(id) => new mongoose.Types.ObjectId(id)
-						),
+						$nin: excludedGroupPostIds,
 					},
 					groupId: { $in: groupIds },
 					removed: false,
