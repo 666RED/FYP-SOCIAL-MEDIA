@@ -9,6 +9,7 @@ import {
 	markCondition,
 	rateCondition,
 } from "../API/firestoreAPI.js";
+import { Report } from "../models/reportModel.js";
 
 export const addNewCampusCondition = async (req, res) => {
 	try {
@@ -500,6 +501,9 @@ export const deleteCondition = async (req, res) => {
 		const userIds = [...upMapIds, ...downMapIds];
 
 		await deleteRates({ userIds, conditionId });
+
+		// delete report if got any
+		await Report.deleteMany({ targetId: conditionId, status: "Pending" });
 
 		res.status(200).json({ msg: "Success", deletedCondition });
 	} catch (err) {

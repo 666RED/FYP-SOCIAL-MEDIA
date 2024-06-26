@@ -1,4 +1,3 @@
-import mongoose from "mongoose";
 import { Group } from "../models/groupModel.js";
 import { User } from "../models/userModel.js";
 import { updateViewedValue } from "../API/firestoreAPI.js";
@@ -10,28 +9,24 @@ export const getNotificationsProfile = async (req, res) => {
 		let returnedNotifications = [];
 
 		for (const notification of notifications) {
-			if (
-				notification.action === "Accept join group" ||
-				notification.action === "Add note"
-			) {
+			if (notification.type === "Group") {
 				const group = await Group.findById(notification.acceptGroupId);
 
 				returnedNotifications.push({
-					...notification,
+					id: notification.id,
 					imagePath: group.groupImagePath,
 					type: "Group",
 				});
-			} else if (
-				notification.action === "Dismiss report" ||
-				notification.action === "Mark resolved" ||
-				notification.action === "Remove post to target" ||
-				notification.action === "Remove post to reporter"
-			) {
-				returnedNotifications.push({ ...notification, type: "Admin" });
+			} else if (notification.type === "Admin") {
+				returnedNotifications.push({
+					id: notification.id,
+					imagePath: "",
+					type: "Admin",
+				});
 			} else {
 				const user = await User.findById(notification.sender);
 				returnedNotifications.push({
-					...notification,
+					id: notification.id,
 					imagePath: user.userProfile.profileImagePath,
 					type: "User",
 				});
@@ -40,8 +35,6 @@ export const getNotificationsProfile = async (req, res) => {
 
 		res.status(200).json({ msg: "Success", returnedNotifications });
 	} catch (err) {
-		console.log(err);
-
 		res.status(500).json({ error: err.message });
 	}
 };

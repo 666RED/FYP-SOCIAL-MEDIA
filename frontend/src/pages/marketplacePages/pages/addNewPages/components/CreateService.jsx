@@ -74,7 +74,9 @@ const CreateService = ({ state, dispatch }) => {
 					}
 					required
 				>
-					<option value="tutoring">Tutoring</option>
+					<option value="tutoring" selected>
+						Tutoring
+					</option>
 					<option value="academic-writing-assistance">
 						Academic writing assistance
 					</option>

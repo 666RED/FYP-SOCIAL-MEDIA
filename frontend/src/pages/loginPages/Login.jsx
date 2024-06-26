@@ -1,5 +1,5 @@
-import { React, useContext, useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
+import { React, useContext, useState, useReducer } from "react";
+import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { useSnackbar, closeSnackbar } from "notistack";
 import { MdCancel } from "react-icons/md";
@@ -7,15 +7,8 @@ import { BsEyeFill, BsEyeSlashFill } from "react-icons/bs/index.js";
 import RegisterForm from "./RegisterForm.jsx";
 import Spinner from "../../components/Spinner/Spinner.jsx";
 import HorizontalRule from "../../components/HorizontalRule.jsx";
-import {
-	setEmail,
-	setPassword,
-	userNotExist,
-	invalidCredentials,
-	successLogin,
-	toggleViewPassword,
-	clearState,
-} from "./reducers/loginSlice.js";
+import { INITIAL_STATE, loginReducer } from "./reducers/loginReducer.js";
+import ACTION_TYPES from "./actionTypes/loginActionTypes.js";
 import { setUser } from "../../features/authSlice.js";
 import { ServerContext } from "../../App.js";
 
@@ -24,11 +17,9 @@ const Login = () => {
 	const serverURL = useContext(ServerContext);
 	const [displayRegForm, setDisplayRegForm] = useState(false);
 	const [loading, setLoading] = useState(false);
+	const [state, dispatch] = useReducer(loginReducer, INITIAL_STATE);
 
-	const dispatch = useDispatch();
 	const authDispatch = useDispatch();
-	const { email, password, isUserExist, isPasswordCorrect, viewPassword } =
-		useSelector((store) => store.login);
 	const navigate = useNavigate();
 	const { enqueueSnackbar } = useSnackbar();
 
@@ -43,27 +34,25 @@ const Login = () => {
 					"Content-Type": "application/json",
 				},
 				body: JSON.stringify({
-					userEmailAddress: email,
-					userPassword: password,
+					userEmailAddress: state.email,
+					userPassword: state.password,
 				}),
 			});
 
 			const data = await res.json();
 
 			if (data.msg === "Not exist") {
-				dispatch(userNotExist());
+				dispatch({ type: ACTION_TYPES.USER_NOT_EXIST });
 				enqueueSnackbar("User does not exist", { variant: "error" });
 			} else if (data.msg === "Invalid credentials") {
-				dispatch(invalidCredentials());
+				dispatch({ type: ACTION_TYPES.INVALID_CREDENTIALS });
 				enqueueSnackbar("Incorrect password", { variant: "error" });
 			} else if (data.msg === "Success") {
 				authDispatch(setUser({ token: data.token, user: data.user }));
-				dispatch(successLogin());
 				enqueueSnackbar("Login", { variant: "success" });
 				navigate("/home");
 			} else if (data.msg === "Early user") {
 				authDispatch(setUser({ token: data.token, user: data.user }));
-				dispatch(successLogin());
 				enqueueSnackbar(
 					"Congratulations! You are among the first 100 registered users. Enjoy your reward of a colorful frame.",
 					{
@@ -121,12 +110,17 @@ const Login = () => {
 					<input
 						type="email"
 						id="email"
-						onChange={(e) => dispatch(setEmail(e.target.value))}
+						onChange={(e) =>
+							dispatch({
+								type: ACTION_TYPES.SET_EMAIL,
+								payload: e.target.value,
+							})
+						}
 						minLength={20}
 						maxLength={50}
-						value={email}
+						value={state.email}
 						className={`w-full border ${
-							isUserExist ? "border-gray-500" : "border-red-500"
+							state.isUserExist ? "border-gray-500" : "border-red-500"
 						} mt-5 p-3 rounded-md`}
 						placeholder="Student / Staff Email Address"
 						required
@@ -134,27 +128,36 @@ const Login = () => {
 					{/* PASSWORD */}
 					<div className="relative z-0">
 						<input
-							type={viewPassword ? "text" : "password"}
+							type={state.viewPassword ? "text" : "password"}
 							id="password"
 							minLength={8}
 							maxLength={30}
-							value={password}
-							onChange={(e) => dispatch(setPassword(e.target.value))}
+							value={state.password}
+							onChange={(e) =>
+								dispatch({
+									type: ACTION_TYPES.SET_PASSWORD,
+									payload: e.target.value,
+								})
+							}
 							className={`w-full form-control my-5 border ${
-								isPasswordCorrect ? "border-gray-500" : "border-red-500"
+								state.isPasswordCorrect ? "border-gray-500" : "border-red-500"
 							} p-3 rounded-md`}
 							placeholder="Password"
 							required
 						/>
-						{viewPassword ? (
+						{state.viewPassword ? (
 							<BsEyeFill
 								className="absolute text-xl top-9 right-2 cursor-pointer hover:text-blue-600"
-								onClick={() => dispatch(toggleViewPassword())}
+								onClick={() =>
+									dispatch({ type: ACTION_TYPES.TOGGLE_VIEW_PASSWORD })
+								}
 							/>
 						) : (
 							<BsEyeSlashFill
 								className="absolute text-xl top-9 right-2 cursor-pointer hover:text-blue-600"
-								onClick={() => dispatch(toggleViewPassword())}
+								onClick={() =>
+									dispatch({ type: ACTION_TYPES.TOGGLE_VIEW_PASSWORD })
+								}
 							/>
 						)}
 					</div>
@@ -164,7 +167,6 @@ const Login = () => {
 					<p
 						className="text-center inline-block mx-auto mt-5 text-blue-600 cursor-pointer text-sm hover:opacity-80"
 						onClick={() => {
-							dispatch(clearState());
 							navigate("/recover-password");
 						}}
 					>

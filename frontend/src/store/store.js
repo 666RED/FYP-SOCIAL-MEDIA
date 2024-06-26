@@ -10,7 +10,6 @@ import {
 	REGISTER,
 } from "redux-persist";
 import authReducer from "../features/authSlice.js";
-import loginReducer from "../pages/loginPages/reducers/loginSlice.js";
 import searchReducer from "../features/searchSlice.js";
 import commentReducer from "../components/comment/feature/commentSlice.js";
 import userPostReducer from "../features/postSlice.js";
@@ -36,7 +35,6 @@ const persistedAdminReducer = persistReducer(persistConfig, adminReducer);
 const rootReducer = combineReducers({
 	auth: persistedAuthReducer,
 	admin: persistedAdminReducer,
-	login: loginReducer,
 	comment: commentReducer,
 	post: userPostReducer,
 	campusCondition: campusConditionReducer,

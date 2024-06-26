@@ -25,7 +25,35 @@ const NotificationContainer = ({
 				const res = await fetch(
 					`${serverURL}/notification/get-notifications-profile?notifications=${JSON.stringify(
 						{
-							notifications,
+							notifications: notifications.map((notification) => {
+								if (
+									notification.action === "Accept join group" ||
+									notification.action === "Add note"
+								) {
+									return {
+										id: notification.id,
+										acceptGroupId: notification.acceptGroupId,
+										type: "Group",
+									};
+								} else if (
+									notification.action === "Dismiss report" ||
+									notification.action === "Mark resolved" ||
+									notification.action === "Remove post to target" ||
+									notification.action === "Remove post to reporter"
+								) {
+									return {
+										id: notification.id,
+										sender: notification.sender,
+										type: "Admin",
+									};
+								} else {
+									return {
+										id: notification.id,
+										sender: notification.sender,
+										type: "User",
+									};
+								}
+							}),
 						}
 					)}`,
 					{
@@ -46,7 +74,21 @@ const NotificationContainer = ({
 				const { msg, returnedNotifications } = await res.json();
 
 				if (msg === "Success") {
-					setNotis(returnedNotifications);
+					setNotis(
+						returnedNotifications.map((noti) => {
+							const matchedNotification = notifications.find(
+								(notification) => notification.id === noti.id
+							);
+							if (matchedNotification) {
+								return {
+									...matchedNotification,
+									imagePath: noti.imagePath,
+									type: noti.type,
+								};
+							}
+							return matchedNotification;
+						})
+					);
 				}
 
 				setLoading(false);

@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 import { Event } from "../models/eventModel.js";
 import { User } from "../models/userModel.js";
 import { uploadFile, deleteFile } from "../middleware/handleFile.js";
+import { Report } from "../models/reportModel.js";
 
 export const createNewEvent = async (req, res) => {
 	try {
@@ -585,6 +586,9 @@ export const removeEvent = async (req, res) => {
 
 		// remove image
 		await deleteFile(originalEvent.eventPosterImagePath);
+
+		// delete report if got any
+		await Report.deleteMany({ targetId: eventId, status: "Pending" });
 
 		res.status(200).json({ msg: "Success" });
 	} catch (err) {

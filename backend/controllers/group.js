@@ -604,8 +604,6 @@ export const getGroupAdminId = async (req, res) => {
 			.status(200)
 			.json({ msg: "Success", returnGroupAdminId: group.groupAdminId });
 	} catch (err) {
-		console.log(err);
-
 		res.status(500).json({ error: err.message });
 	}
 };

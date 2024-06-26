@@ -1,4 +1,4 @@
-import React, { useState, useContext } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { useSnackbar } from "notistack";
@@ -12,7 +12,7 @@ import { ServerContext } from "../../../../../../../App.js";
 import { folderContext } from "../FolderPage.jsx";
 
 const Folder = ({ folder }) => {
-	const { token } = useSelector((store) => store.auth);
+	const { user, token } = useSelector((store) => store.auth);
 	const [loading, setLoading] = useState(false);
 	const serverURL = useContext(ServerContext);
 	const navigate = useNavigate();
@@ -21,6 +21,50 @@ const Folder = ({ folder }) => {
 	const [showRenameFolderDiv, setShowRenameFolderDiv] = useState(false);
 	const { enqueueSnackbar } = useSnackbar();
 	const { folders, setFolders } = useContext(folderContext);
+	const [isGroupAdmin, setIsGroupAdmin] = useState(false);
+
+	// is group admin
+	useEffect(() => {
+		const getGroupAdminId = async () => {
+			try {
+				const res = await fetch(
+					`${serverURL}/group/get-group-admin-id?groupId=${groupId}`,
+					{
+						method: "GET",
+						headers: {
+							"Content-Type": "application/json",
+							Authorization: `Bearer ${token}`,
+						},
+					}
+				);
+
+				if (!res.ok && res.status === 403) {
+					enqueueSnackbar("Access Denied", { variant: "error" });
+					return;
+				}
+
+				const { msg, returnGroupAdminId } = await res.json();
+
+				if (msg === "Success") {
+					if (returnGroupAdminId === user._id) {
+						setIsGroupAdmin(true);
+					} else {
+						setIsGroupAdmin(false);
+					}
+				} else if (msg === "Group not found") {
+					enqueueSnackbar("Group not found", { variant: "error" });
+				} else {
+					enqueueSnackbar("An error occurred", { variant: "error" });
+				}
+			} catch (err) {
+				enqueueSnackbar("Could not connect to the server", {
+					variant: "error",
+				});
+			}
+		};
+
+		getGroupAdminId();
+	}, []);
 
 	const handleNavigate = (e) => {
 		if (!e.target.closest(".folder-action")) {
@@ -125,10 +169,12 @@ const Folder = ({ folder }) => {
 				</div>
 			)}
 			{/* THREE DOTS */}
-			<BsThreeDots
-				className="absolute cursor-pointer top-2 right-2"
-				onClick={handleShowOptionDiv}
-			/>
+			{isGroupAdmin && (
+				<BsThreeDots
+					className="absolute cursor-pointer top-2 right-2"
+					onClick={handleShowOptionDiv}
+				/>
+			)}
 			{/* RENAME FOLDER DIV */}
 			{showRenameFolderDiv && (
 				<RenameFolderDiv

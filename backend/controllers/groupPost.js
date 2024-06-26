@@ -2,6 +2,7 @@ import { GroupPost } from "../models/groupPostModel.js";
 import { Group } from "../models/groupModel.js";
 import { User } from "../models/userModel.js";
 import { formatDateTime } from "../usefulFunction.js";
+import { Report } from "../models/reportModel.js";
 import { GroupPostComment } from "../models/groupPostCommentModel.js";
 import { uploadFile, deleteFile } from "../middleware/handleFile.js";
 import {
@@ -330,6 +331,9 @@ export const deletePost = async (req, res) => {
 		if (postFilePath !== "") {
 			await deleteFile(postFilePath);
 		}
+
+		// delete report if got any
+		await Report.deleteMany({ targetId: postId, status: "Pending" });
 
 		res.status(200).json({ msg: "Success" });
 	} catch (err) {

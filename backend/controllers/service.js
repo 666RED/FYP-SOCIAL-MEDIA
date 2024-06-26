@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 import { Service } from "../models/serviceModel.js";
 import { User } from "../models/userModel.js";
 import { uploadFile, deleteFile } from "../middleware/handleFile.js";
+import { Report } from "../models/reportModel.js";
 
 export const createNewService = async (req, res) => {
 	try {
@@ -28,6 +29,8 @@ export const createNewService = async (req, res) => {
 
 		res.status(201).json({ msg: "Success" });
 	} catch (err) {
+		console.log(err);
+
 		res.status(500).json({ error: err.message });
 	}
 };
@@ -339,6 +342,9 @@ export const removeService = async (req, res) => {
 
 		// remove image
 		await deleteFile(removedService.servicePosterImagePath);
+
+		// delete report if got any
+		await Report.deleteMany({ targetId: serviceId, status: "Pending" });
 
 		res.status(200).json({ msg: "Success" });
 	} catch (err) {

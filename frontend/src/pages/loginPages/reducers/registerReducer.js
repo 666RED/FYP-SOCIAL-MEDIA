@@ -8,6 +8,7 @@ export const INITIAL_STATE = {
 	validPhoneNumber: true,
 	validEmail: true,
 	loading: false,
+	discardChanges: false,
 };
 
 export const registerReducer = (state, action) => {
@@ -16,30 +17,35 @@ export const registerReducer = (state, action) => {
 			return {
 				...state,
 				name: action.payload,
+				discardChanges: true,
 			};
 		}
 		case "SET_GENDER": {
 			return {
 				...state,
 				gender: action.payload,
+				discardChanges: true,
 			};
 		}
 		case "SET_EMAIL": {
 			return {
 				...state,
 				email: action.payload,
+				discardChanges: true,
 			};
 		}
 		case "SET_PHONE_NUMBER": {
 			return {
 				...state,
 				phoneNumber: action.payload,
+				discardChanges: true,
 			};
 		}
 		case "SET_PASSWORD": {
 			return {
 				...state,
 				password: action.payload,
+				discardChanges: true,
 			};
 		}
 		case "TOGGLE_PASSWORD": {

@@ -2,8 +2,8 @@ import { Post } from "../models/postModel.js";
 import { Comment } from "../models/commentModel.js";
 import { User } from "../models/userModel.js";
 import { GroupPost } from "../models/groupPostModel.js";
+import { Report } from "../models/reportModel.js";
 import { CampusCondition } from "../models/campusConditionModel.js";
-import { Group } from "../models/groupModel.js";
 import { formatDateTime } from "../usefulFunction.js";
 import mongoose from "mongoose";
 
@@ -336,6 +336,9 @@ export const deletePost = async (req, res) => {
 			return res.status(400).json({ msg: "Fail to delete comments" });
 		}
 
+		// delete report if got any
+		await Report.deleteMany({ targetId: postId, status: "Pending" });
+
 		res.status(200).json({ msg: "Success" });
 	} catch (err) {
 		console.log(err);
@@ -363,10 +366,6 @@ export const getHomePosts = async (req, res) => {
 		const excludedConditionIds = posts
 			.filter((post) => post.type === "Condition")
 			.map((post) => new mongoose.Types.ObjectId(post.id));
-
-		console.log(excludedFriendPostIds);
-		console.log(excludedGroupPostIds);
-		console.log(excludedConditionIds);
 
 		const user = await User.findById(userId);
 
@@ -460,8 +459,9 @@ export const getHomePosts = async (req, res) => {
 
 		// randomly pick
 		combinedPosts = combinedPosts
-			.sort(() => 0.5 - Math.random())
-			.slice(0, returnLimit);
+			.sort(() => 0.5 - Math.random()) // Randomize order
+			.slice(0, returnLimit) // Limit to returnLimit number of posts
+			.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)); // Sort by createdAt in descending order
 
 		if (!combinedPosts.length) {
 			return res.status(200).json({ msg: "No post" });
@@ -488,8 +488,6 @@ export const getHomePosts = async (req, res) => {
 
 		res.status(200).json({ msg: "Success", returnedPosts: combinedPosts });
 	} catch (err) {
-		console.log(err);
-
 		res.status(500).json({ error: err.message });
 	}
 };

@@ -9,7 +9,6 @@ import FormHeader from "../../components/FormHeader.jsx";
 import { registerReducer, INITIAL_STATE } from "./reducers/registerReducer.js";
 import { ACTION_TYPES } from "./actionTypes/registerActionTypes.js";
 import { ServerContext } from "../../App.js";
-import { clearState } from "./reducers/loginSlice.js";
 
 const RegisterForm = ({ setDisplayRegForm }) => {
 	const serverURL = useContext(ServerContext);
@@ -84,7 +83,6 @@ const RegisterForm = ({ setDisplayRegForm }) => {
 							),
 						}
 					);
-					loginDispatch(clearState());
 					dispatch({ type: ACTION_TYPES.SUGGESS_REGISTER });
 					setDisplayRegForm(false);
 				} else if (msg === "Fail to register user") {
@@ -115,6 +113,7 @@ const RegisterForm = ({ setDisplayRegForm }) => {
 					<FormHeader
 						title="Register"
 						closeFunction={() => dispatch(setDisplayRegForm(false))}
+						discardChanges={state.discardChanges}
 					/>
 					{/* NAME */}
 					<label htmlFor="register-name">Name:</label>

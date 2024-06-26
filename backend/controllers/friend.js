@@ -25,11 +25,10 @@ export const getFriends = async (req, res) => {
 		);
 
 		const friendsIds = Array.from(user.userFriendsMap.keys());
-		const friendsToFetch = friendsIds.filter(
-			(friendId) => !excludedFriends.includes(friendId)
-		);
 
-		const friendsData = await User.find({ _id: { $in: friendsToFetch } })
+		const friendsData = await User.find({
+			_id: { $in: friendsIds, $nin: excludedFriends },
+		})
 			.limit(limit)
 			.select("-userPassword -verificationCode -__v") // Projection to exclude sensitive fields
 			.populate({
@@ -64,18 +63,14 @@ export const getSearchedFriends = async (req, res) => {
 			return res.status(404).json({ msg: "User not found" });
 		}
 
-		const friendsMap = user.userFriendsMap;
+		const friendsIds = Array.from(user.userFriendsMap.keys());
 
 		const excludedFriends = friendIds.map(
 			(id) => new mongoose.Types.ObjectId(id)
 		);
 
-		const friendsToFetch = Array.from(friendsMap.keys()).filter(
-			(friendId) => !excludedFriends.includes(friendId)
-		);
-
 		const friendsData = await User.find({
-			_id: { $in: friendsToFetch },
+			_id: { $in: friendsIds, $nin: excludedFriends },
 			userName: { $regex: new RegExp(searchText, "i") },
 		})
 			.limit(limit)
@@ -100,6 +95,8 @@ export const getSearchedFriends = async (req, res) => {
 
 		res.status(200).json({ msg: "Success", returnFriendsArr });
 	} catch (err) {
+		console.log(err);
+
 		res.status(500).json({ error: err.message });
 	}
 };

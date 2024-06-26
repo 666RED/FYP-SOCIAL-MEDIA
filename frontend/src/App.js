@@ -201,31 +201,11 @@ function App() {
 								noti.id === id ? { id, ...data } : noti
 							)
 						);
-						switch (data.action) {
-							case "Rate up": {
-								enqueueSnackbar(
-									`${data.userName} rated up on your campus condition`,
-									snackBarSetting
-								);
-								break;
-							}
-							case "Rate down": {
-								enqueueSnackbar(
-									`${data.userName} rated down on your campus condition`,
-									snackBarSetting
-								);
-								break;
-							}
-						}
 					} else if (change.type === "removed") {
 						setNotifications((prevNotifications) =>
 							prevNotifications.filter((noti) => noti.id !== id)
 						);
 					}
-					// setNotifications((prevNotifications) => [
-					// 	{ id, ...data },
-					// 	...prevNotifications,
-					// ]);
 				}
 			});
 

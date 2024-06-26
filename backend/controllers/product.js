@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 import { Product } from "../models/productModel.js";
 import { User } from "../models/userModel.js";
 import { uploadFile, deleteFile } from "../middleware/handleFile.js";
+import { Report } from "../models/reportModel.js";
 
 export const createNewProduct = async (req, res) => {
 	try {
@@ -211,6 +212,9 @@ export const removeProduct = async (req, res) => {
 
 		// remove image
 		await deleteFile(removedProduct.productImagePath);
+
+		// delete report if got any
+		await Report.deleteMany({ targetId: productId, status: "Pending" });
 
 		res.status(200).json({ msg: "Success" });
 	} catch (err) {
