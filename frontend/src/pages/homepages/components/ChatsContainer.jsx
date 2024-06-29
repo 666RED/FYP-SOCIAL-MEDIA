@@ -107,13 +107,15 @@ const ChatsContainer = ({ showChats, setShowChats }) => {
 
 	return (
 		<div
-			className={`absolute bg-white top-10 shadow-[rgba(0,0,0,0.1)_0px_0px_7px_7px] rounded-xl sm:min-w-[30rem] sm:-right-12 min-w-[18rem] -right-12 min-h-[6rem] max-h-[15rem] overflow-x-hidden overflow-y-auto messages ${
+			className={`absolute bg-white top-10 shadow-[rgba(0,0,0,0.1)_0px_0px_7px_7px] rounded-xl sm:min-w-[30rem] sm:-right-12 min-w-[18rem] -right-12 min-h-[6rem] max-h-[35rem] overflow-x-hidden overflow-y-auto messages ${
 				showChats ? "visible" : "hidden"
 			}`}
 			ref={containerRef}
 		>
 			{/* TITLE */}
-			<h2 className="font-semibold sticky top-0 z-40 py-1 indent-2">Chats</h2>
+			<h2 className="font-semibold sticky top-0 z-40 py-1 indent-2 bg-white">
+				Chats
+			</h2>
 			{/* CHATS */}
 			{loading ? (
 				<Loader />
