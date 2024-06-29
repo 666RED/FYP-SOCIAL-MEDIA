@@ -96,12 +96,22 @@ const Homepage = () => {
 		};
 	}, []);
 
-	const toggleShowNotification = () => {
-		setShowNotifications((prev) => !prev);
-	};
-
-	const toggleShowChats = () => {
-		setShowChats((prev) => !prev);
+	const handleShow = (item) => {
+		if (item === "Chats") {
+			if (showChats) {
+				setShowChats(false);
+			} else {
+				setShowChats(true);
+			}
+			setShowNotifications(false);
+		} else {
+			if (showNotifications) {
+				setShowNotifications(false);
+			} else {
+				setShowNotifications(true);
+			}
+			setShowChats(false);
+		}
 	};
 
 	return user && token ? (
@@ -130,10 +140,18 @@ const Homepage = () => {
 						{/* CHAT ICON */}
 						<div className="relative">
 							<IoChatbubbleEllipses
-								className="icon"
-								onClick={toggleShowChats}
+								className="icon relative"
+								onClick={() => handleShow("Chats")}
+								id="chat-icon"
 							/>
-							<p className="absolute bg-red-600 rounded-full text-white px-1 text-xs -right-1 -top-1">
+							{showChats && (
+								<div className="absolute left-0 right-0 bottom-[-4px] h-[2px] bg-blue-600"></div>
+							)}
+
+							<p
+								className="absolute bg-red-600 rounded-full text-white px-1 text-xs -right-1 -top-1 cursor-pointer"
+								onClick={() => handleShow("Chats")}
+							>
 								{chats.filter(
 									(chat) =>
 										!chat.viewed &&
@@ -146,30 +164,33 @@ const Homepage = () => {
 									).length}
 							</p>
 							{/* CHATS CONTAINER */}
-							{showChats && (
-								<ChatsContainer
-									showChats={showChats}
-									toggleShowChats={toggleShowChats}
-								/>
-							)}
+							<ChatsContainer
+								showChats={showChats}
+								setShowChats={setShowChats}
+							/>
 						</div>
 						{/* NOTIFICATION ICON*/}
-						<div className="relative">
+						<div className="relative mx-3">
 							<GoBellFill
-								className="icon mx-3"
-								onClick={toggleShowNotification}
+								className="icon"
+								onClick={() => handleShow("Notifications")}
+								id="notification-icon"
 							/>
-							<p className="absolute bg-red-600 rounded-full text-white px-1 text-xs right-1 -top-1">
+							{showNotifications && (
+								<div className="absolute left-0 right-0 bottom-[-4px] h-[2px] bg-blue-600"></div>
+							)}
+							<p
+								className="absolute bg-red-600 rounded-full text-white px-1 text-xs -right-2 -top-1 cursor-pointer"
+								onClick={() => handleShow("Notifications")}
+							>
 								{notifications.filter((noti) => !noti.viewed).length !== 0 &&
 									notifications.filter((noti) => !noti.viewed).length}
 							</p>
 							{/* NOTIFICATION CONTAINER */}
-							{showNotifications && (
-								<NotificationContainer
-									showNotifications={showNotifications}
-									toggleShowNotification={toggleShowNotification}
-								/>
-							)}
+							<NotificationContainer
+								showNotifications={showNotifications}
+								setShowNotifications={setShowNotifications}
+							/>
 						</div>
 					</div>
 				</div>

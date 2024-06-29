@@ -147,11 +147,11 @@
 		@apply md:max-h-[26.5rem] min-[500px]:max-h-[23.5rem] max-h-[31.5rem];
 	}
 
-	#messages::-webkit-scrollbar {
+	.messages::-webkit-scrollbar {
 		width: 5px;
 	}
 
-	#messages::-webkit-scrollbar-thumb {
+	.messages::-webkit-scrollbar-thumb {
 		background: #cecdcd;
 	}
 }

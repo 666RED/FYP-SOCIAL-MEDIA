@@ -1,7 +1,9 @@
 import { React } from "react";
-import { FaPhoneAlt } from "react-icons/fa";
+import { useSelector } from "react-redux";
+import ContactButton from "../pages/marketplacePages/pages/mainPages/components/ContactButton.jsx";
 
 const SellerInfo = ({ state, handleOnClick, name, isAdmin = false }) => {
+	const { user } = useSelector((store) => store.auth);
 	return (
 		<div>
 			<h3 className="mb-2">{name}</h3>
@@ -13,17 +15,20 @@ const SellerInfo = ({ state, handleOnClick, name, isAdmin = false }) => {
 					className={`rounded-full border-[2.5px] ${state.frameColor} w-14 mr-2 md:w-20`}
 				/>
 				{/* SELLER NAME */}
-				<div>
+				<div className="flex flex-col">
 					<p
 						className={`${!isAdmin && "cursor-pointer hover:opacity-80"}`}
 						onClick={!isAdmin ? handleOnClick : null}
 					>
 						{state.userName}
 					</p>
-					<div className="flex items-center">
-						<FaPhoneAlt className="mr-2" />
-						<p>{state.contactNumber}</p>
-					</div>
+					{/* CONTACT BUTTON */}
+					{user._id !== state.userId && (
+						<ContactButton
+							contactUserId={state.userId}
+							path={window.location.pathname}
+						/>
+					)}
 				</div>
 			</div>
 		</div>

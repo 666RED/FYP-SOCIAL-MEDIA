@@ -16,6 +16,7 @@ import { ACTION_TYPES } from "../actionTypes/userProfileActionTypes.js";
 import { ServerContext } from "../../../App.js";
 import { setShowAddNewPostForm } from "../../../features/postSlice.js";
 import { setUserFriendsMap } from "../../../features/authSlice.js";
+import ContactButton from "../../marketplacePages/pages/mainPages/components/ContactButton.jsx";
 
 const UserProfile = ({ isFriend }) => {
 	const { userId } = useParams();
@@ -479,13 +480,6 @@ const UserProfile = ({ isFriend }) => {
 		}
 	};
 
-	const handleOnClick = () => {
-		const previousArr = JSON.parse(localStorage.getItem("previous")) || [];
-		previousArr.push(`/profile/${userId}`);
-		localStorage.setItem("previous", JSON.stringify(previousArr));
-		navigate(`/chat/${userId}`);
-	};
-
 	return (
 		<div>
 			{state.loading && <Spinner />}
@@ -594,19 +588,18 @@ const UserProfile = ({ isFriend }) => {
 							))}
 						{/* VIEW FRIENDS BUTTON */}
 						<button
-							className="btn-gray profile-btn my-2 text-sm sm:text-base "
+							className="btn-gray profile-btn mt-2 text-sm sm:text-base "
 							onClick={() => navigate(`/profile/view-friends/${userId}`)}
 						>
 							View Friends
 						</button>
-						{/* MESSAGE BUTTON */}
+						{/* CHAT BUTTON */}
 						{!state.isUser && isFriend && (
-							<button
-								className="btn-dark-blue text-sm sm:text-base"
-								onClick={handleOnClick}
-							>
-								Chat
-							</button>
+							<ContactButton
+								contactUserId={userId}
+								path={`/profile/${userId}`}
+								text="Chat"
+							/>
 						)}
 					</div>
 				</div>

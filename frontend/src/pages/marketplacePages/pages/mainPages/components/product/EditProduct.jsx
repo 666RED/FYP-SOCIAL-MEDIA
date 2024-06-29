@@ -199,7 +199,7 @@ const EditProduct = () => {
 	};
 
 	return user && token ? (
-		<div className="page-layout-with-back-arrow mb-5 relative">
+		<div className="page-layout-with-back-arrow pb-5 relative">
 			{/* HEADER */}
 			<DirectBackArrowHeader
 				destination="/marketplace"

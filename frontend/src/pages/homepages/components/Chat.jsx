@@ -1,4 +1,4 @@
-import { React, useContext } from "react";
+import { React, useContext, useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 import { useSnackbar } from "notistack";
 import { useNavigate } from "react-router-dom";
@@ -11,6 +11,19 @@ const Chat = ({ chat }) => {
 	const { enqueueSnackbar } = useSnackbar();
 	const navigate = useNavigate();
 	const { user, token } = useSelector((store) => store.auth);
+	const [windowWidth, setWindowWidth] = useState(window.innerWidth);
+
+	useEffect(() => {
+		const handleResize = () => {
+			setWindowWidth(window.innerWidth);
+		};
+
+		window.addEventListener("resize", handleResize);
+
+		return () => {
+			window.removeEventListener("resize", handleResize);
+		};
+	}, []);
 
 	const handleNavigate = async () => {
 		try {
@@ -38,7 +51,6 @@ const Chat = ({ chat }) => {
 			} else {
 				console.log("Fail to update chats viewed");
 			}
-
 			const friendId =
 				chat.sender.toString() === user._id.toString()
 					? chat.receiver
@@ -83,8 +95,12 @@ const Chat = ({ chat }) => {
 								: "text-gray-500"
 						}`}
 					>
-						{chat.message.length > 40
-							? `${chat.message.slice(0, 41)}...`
+						{windowWidth >= 640
+							? chat.message.length > 35
+								? `${chat.message.slice(0, 36)}...`
+								: chat.message
+							: chat.message.length > 15
+							? `${chat.message.slice(0, 16)}...`
 							: chat.message}
 					</p>
 					{/* TIME */}

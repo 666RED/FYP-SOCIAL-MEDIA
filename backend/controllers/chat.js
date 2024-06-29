@@ -52,8 +52,6 @@ export const getChatsProfile = async (req, res) => {
 			});
 		}
 
-		console.log(returnedChats);
-
 		res.status(200).json({ msg: "Success", returnedChats });
 	} catch (err) {
 		res.status(500).json({ error: err.message });

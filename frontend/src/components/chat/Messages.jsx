@@ -117,7 +117,7 @@ const Messages = ({ imagePath, scroll }) => {
 							behavior: "smooth",
 							block: "end",
 						});
-					}, 100);
+					}, 300);
 				}
 			}
 
@@ -170,8 +170,7 @@ const Messages = ({ imagePath, scroll }) => {
 
 	return (
 		<div
-			className={`overflow-y-auto px-2 bg-[#365486] pt-2 flex-1 relative`}
-			id="messages"
+			className={`overflow-y-auto px-2 bg-[#365486] pt-2 flex-1 relative messages`}
 		>
 			{messages.length > 0 ? (
 				// MESSAGES

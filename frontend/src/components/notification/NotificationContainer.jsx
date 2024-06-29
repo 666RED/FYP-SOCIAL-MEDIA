@@ -1,22 +1,19 @@
-import { React, useContext, useEffect, useState } from "react";
+import { React, useContext, useEffect, useState, useRef } from "react";
 import { useSelector } from "react-redux";
 import { useSnackbar } from "notistack";
-import { MdCancel } from "react-icons/md";
 import Notification from "./Notification.jsx";
 import Loader from "../Spinner/Loader.jsx";
 import { NotificationContext } from "../../App.js";
 import { ServerContext } from "../../App.js";
 
-const NotificationContainer = ({
-	showNotifications,
-	toggleShowNotification,
-}) => {
+const NotificationContainer = ({ showNotifications, setShowNotifications }) => {
 	const serverURL = useContext(ServerContext);
 	const notifications = useContext(NotificationContext);
 	const [notis, setNotis] = useState([]);
 	const [loading, setLoading] = useState(false);
 	const { token } = useSelector((store) => store.auth);
 	const { enqueueSnackbar } = useSnackbar();
+	const containerRef = useRef();
 
 	useEffect(() => {
 		const getNotifications = async () => {
@@ -103,12 +100,39 @@ const NotificationContainer = ({
 		getNotifications();
 	}, [notifications]);
 
+	// close container
+	useEffect(() => {
+		const handleClickOutside = (event) => {
+			if (
+				containerRef.current &&
+				!containerRef.current.contains(event.target) &&
+				!(
+					document.getElementById("notification-icon") &&
+					document.getElementById("notification-icon").contains(event.target)
+				)
+			) {
+				setShowNotifications(false);
+			}
+		};
+
+		document.addEventListener("mousedown", handleClickOutside);
+
+		return () => {
+			document.removeEventListener("mousedown", handleClickOutside);
+		};
+	}, []);
+
 	return (
-		<div className="absolute right-0 bg-white top-10 shadow-2xl rounded-xl min-w-[30rem] min-h-[7rem] overflow-hidden">
-			<div className="ml-2 mt-2 flex items-center sticky top-0 bg-white z-40">
-				{/* TITLE */}
-				<h2 className="font-semibold">Notifications</h2>
-			</div>
+		<div
+			className={`absolute -right-3 bg-white top-10 shadow-[rgba(0,0,0,0.1)_0px_0px_7px_7px] rounded-xl sm:min-w-[30rem] min-w-[18rem] min-h-[6rem] max-h-[35rem] overflow-x-hidden overflow-y-auto messages ${
+				showNotifications ? "visible" : "hidden"
+			}`}
+			ref={containerRef}
+		>
+			{/* TITLE */}
+			<h2 className="font-semibold indent-2 py-1 sticky top-0 bg-white z-40">
+				Notifications
+			</h2>
 			{/* NOTIFICATIONS */}
 			{loading ? (
 				<Loader />

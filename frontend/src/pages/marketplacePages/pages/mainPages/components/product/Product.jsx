@@ -1,25 +1,18 @@
-import { React, useContext } from "react";
+import { React } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
-import { FaPhoneAlt, FaDollarSign } from "react-icons/fa";
+import { FaDollarSign } from "react-icons/fa";
 import { MdOutlineProductionQuantityLimits } from "react-icons/md";
-import { ServerContext } from "../../../../../../App.js";
+import ContactButton from "../ContactButton.jsx";
+import EditButton from "../EditButton.jsx";
+import ViewButton from "../ViewButton.jsx";
 
 const Product = ({ product }) => {
-	const serverURL = useContext(ServerContext);
 	const navigate = useNavigate();
 	const { user } = useSelector((store) => store.auth);
 
-	const path =
-		product.userId === user._id
-			? `/marketplace/product/edit-product/${product._id}`
-			: `/marketplace/product/view-product/${product._id}`;
-
 	return (
-		<div
-			className="col-span-6 md:col-span-4 lg:col-span-3 rounded-xl p-3 my-2 border shadow-xl border-gray-300 marketplace-card flex flex-col cursor-pointer hover:bg-gray-200"
-			onClick={() => navigate(path)}
-		>
+		<div className="col-span-6 md:col-span-4 lg:col-span-3 rounded-xl p-3 my-2 border shadowDesign border-gray-300 marketplace-card flex flex-col">
 			{/* PRODUCT IMAGE */}
 			<img
 				src={product.productImagePath}
@@ -42,11 +35,15 @@ const Product = ({ product }) => {
 					<p className="ml-2">{product.productQuantity} remaining</p>
 				</div>
 			)}
-			{/* CONTACT NUMBER */}
-			<div className="flex items-center">
-				<FaPhoneAlt className="mr-2" />
-				<p>{product.contactNumber}</p>
-			</div>
+			{/* VIEW BUTTON */}
+			<ViewButton path={`/marketplace/product/view-product/${product._id}`} />
+			{user._id !== product.userId ? (
+				// CONTACT BUTTON
+				<ContactButton contactUserId={product.userId} />
+			) : (
+				// EDIT BUTTON
+				<EditButton path={`/marketplace/product/edit-product/${product._id}`} />
+			)}
 		</div>
 	);
 };

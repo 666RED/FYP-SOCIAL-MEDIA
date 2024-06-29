@@ -1,4 +1,4 @@
-import React, { useState, useContext, useEffect } from "react";
+import React, { useState, useContext, useEffect, useRef } from "react";
 import { useSelector } from "react-redux";
 import { useSnackbar } from "notistack";
 import { MdCancel } from "react-icons/md";
@@ -7,13 +7,14 @@ import Chat from "./Chat.jsx";
 import { ServerContext } from "../../../App.js";
 import { MessageContext } from "../../../App.js";
 
-const MessagesContainer = ({ showChats, toggleShowChats }) => {
+const ChatsContainer = ({ showChats, setShowChats }) => {
 	const serverURL = useContext(ServerContext);
 	const { chats } = useContext(MessageContext);
 	const [loading, setLoading] = useState(false);
 	const [allChats, setAllChats] = useState([]);
 	const { token, user } = useSelector((store) => store.auth);
 	const { enqueueSnackbar } = useSnackbar();
+	const containerRef = useRef();
 
 	useEffect(() => {
 		const getChats = async () => {
@@ -80,14 +81,39 @@ const MessagesContainer = ({ showChats, toggleShowChats }) => {
 		};
 
 		getChats();
+	}, [chats]);
+
+	// close container
+	useEffect(() => {
+		const handleClickOutside = (event) => {
+			if (
+				containerRef.current &&
+				!containerRef.current.contains(event.target) &&
+				!(
+					document.getElementById("chat-icon") &&
+					document.getElementById("chat-icon").contains(event.target)
+				)
+			) {
+				setShowChats(false);
+			}
+		};
+
+		document.addEventListener("mousedown", handleClickOutside);
+
+		return () => {
+			document.removeEventListener("mousedown", handleClickOutside);
+		};
 	}, []);
 
 	return (
-		<div className="absolute right-0 bg-white top-10 shadow-2xl rounded-xl min-w-[30rem] min-h-[7rem] overflow-hidden">
-			<div className="ml-2 mt-2 flex items-center sticky top-0 z-40">
-				{/* TITLE */}
-				<h2 className="font-semibold">Chats</h2>
-			</div>
+		<div
+			className={`absolute bg-white top-10 shadow-[rgba(0,0,0,0.1)_0px_0px_7px_7px] rounded-xl sm:min-w-[30rem] sm:-right-12 min-w-[18rem] -right-12 min-h-[6rem] max-h-[15rem] overflow-x-hidden overflow-y-auto messages ${
+				showChats ? "visible" : "hidden"
+			}`}
+			ref={containerRef}
+		>
+			{/* TITLE */}
+			<h2 className="font-semibold sticky top-0 z-40 py-1 indent-2">Chats</h2>
 			{/* CHATS */}
 			{loading ? (
 				<Loader />
@@ -100,4 +126,4 @@ const MessagesContainer = ({ showChats, toggleShowChats }) => {
 	);
 };
 
-export default MessagesContainer;
+export default ChatsContainer;

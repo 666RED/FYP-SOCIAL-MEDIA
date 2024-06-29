@@ -209,7 +209,7 @@ const Services = ({ getServicePath, searchServicePath, setLoading }) => {
 			{isLoadingServices ? (
 				<Loader />
 			) : servicesArr.length > 0 ? (
-				<div className="grid grid-cols-12 gap-2 px-2 max-img-height overflow-y-auto marketplace-content-height mb-2">
+				<div className="grid grid-cols-12 gap-4 px-2 max-img-height overflow-y-auto marketplace-content-height mb-2">
 					{servicesArr.map((service) => (
 						<Service key={service._id} service={service} />
 					))}

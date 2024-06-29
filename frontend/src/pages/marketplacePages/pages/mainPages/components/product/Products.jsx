@@ -210,7 +210,7 @@ const Products = ({ getProductPath, searchProductPath, setLoading }) => {
 			{isLoadingProducts ? (
 				<Loader />
 			) : productsArr.length > 0 ? (
-				<div className="grid grid-cols-12 gap-2 px-2 max-img-height overflow-y-auto marketplace-content-height mb-2">
+				<div className="grid grid-cols-12 gap-4 px-2 max-img-height overflow-y-auto marketplace-content-height mb-2">
 					{productsArr.map((product) => (
 						<Product key={product._id} product={product} />
 					))}

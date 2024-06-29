@@ -177,6 +177,8 @@ export const getService = async (req, res) => {
 
 		const user = await User.findById(service.userId);
 
+		console.log(user);
+
 		let userName = "";
 		let userProfileImagePath = "";
 		let frameColor = "";

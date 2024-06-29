@@ -326,7 +326,7 @@ const CreateNewItem = () => {
 	return user && token ? (
 		<form
 			onSubmit={handleSubmit}
-			className="page-layout-with-back-arrow"
+			className="page-layout-with-back-arrow pb-2"
 			autoComplete="off"
 		>
 			{loading && <Spinner />}

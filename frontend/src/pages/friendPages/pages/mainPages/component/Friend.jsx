@@ -3,11 +3,11 @@ import { useSelector, useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { useSnackbar } from "notistack";
 import { FaMale, FaFemale } from "react-icons/fa";
-import FriendStatusButton from "../../../../../components/FriendStatusButton.jsx";
 import Spinner from "../../../../../components/Spinner/Spinner.jsx";
 import { removeFriend } from "../../../../../features/friendSlice.js";
 import { ServerContext } from "../../../../../App.js";
 import { setSearchText } from "../../../../../features/searchSlice.js";
+import ContactButton from "../../../../marketplacePages/pages/mainPages/components/ContactButton.jsx";
 
 const Friend = ({ friend }) => {
 	const sliceDispatch = useDispatch();
@@ -112,14 +112,16 @@ const Friend = ({ friend }) => {
 			<div className="col-span-4 md:w-full">
 				{/* VIEW PROFILE BUTTON */}
 				<button
-					className="btn-gray w-full mb-2 text-sm sm:text-base"
+					className="btn-gray w-full text-sm sm:text-base"
 					onClick={handleOnClick}
 				>
 					View Profile
 				</button>
+				{/* CONTACT BUTTON */}
+				<ContactButton contactUserId={friend._id} path="/friend" text="Chat" />
 				{/* UNFRIEND BUTTON */}
 				<button
-					className="btn-red text-sm sm:text-base w-full"
+					className="btn-red text-sm sm:text-base w-full mt-2"
 					onClick={handleRemoveFriend}
 				>
 					Unfriend

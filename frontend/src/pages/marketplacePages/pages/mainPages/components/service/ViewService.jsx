@@ -84,7 +84,7 @@ const ViewService = () => {
 	};
 
 	return user && token ? (
-		<div className="page-layout-with-back-arrow mb-5">
+		<div className="page-layout-with-back-arrow pb-5 relative">
 			{/* REPORT FORM */}
 			{state.showReportForm && (
 				<ReportForm
@@ -112,10 +112,12 @@ const ViewService = () => {
 				/>
 			</form>
 			{/* REPORT ICON */}
-			<MdReport
-				className="text-3xl cursor-pointer hover:opacity-80 text-red-600 absolute top-1 right-1"
-				onClick={handleReport}
-			/>
+			{user._id !== state.userId && (
+				<MdReport
+					className="text-3xl cursor-pointer hover:opacity-80 text-red-600 absolute top-1 right-1"
+					onClick={handleReport}
+				/>
+			)}
 		</div>
 	) : (
 		<Error />

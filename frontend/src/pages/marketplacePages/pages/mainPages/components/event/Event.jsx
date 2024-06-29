@@ -1,31 +1,19 @@
-import { React, useContext } from "react";
+import { React } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
-import {
-	FaCalendarAlt,
-	FaPlayCircle,
-	FaFlagCheckered,
-	FaPhoneAlt,
-} from "react-icons/fa";
+import { FaCalendarAlt, FaPlayCircle, FaFlagCheckered } from "react-icons/fa";
 import { IoMdTime } from "react-icons/io";
 import { IoLocationSharp } from "react-icons/io5";
-import { ServerContext } from "../../../../../../App.js";
+import ViewButton from "../ViewButton.jsx";
+import ContactButton from "../ContactButton.jsx";
+import EditButton from "../EditButton.jsx";
 
 const Event = ({ event }) => {
-	const serverURL = useContext(ServerContext);
 	const navigate = useNavigate();
 	const { user } = useSelector((store) => store.auth);
 
-	const path =
-		event.userId === user._id
-			? `/marketplace/event/edit-event/${event._id}`
-			: `/marketplace/event/view-event/${event._id}`;
-
 	return (
-		<div
-			className="col-span-6 md:col-span-4 lg:col-span-3 rounded-xl p-2 my-2 border shadow-xl border-gray-300 marketplace-card flex flex-col cursor-pointer hover:bg-gray-200"
-			onClick={() => navigate(path)}
-		>
+		<div className="col-span-6 md:col-span-4 lg:col-span-3 rounded-xl p-2 my-2 border shadowDesign border-gray-300 marketplace-card flex flex-col">
 			{/* EVENT IMAGE */}
 			<img
 				src={event.eventPosterImagePath}
@@ -69,11 +57,15 @@ const Event = ({ event }) => {
 				<IoLocationSharp />
 				<p className="ml-2">{event.eventVenue}</p>
 			</div>
-			{/* CONTACT NUMBER */}
-			<div className="flex items-center">
-				<FaPhoneAlt />
-				<p className="ml-2">{event.contactNumbers[0]}</p>
-			</div>
+			{/* VIEW BUTTON */}
+			<ViewButton path={`/marketplace/event/view-event/${event._id}`} />
+			{user._id !== event.userId ? (
+				// CONTACT BUTTON
+				<ContactButton contactUserId={event.userId} />
+			) : (
+				// EDIT BUTTON
+				<EditButton path={`/marketplace/event/edit-event/${event._id}`} />
+			)}
 		</div>
 	);
 };
