@@ -41,7 +41,7 @@ import { createNewNote } from "./controllers/note.js";
 import { confirmation } from "./controllers/auth.js";
 
 // change here before publish
-const isPublish = false;
+const isPublish = true;
 
 export const backendServer = isPublish
 	? "https://fyp-fsktm-connect.onrender.com"
