@@ -3,6 +3,12 @@
 @tailwind utilities;
 
 @layer base {
+	html,
+	body,
+	#root {
+		height: 100%;
+	}
+
 	h1 {
 		@apply text-3xl;
 	}
@@ -33,6 +39,9 @@
 	}
 	.btn-yellow {
 		@apply bg-yellow-400 text-white rounded-lg md:text-xl hover:opacity-80 transition py-2 px-3;
+	}
+	.btn-dark-blue {
+		@apply bg-blue-900 text-white rounded-lg md:text-xl hover:opacity-80 transition py-2 px-3;
 	}
 	.main-container {
 		@apply absolute top-0 bottom-0 left-0 right-0 flex justify-center items-center;
@@ -97,11 +106,11 @@
 		color: black; /* Custom text color */
 	}
 
-	.notifications {
+	.rightSlideContainer {
 		@apply fixed z-30 top-0 right-0 bottom-0 w-full bg-white transition-all overflow-y-auto duration-500 translate-x-full;
 	}
 
-	.notifications.show {
+	.rightSlideContainer.show {
 		@apply translate-x-0;
 	}
 
@@ -138,13 +147,11 @@
 		@apply md:max-h-[26.5rem] min-[500px]:max-h-[23.5rem] max-h-[31.5rem];
 	}
 
-	#example {
-		-ms-overflow-style: none; /* Internet Explorer 10+ */
-		scrollbar-width: none; /* Firefox */
+	#messages::-webkit-scrollbar {
+		width: 5px;
 	}
 
-	#example::-webkit-scrollbar {
-		display: none; /* Safari and Chrome */
-		width: 2em;
+	#messages::-webkit-scrollbar-thumb {
+		background: #cecdcd;
 	}
 }

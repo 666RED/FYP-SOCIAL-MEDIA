@@ -176,7 +176,7 @@ const UserProfilePage = () => {
 			)}
 			<div className="page-design">
 				{/* USER PROFILE */}
-				<UserProfile />
+				<UserProfile isFriend={isFriend} />
 				<hr className="border-4 border-gray-400 my-4" />
 				{isFriend || user._id === userId ? (
 					<div>

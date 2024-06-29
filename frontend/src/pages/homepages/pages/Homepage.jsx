@@ -2,22 +2,26 @@ import { React, useContext, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useSnackbar } from "notistack";
 import { GiHamburgerMenu } from "react-icons/gi/index.js";
+import { IoChatbubbleEllipses } from "react-icons/io5";
 import { GoBellFill } from "react-icons/go";
 import NotificationContainer from "../../../components/notification/NotificationContainer.jsx";
-import { ServerContext } from "../../../App.js";
 import SideBar from "../../../components/Sidebar/SideBar.jsx";
 import Error from "../../../components/Error.jsx";
 import LoadMoreButton from "../../../components/LoadMoreButton.jsx";
 import Posts from "../components/Posts.jsx";
+import ChatsContainer from "../components/ChatsContainer.jsx";
 import {
 	resetState,
 	setHasPosts,
 	loadPosts,
 } from "../../../features/homeSlice.js";
 import { NotificationContext } from "../../../App.js";
+import { MessageContext } from "../../../App.js";
+import { ServerContext } from "../../../App.js";
 
 const Homepage = () => {
 	const notifications = useContext(NotificationContext);
+	const { chats } = useContext(MessageContext);
 	const serverURL = useContext(ServerContext);
 	const [extendSideBar, setExtendSideBar] = useState(false);
 	const [loadMore, setLoadMore] = useState(false);
@@ -29,6 +33,7 @@ const Homepage = () => {
 		(store) => store.home
 	);
 	const [showNotifications, setShowNotifications] = useState(false);
+	const [showChats, setShowChats] = useState(false);
 
 	const handleLoadMore = async () => {
 		try {
@@ -95,13 +100,12 @@ const Homepage = () => {
 		setShowNotifications((prev) => !prev);
 	};
 
+	const toggleShowChats = () => {
+		setShowChats((prev) => !prev);
+	};
+
 	return user && token ? (
 		<div className="py-2" id="example">
-			{/* NOTIFICATION CONTAINER */}
-			<NotificationContainer
-				showNotifications={showNotifications}
-				toggleShowNotification={toggleShowNotification}
-			/>
 			{/* SIDEBAR */}
 			<SideBar
 				selectedSection="Home"
@@ -122,16 +126,51 @@ const Homepage = () => {
 				</div>
 				{/* RIGHT HAND SIDE */}
 				<div className="flex items-center">
-					{/* NOTIFICATION ICON*/}
-					<div className="relative">
-						<GoBellFill
-							className="icon mr-3"
-							onClick={toggleShowNotification}
-						/>
-						<p className="absolute bg-red-600 rounded-full text-white px-1 text-xs right-1 -top-1">
-							{notifications.filter((noti) => !noti.viewed).length !== 0 &&
-								notifications.filter((noti) => !noti.viewed).length}
-						</p>
+					<div className="flex items-center">
+						{/* CHAT ICON */}
+						<div className="relative">
+							<IoChatbubbleEllipses
+								className="icon"
+								onClick={toggleShowChats}
+							/>
+							<p className="absolute bg-red-600 rounded-full text-white px-1 text-xs -right-1 -top-1">
+								{chats.filter(
+									(chat) =>
+										!chat.viewed &&
+										chat.sender.toString() !== user._id.toString()
+								).length !== 0 &&
+									chats.filter(
+										(chat) =>
+											!chat.viewed &&
+											chat.sender.toString() !== user._id.toString()
+									).length}
+							</p>
+							{/* CHATS CONTAINER */}
+							{showChats && (
+								<ChatsContainer
+									showChats={showChats}
+									toggleShowChats={toggleShowChats}
+								/>
+							)}
+						</div>
+						{/* NOTIFICATION ICON*/}
+						<div className="relative">
+							<GoBellFill
+								className="icon mx-3"
+								onClick={toggleShowNotification}
+							/>
+							<p className="absolute bg-red-600 rounded-full text-white px-1 text-xs right-1 -top-1">
+								{notifications.filter((noti) => !noti.viewed).length !== 0 &&
+									notifications.filter((noti) => !noti.viewed).length}
+							</p>
+							{/* NOTIFICATION CONTAINER */}
+							{showNotifications && (
+								<NotificationContainer
+									showNotifications={showNotifications}
+									toggleShowNotification={toggleShowNotification}
+								/>
+							)}
+						</div>
 					</div>
 				</div>
 			</div>

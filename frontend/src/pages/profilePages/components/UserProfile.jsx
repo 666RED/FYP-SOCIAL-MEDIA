@@ -17,7 +17,7 @@ import { ServerContext } from "../../../App.js";
 import { setShowAddNewPostForm } from "../../../features/postSlice.js";
 import { setUserFriendsMap } from "../../../features/authSlice.js";
 
-const UserProfile = () => {
+const UserProfile = ({ isFriend }) => {
 	const { userId } = useParams();
 
 	const sliceDispatch = useDispatch();
@@ -479,6 +479,13 @@ const UserProfile = () => {
 		}
 	};
 
+	const handleOnClick = () => {
+		const previousArr = JSON.parse(localStorage.getItem("previous")) || [];
+		previousArr.push(`/profile/${userId}`);
+		localStorage.setItem("previous", JSON.stringify(previousArr));
+		navigate(`/chat/${userId}`);
+	};
+
 	return (
 		<div>
 			{state.loading && <Spinner />}
@@ -547,6 +554,7 @@ const UserProfile = () => {
 							{state.name}
 						</p>
 					</div>
+					{/* BUTTON ROW */}
 					<div className="flex flex-col col-span-5 col-start-7">
 						{/* EDIT PROFILE BUTTON */}
 						{state.isUser && (
@@ -591,6 +599,15 @@ const UserProfile = () => {
 						>
 							View Friends
 						</button>
+						{/* MESSAGE BUTTON */}
+						{!state.isUser && isFriend && (
+							<button
+								className="btn-dark-blue text-sm sm:text-base"
+								onClick={handleOnClick}
+							>
+								Chat
+							</button>
+						)}
 					</div>
 				</div>
 				<hr />

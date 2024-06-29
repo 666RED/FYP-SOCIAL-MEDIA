@@ -1,14 +1,20 @@
 import {
 	doc,
+	addDoc,
 	deleteDoc,
 	updateDoc,
 	setDoc,
 	collection,
 	serverTimestamp,
+	query,
+	where,
+	getDocs,
+	writeBatch,
 } from "firebase/firestore";
 import { db } from "../firebase-config.js";
 
 const notificationRef = collection(db, "notifications");
+const messageRef = collection(db, "messages");
 
 /* POST AND COMMENT */
 export const likePost = async ({ userId, userName, postId, postUserId }) => {
@@ -448,8 +454,6 @@ export const addNewNote = async ({
 			await setDoc(docToNotify, notificationData);
 		}
 	} catch (err) {
-		console.log(err);
-
 		throw new Error("Failed to add new notes");
 	}
 };
@@ -489,8 +493,51 @@ export const updateViewedValue = async ({ id }) => {
 
 		await updateDoc(docToNotify, { viewed: true });
 	} catch (err) {
-		console.log(err);
+		throw new Error("Failed to update viewed values");
+	}
+};
 
+/* CHAT */
+export const addNewMessage = async ({
+	userId,
+	friendId,
+	userName,
+	message,
+}) => {
+	try {
+		const messageData = {
+			createdAt: serverTimestamp(),
+			sender: userId,
+			userName,
+			receiver: friendId,
+			message,
+			viewed: false,
+		};
+
+		await addDoc(messageRef, messageData);
+	} catch (err) {
+		throw new Error("Failed to send message");
+	}
+};
+
+export const updateChatsViewed = async ({ receiverId, senderId }) => {
+	try {
+		const messageRef = collection(db, "messages");
+		const q = query(
+			messageRef,
+			where("sender", "==", senderId),
+			where("receiver", "==", receiverId)
+		);
+		const querySnapshot = await getDocs(q);
+
+		const batch = writeBatch(db);
+		querySnapshot.forEach((document) => {
+			const docRef = doc(db, "messages", document.id);
+			batch.update(docRef, { viewed: true });
+		});
+
+		await batch.commit();
+	} catch (err) {
 		throw new Error("Failed to update viewed values");
 	}
 };

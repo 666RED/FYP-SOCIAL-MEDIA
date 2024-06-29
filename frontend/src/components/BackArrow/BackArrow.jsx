@@ -2,7 +2,7 @@ import { React } from "react";
 import { FaArrowLeft } from "react-icons/fa/index.js";
 import { useNavigate } from "react-router-dom";
 
-const BackArrow = ({ discardChanges = false }) => {
+const BackArrow = ({ discardChanges = false, white = false }) => {
 	const navigate = useNavigate();
 
 	const handleGoBack = () => {
@@ -15,7 +15,9 @@ const BackArrow = ({ discardChanges = false }) => {
 	return (
 		<div>
 			<FaArrowLeft
-				className="text-lg cursor-pointer hover:opacity-80"
+				className={`text-lg cursor-pointer hover:opacity-80 ${
+					white && "text-white"
+				}`}
 				onClick={() => {
 					if (!discardChanges) {
 						handleGoBack();

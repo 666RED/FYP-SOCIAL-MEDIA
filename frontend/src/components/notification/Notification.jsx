@@ -213,7 +213,7 @@ const Notification = ({ notification }) => {
 
 	return (
 		<div
-			className={`ml-2 flex items-center my-1 py-2 px-1 cursor-pointer  ${
+			className={`flex items-center py-2 px-1 cursor-pointer ${
 				!notification.viewed
 					? "bg-blue-100 hover:bg-blue-200"
 					: " hover:bg-gray-200"

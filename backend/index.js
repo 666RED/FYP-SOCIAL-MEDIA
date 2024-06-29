@@ -23,6 +23,7 @@ import settingRoute from "./routes/settingRoute.js";
 import adminRoute from "./routes/adminRoute.js";
 import noteRoute from "./routes/noteRoute.js";
 import notificationRoute from "./routes/notificationRoute.js";
+import chatRoute from "./routes/chatRoute.js";
 // MIDDLEWARE & DIRECT PATH
 import { verifyToken } from "./middleware/auth.js";
 import { editProfile } from "./controllers/profile.js";
@@ -40,7 +41,7 @@ import { createNewNote } from "./controllers/note.js";
 import { confirmation } from "./controllers/auth.js";
 
 // change here before publish
-const isPublish = true;
+const isPublish = false;
 
 export const backendServer = isPublish
 	? "https://fyp-fsktm-connect.onrender.com"
@@ -164,6 +165,7 @@ app.use("/setting", settingRoute);
 app.use("/admin", adminRoute);
 app.use("/note", noteRoute);
 app.use("/notification", notificationRoute);
+app.use("/chat", chatRoute);
 
 // DATABASE CONFIGURATION
 let databaseUrl;

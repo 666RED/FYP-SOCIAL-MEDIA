@@ -104,15 +104,10 @@ const NotificationContainer = ({
 	}, [notifications]);
 
 	return (
-		<div className={`notifications ${showNotifications ? "show" : ""}`}>
-			{/* CANCEL ICON */}
+		<div className="absolute right-0 bg-white top-10 shadow-2xl rounded-xl min-w-[30rem] min-h-[7rem] overflow-hidden">
 			<div className="ml-2 mt-2 flex items-center sticky top-0 bg-white z-40">
-				<MdCancel
-					onClick={toggleShowNotification}
-					className="text-2xl cursor-pointer text-red-600 hover:opacity-70 mr-2"
-				/>
 				{/* TITLE */}
-				<h2>Notifications</h2>
+				<h2 className="font-semibold">Notifications</h2>
 			</div>
 			{/* NOTIFICATIONS */}
 			{loading ? (
@@ -122,7 +117,7 @@ const NotificationContainer = ({
 					<Notification notification={noti} key={index} />
 				))
 			) : (
-				<h2>No notification</h2>
+				<h2 className="text-center">No notification...</h2>
 			)}
 		</div>
 	);
