@@ -41,7 +41,7 @@ import { createNewNote } from "./controllers/note.js";
 import { confirmation } from "./controllers/auth.js";
 
 // change here before publish
-const isPublish = true;
+const isPublish = false;
 
 export const backendServer = isPublish
 	? "https://fyp-fsktm-connect.onrender.com"
@@ -169,7 +169,7 @@ app.use("/chat", chatRoute);
 
 // DATABASE CONFIGURATION
 let databaseUrl;
-if (!isPublish) {
+if (isPublish) {
 	databaseUrl = process.env.MONGO_URL_PUBLISH;
 } else {
 	databaseUrl = process.env.MONGO_URL;
