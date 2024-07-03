@@ -25,7 +25,7 @@ const Friend = ({ friend }) => {
 				<img
 					src={friend.userProfile.profileImagePath}
 					alt="Friend profile image"
-					className={`w-10 border-[2.5px] ${friend.userProfile.profileFrameColor} rounded-full`}
+					className={`w-14 h-14 object-cover border-[2.5px] ${friend.userProfile.profileFrameColor} rounded-full`}
 				/>
 				<div className="ml-3 text-sm md:text-base">
 					<div className="flex items-center">

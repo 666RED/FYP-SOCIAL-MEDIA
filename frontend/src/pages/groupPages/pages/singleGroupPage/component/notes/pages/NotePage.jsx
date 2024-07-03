@@ -127,7 +127,7 @@ const NotePage = () => {
 				{/* ADD NEW NOTE BUTTON */}
 				{isGroupAdmin && (
 					<button
-						className="btn-green flex items-center absolute top-1 right-1"
+						className="btn-green flex items-center absolute top-2 right-2"
 						onClick={() => setShowAddNewNoteDiv((prev) => !prev)}
 					>
 						<BsFileEarmarkPlusFill className="mr-2" />

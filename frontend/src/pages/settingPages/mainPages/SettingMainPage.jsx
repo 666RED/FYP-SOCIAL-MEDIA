@@ -24,7 +24,7 @@ const SettingMainPage = () => {
 
 	useEffect(() => {
 		if (mainContentRef.current) {
-			const wrapperTop = mainContentRef.current.offsetTop - 10;
+			const wrapperTop = mainContentRef.current.offsetTop - 25;
 			window.scrollTo({
 				top: wrapperTop,
 				behavior: "smooth",
@@ -39,7 +39,7 @@ const SettingMainPage = () => {
 	}, []);
 
 	return user && token ? (
-		<div className="pt-2 pb-5">
+		<div className="pb-2">
 			{/* SIDEBAR */}
 			<SideBar
 				selectedSection="Setting"
@@ -56,7 +56,7 @@ const SettingMainPage = () => {
 			<SettingContext.Provider
 				value={{ option, setOption, discardChanges, setDiscardChanges }}
 			>
-				<div className="grid grid-cols-12 px-2 mt-3">
+				<div className="grid grid-cols-12 px-2 mt-1">
 					{/* OPTION PANE */}
 					<div className="col-span-12 md:col-span-3">
 						<SettingList />

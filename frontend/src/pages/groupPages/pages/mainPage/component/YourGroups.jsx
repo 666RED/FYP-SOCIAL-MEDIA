@@ -210,7 +210,7 @@ const YourGroups = ({ setLoading }) => {
 			{isLoadingGroups ? (
 				<Loader />
 			) : groupsArr.length !== 0 ? (
-				<div className="mt-3 grid grid-cols-12 md:gap-x-5 max-h-[32rem] min-[500px]:max-h-[26rem] overflow-y-auto">
+				<div className="mt-3 grid grid-cols-12 md:gap-x-5 overflow-y-auto">
 					{groupsArr.map((group) => (
 						<YourGroup key={group._id} group={group} />
 					))}

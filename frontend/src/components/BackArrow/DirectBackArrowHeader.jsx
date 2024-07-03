@@ -11,21 +11,19 @@ const DirectBackArrowHeader = ({
 
 	return (
 		<div className="flex items-center">
-			<div>
-				<FaArrowLeft
-					className="text-lg cursor-pointer hover:opacity-80"
-					onClick={() => {
-						if (!discardChanges) {
+			<FaArrowLeft
+				className="text-lg cursor-pointer hover:opacity-80"
+				onClick={() => {
+					if (!discardChanges) {
+						navigate(destination);
+					} else {
+						const ans = window.confirm("Discard changes?");
+						if (ans) {
 							navigate(destination);
-						} else {
-							const ans = window.confirm("Discard changes?");
-							if (ans) {
-								navigate(destination);
-							}
 						}
-					}}
-				/>
-			</div>
+					}
+				}}
+			/>
 			<h2 className="ml-4 font-semibold">{title}</h2>
 		</div>
 	);

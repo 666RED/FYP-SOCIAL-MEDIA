@@ -8,6 +8,7 @@ import UploadImage from "../../../../components/UploadImage.jsx";
 import Places from "./components/Places.jsx";
 import Spinner from "../../../../components/Spinner/Spinner.jsx";
 import Error from "../../../../components/Error.jsx";
+import RedStar from "../../../../components/RedStar.jsx";
 import {
 	uploadConditionReducer,
 	INITIAL_STATE,
@@ -128,7 +129,7 @@ const UploadCondition = () => {
 	};
 
 	return user && token ? (
-		<form className="page-layout-with-back-arrow" onSubmit={handleSubmit}>
+		<form className="page-layout-with-back-arrow pb-2" onSubmit={handleSubmit}>
 			{state.loading && <Spinner />}
 			{/* HEADER */}
 			<DirectBackArrowHeader
@@ -138,7 +139,9 @@ const UploadCondition = () => {
 			{/* MAIN CONTENT CONTAINER */}
 			<div className="md:w-2/3 mx-auto">
 				{/* TITLE */}
-				<h3 className="mt-3">Title:</h3>
+				<h3 className="mt-3">
+					Title <RedStar />
+				</h3>
 				<input
 					id="title"
 					type="text"
@@ -151,7 +154,9 @@ const UploadCondition = () => {
 					}
 				/>
 				{/* DESCRIPTION */}
-				<h3 className="mt-3">Description:</h3>
+				<h3 className="mt-3">
+					Description <RedStar />
+				</h3>
 				<textarea
 					id="description"
 					rows="5"
@@ -168,7 +173,7 @@ const UploadCondition = () => {
 				></textarea>
 				{/* IMAGE */}
 				<div className="flex justify-between items-center mt-3">
-					<h3>Image:</h3>
+					<h3>Image</h3>
 					<RemoveImageText
 						handleRemove={handleRemove}
 						imagePath={state.postImagePath}
@@ -181,10 +186,12 @@ const UploadCondition = () => {
 					imagePath={state.postImagePath}
 				/>
 				{/* LOCATION */}
-				<h3 className="mt-3">Location:</h3>
+				<h3 className="mt-3">
+					Location <RedStar />
+				</h3>
 				{/*  MAP */}
 				<Places />
-				<button className="btn-green my-6 w-1/3 md:w-1/4 block mx-auto">
+				<button className="btn-green mt-6 w-1/3 md:w-1/4 block mx-auto">
 					UPLOAD
 				</button>
 			</div>

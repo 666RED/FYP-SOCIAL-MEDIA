@@ -20,8 +20,9 @@ const FriendsList = ({ setLoading }) => {
 	const { userId } = useParams();
 	const serverURL = useContext(ServerContext);
 	const { user, token } = useSelector((store) => store.auth);
-	const { friendsArr, numberOfFriends, isLoadingFriend, hasFriends } =
-		useSelector((store) => store.friend);
+	const { friendsArr, isLoadingFriend, hasFriends } = useSelector(
+		(store) => store.friend
+	);
 	const { searchText } = useSelector((store) => store.search);
 	const { enqueueSnackbar } = useSnackbar();
 	const [loadMore, setLoadMore] = useState(false);
@@ -185,40 +186,30 @@ const FriendsList = ({ setLoading }) => {
 		}
 	};
 
-	return (
-		<div className="mt-3 min-[500px]:max-h-[31rem] max-h-[37rem] overflow-y-auto">
-			{/* NUMBER OF FRIENDS */}
-			<p className="text-lg">
-				{numberOfFriends} {numberOfFriends > 1 ? "friends" : "friend"}
-			</p>
-			{/* HORIZONTAL LINE */}
-			<hr className="my-3 border-2 border-gray-500" />
-			{isLoadingFriend ? (
-				<div className="mt-4">
-					<Loader />
-				</div>
-			) : friendsArr.length > 0 ? (
-				// FRIEND
-				<div>
-					{friendsArr.map((friend) => (
-						<Friend key={friend._id} friend={friend} />
-					))}
-					{/* LOAD MORE BUTTON */}
-					<LoadMoreButton
-						handleLoadMore={
-							searchText === "" ? handleLoadMore : handleLoadMoreSearch
-						}
-						hasComponent={hasFriends}
-						isLoadingComponent={isLoadingFriend}
-						loadMore={loadMore}
-					/>
-				</div>
-			) : searchText === "" ? (
-				<h2>No friend</h2>
-			) : (
-				<h2>No result</h2>
-			)}
+	return isLoadingFriend ? (
+		<div className="middle-component">
+			<Loader />
 		</div>
+	) : friendsArr.length > 0 ? (
+		// FRIEND
+		<div className="flex-1 h-full overflow-auto middle-component pb-2">
+			{friendsArr.map((friend) => (
+				<Friend key={friend._id} friend={friend} />
+			))}
+			{/* LOAD MORE BUTTON */}
+			<LoadMoreButton
+				handleLoadMore={
+					searchText === "" ? handleLoadMore : handleLoadMoreSearch
+				}
+				hasComponent={hasFriends}
+				isLoadingComponent={isLoadingFriend}
+				loadMore={loadMore}
+			/>
+		</div>
+	) : searchText === "" ? (
+		<h2 className="middle-component">No friend</h2>
+	) : (
+		<h2 className="middle-component">No result</h2>
 	);
 };
 

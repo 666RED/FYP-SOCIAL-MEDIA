@@ -1,13 +1,14 @@
-import React, { useState, useContext } from "react";
+import React, { useContext } from "react";
 import Note from "./Note.jsx";
 import { noteContext } from "../pages/NotePage.jsx";
 
 const Notes = () => {
-	const { notes, isGroupAdmin, setNotes } = useContext(noteContext);
+	const { notes, isGroupAdmin } = useContext(noteContext);
 
 	return (
-		<table className="mt-8 w-full min-w-max">
-			<thead>
+		<table className="mt-6 w-full min-w-max">
+			{/* HEADER */}
+			<thead className="sticky top-0">
 				<tr>
 					<th>#</th>
 					<th className="text-left">Note</th>
@@ -15,6 +16,7 @@ const Notes = () => {
 					{isGroupAdmin && <th>Operation</th>}
 				</tr>
 			</thead>
+			{/* BODY */}
 			<tbody>
 				{notes.length > 0 ? (
 					notes.map((note, index) => (

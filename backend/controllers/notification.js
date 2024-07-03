@@ -39,6 +39,44 @@ export const getNotificationsProfile = async (req, res) => {
 	}
 };
 
+export const getNotificationProfile = async (req, res) => {
+	try {
+		const { id, sender, type } = req.query;
+
+		let returnedNotification = {};
+
+		if (type === "Group") {
+			const group = await Group.findById(sender);
+
+			returnedNotification = {
+				id: id,
+				imagePath: group.groupImagePath,
+				type: "Group",
+			};
+		} else if (type === "Admin") {
+			returnedNotification = {
+				id: id,
+				imagePath: "",
+				type: "Admin",
+			};
+		} else {
+			const user = await User.findById(sender);
+
+			returnedNotification = {
+				id: id,
+				imagePath: user.userProfile.profileImagePath,
+				type: "User",
+			};
+		}
+
+		res.status(200).json({ msg: "Success", returnedNotification });
+	} catch (err) {
+		console.log(err);
+
+		res.status(500).json({ error: err.message });
+	}
+};
+
 export const updateViewed = async (req, res) => {
 	try {
 		const { id, viewed } = req.body;

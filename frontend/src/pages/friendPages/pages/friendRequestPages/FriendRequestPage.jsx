@@ -69,10 +69,10 @@ const FriendRequestPage = () => {
 	};
 
 	return user && token ? (
-		<div className="page-layout-with-back-arrow mb-3">
+		<div className="page-layout-with-back-arrow flex flex-col h-full">
 			{/* HEADER */}
 			<DirectBackArrowHeader destination="/friend" title="Friend request" />
-			<div className="overflow-y-auto overflow-x-hidden max-h-[42rem] min-[500px]:max-h-[35rem] pb-2">
+			<div className="overflow-y-auto overflow-x-hidden pb-2">
 				{/* FRIEND REQUESTS LIST */}
 				<FriendRequestsList />
 				{/* LOAD MORE BUTTON */}

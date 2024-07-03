@@ -5,6 +5,7 @@ const ContactButton = ({
 	contactUserId,
 	path = `/marketplace`,
 	text = "Contact",
+	marginTop = false,
 }) => {
 	const navigate = useNavigate();
 
@@ -18,7 +19,9 @@ const ContactButton = ({
 
 	return (
 		<button
-			className="btn-dark-blue text-sm sm:text-base mt-2 w-full"
+			className={`btn-dark-blue text-sm sm:text-base ${
+				marginTop ? "mt-2" : "mt-0"
+			} w-full`}
 			onClick={handleOnClick}
 		>
 			{text}

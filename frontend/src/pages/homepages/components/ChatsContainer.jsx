@@ -107,9 +107,7 @@ const ChatsContainer = ({ showChats, setShowChats }) => {
 
 	return (
 		<div
-			className={`absolute bg-white top-10 shadow-[rgba(0,0,0,0.1)_0px_0px_7px_7px] rounded-xl sm:min-w-[30rem] sm:-right-12 min-w-[18rem] -right-12 min-h-[6rem] max-h-[35rem] overflow-x-hidden overflow-y-auto messages ${
-				showChats ? "visible" : "hidden"
-			}`}
+			className={`right-container messages ${showChats ? "visible" : "hidden"}`}
 			ref={containerRef}
 		>
 			{/* TITLE */}

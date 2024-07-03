@@ -1,6 +1,12 @@
-import { React, useContext, useEffect, useReducer, useState } from "react";
+import {
+	React,
+	useContext,
+	useEffect,
+	useReducer,
+	useState,
+	useRef,
+} from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { useParams } from "react-router-dom";
 import { useSnackbar } from "notistack";
 import { BsThreeDots } from "react-icons/bs/index.js";
 import { FaFile } from "react-icons/fa/index.js";
@@ -28,6 +34,7 @@ const GroupPost = ({ post, isAdmin = false, viewPost = false }) => {
 	const { user, token } = useSelector((store) => store.auth);
 	const [state, dispatch] = useReducer(groupPostReducer, INITIAL_STATE);
 	const { enqueueSnackbar } = useSnackbar();
+	const optionDivRef = useRef();
 
 	const [showImage, setShowImage] = useState(false);
 
@@ -194,6 +201,24 @@ const GroupPost = ({ post, isAdmin = false, viewPost = false }) => {
 		dispatch({ type: ACTION_TYPES.TOGGLE_SHOW_REPORT_FORM });
 	};
 
+	// close option divs
+	useEffect(() => {
+		const handleClickOutside = (event) => {
+			if (
+				optionDivRef.current &&
+				!optionDivRef.current.contains(event.target)
+			) {
+				dispatch({ type: ACTION_TYPES.CLOSE_OPTION_DIV });
+			}
+		};
+
+		document.addEventListener("mousedown", handleClickOutside);
+
+		return () => {
+			document.removeEventListener("mousedown", handleClickOutside);
+		};
+	}, []);
+
 	return (
 		<div
 			className={`relative my-3 bg-white rounded-xl shadow-2xl py-4 px-2 mx-auto ${
@@ -216,7 +241,7 @@ const GroupPost = ({ post, isAdmin = false, viewPost = false }) => {
 			)}
 			{/* OPTION DIV */}
 			{state.showOptionDiv && (
-				<div className="option-div-container">
+				<div className="option-div-container" ref={optionDivRef}>
 					{/* EDIT */}
 					{post.userId === user._id && (
 						<OptionDiv

@@ -88,7 +88,7 @@ const CampusConditionPage = () => {
 	};
 
 	return user && token ? (
-		<div className="py-2">
+		<div>
 			{/* SIDEBAR */}
 			<SideBar
 				selectedSection="Campus Condition"
@@ -101,9 +101,8 @@ const CampusConditionPage = () => {
 				setExtendSideBar={setExtendSideBar}
 				title={"Campus Condition"}
 			/>
-
 			{/* MAIN CONTENT */}
-			<div className="page-design lg:grid lg:grid-cols-5 gap-x-3">
+			<div className="main-content-design lg:grid lg:grid-cols-5 gap-x-3">
 				{/* BUTTON ROW */}
 				<div className="lg:col-span-5 grid grid-cols-12 gap-x-2 my-3">
 					{/* UPLOAD NEW BUTTTON */}

@@ -1,4 +1,11 @@
-import { React, useEffect, useContext, useReducer, useState } from "react";
+import {
+	React,
+	useEffect,
+	useContext,
+	useReducer,
+	useState,
+	useRef,
+} from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { useSnackbar } from "notistack";
@@ -42,6 +49,7 @@ const CampusCondition = ({
 	const [state, dispatch] = useReducer(CampusConditionReducer, INITIAL_STATE);
 	const { campusConditions } = useSelector((store) => store.campusCondition);
 	const [showImage, setShowImage] = useState(false);
+	const optionDivRef = useRef();
 
 	const previous = window.location.pathname;
 
@@ -360,6 +368,24 @@ const CampusCondition = ({
 		}
 	};
 
+	// close option divs
+	useEffect(() => {
+		const handleClickOutside = (event) => {
+			if (
+				optionDivRef.current &&
+				!optionDivRef.current.contains(event.target)
+			) {
+				dispatch({ type: ACTION_TYPES.CLOSE_OPTION_DIV });
+			}
+		};
+
+		document.addEventListener("mousedown", handleClickOutside);
+
+		return () => {
+			document.removeEventListener("mousedown", handleClickOutside);
+		};
+	}, []);
+
 	return (
 		<div
 			className={`relative mb-3 bg-white rounded-xl shadow-2xl py-4 px-2 mx-auto ${
@@ -411,7 +437,10 @@ const CampusCondition = ({
 
 			{/* OPTION DIV */}
 			{state.showOptionDiv && (
-				<div className="absolute right-3 top-10 border border-gray-600 bg-gray-200">
+				<div
+					className="absolute right-3 top-10 border border-gray-600 bg-gray-200"
+					ref={optionDivRef}
+				>
 					{user._id === condition.userId ? (
 						<div>
 							{/* EDIT */}

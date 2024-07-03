@@ -19,6 +19,12 @@ export const commentReducer = (state, action) => {
 				showOptions: !state.showOptions,
 			};
 		}
+		case "CLOSE_OPTIONS": {
+			return {
+				...state,
+				showOptions: false,
+			};
+		}
 		case "TOGGLE_EDIT_COMMENT_FORM": {
 			return {
 				...state,

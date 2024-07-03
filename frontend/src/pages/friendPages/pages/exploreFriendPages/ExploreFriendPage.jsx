@@ -226,11 +226,11 @@ const ExploreFriendPage = () => {
 	};
 
 	return user && token ? (
-		<div className="page-layout-with-back-arrow mb-5">
+		<div className="page-layout-with-back-arrow flex flex-col h-full">
 			{/* HEADER */}
 			<DirectBackArrowHeader destination="/friend" title="Explore friend" />
 			{/* SEARCHBAR */}
-			<div className="mt-3">
+			<div className="py-3">
 				<SearchBar
 					func={handleOnChange}
 					placeholderText="Search user"
@@ -238,7 +238,7 @@ const ExploreFriendPage = () => {
 					isDisabled={loading}
 				/>
 			</div>
-			<div className="max-h-[39rem] min-[500px]:max-h-[31rem] overflow-y-auto pb-2">
+			<div className="overflow-y-auto pb-2">
 				{/* FRIENDS LIST */}
 				<RandomFriendsList setLoading={setLoading} />
 				{/* LOAD MORE BUTTON */}

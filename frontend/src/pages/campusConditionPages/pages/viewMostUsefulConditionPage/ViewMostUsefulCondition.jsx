@@ -58,21 +58,19 @@ const ViewMostUsefulCondition = () => {
 	}, []);
 
 	return (
-		<div className="px-3 py-2">
+		<div className="page-layout-with-back-arrow">
+			<DirectBackArrowHeader
+				destination="/campus-condition"
+				title="Most Useful Condition"
+			/>
 			{loading ? (
 				<Loader />
 			) : (
-				<div>
-					<DirectBackArrowHeader
-						destination="/campus-condition"
-						title="Most Useful Condition"
+				<div className="mt-5 md:w-4/5 md:mx-auto shadowDesign rounded-xl">
+					<CampusCondition
+						condition={mostUsefulCondition}
+						inViewMostUseful={true}
 					/>
-					<div className="mt-5 md:w-4/5 md:mx-auto shadowDesign rounded-xl">
-						<CampusCondition
-							condition={mostUsefulCondition}
-							inViewMostUseful={true}
-						/>
-					</div>
 				</div>
 			)}
 		</div>

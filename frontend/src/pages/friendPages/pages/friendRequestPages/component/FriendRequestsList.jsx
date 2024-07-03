@@ -91,7 +91,7 @@ const FriendRequestsList = () => {
 	}, []);
 
 	return (
-		<div className="my-5 grid grid-cols-12 gap-x-5">
+		<div className="flex-1 grid grid-cols-12 gap-x-5">
 			{isLoadingFriendRequests ? (
 				<div className="col-span-12">
 					<Loader />

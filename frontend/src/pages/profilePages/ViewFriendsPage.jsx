@@ -19,7 +19,9 @@ let currentRequest;
 const ViewFriendsPage = () => {
 	const sliceDispatch = useDispatch();
 	const { userId } = useParams();
-	const { originalFriendsArr } = useSelector((store) => store.friend);
+	const { originalFriendsArr, numberOfFriends } = useSelector(
+		(store) => store.friend
+	);
 	const { searchText } = useSelector((store) => store.search);
 	const { user, token } = useSelector((store) => store.auth);
 	const serverURL = useContext(ServerContext);
@@ -100,25 +102,29 @@ const ViewFriendsPage = () => {
 	};
 
 	return user && token ? (
-		<div className="page-layout-with-back-arrow">
+		<div className="page-layout-with-back-arrow flex flex-col h-full ">
 			{/* HEADER */}
 			<DirectBackArrowHeader
 				destination={`/profile/${userId}`}
 				title="View friends"
 			/>
-			<div className="w-full md:w-2/3 md:mx-auto mt-5">
-				{/* SEARCH BAR */}
-				<div className="mt-3">
-					<SearchBar
-						func={handleOnChange}
-						text={searchText}
-						placeholderText="Search user"
-						isDisabled={loading}
-					/>
-				</div>
-				{/* FRIENDS LIST */}
-				<FriendsList setLoading={setLoading} />
+			{/* SEARCH BAR */}
+			<div className="middle-component my-3">
+				<SearchBar
+					func={handleOnChange}
+					text={searchText}
+					placeholderText="Search user"
+					isDisabled={loading}
+				/>
 			</div>
+			{/* NUMBER OF FRIENDS */}
+			<p className="text-lg middle-component">
+				{numberOfFriends} {numberOfFriends > 1 ? "friends" : "friend"}
+			</p>
+			{/* HORIZONTAL LINE */}
+			<hr className="border-2 border-gray-500 middle-component my-2" />
+			{/* FRIENDS LIST */}
+			<FriendsList setLoading={setLoading} />
 		</div>
 	) : (
 		<Error />

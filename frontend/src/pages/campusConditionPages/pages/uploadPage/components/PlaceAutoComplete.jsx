@@ -36,6 +36,7 @@ const PlaceAutoComplete = () => {
 				onChange={(e) => setValue(e.target.value)}
 				disabled={!ready}
 				placeholder="Search..."
+				className="w-full"
 			/>
 			{/* POP OUT */}
 			<div className="relative">

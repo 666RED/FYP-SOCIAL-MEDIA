@@ -13,23 +13,21 @@ const BackArrow = ({ discardChanges = false, white = false }) => {
 	};
 
 	return (
-		<div>
-			<FaArrowLeft
-				className={`text-lg cursor-pointer hover:opacity-80 ${
-					white && "text-white"
-				}`}
-				onClick={() => {
-					if (!discardChanges) {
-						handleGoBack();
-						return;
-					}
-					const answer = window.confirm("Discard changes?");
-					if (answer) {
-						handleGoBack();
-					}
-				}}
-			/>
-		</div>
+		<FaArrowLeft
+			className={`text-lg cursor-pointer hover:opacity-80 ${
+				white && "text-white"
+			}`}
+			onClick={() => {
+				if (!discardChanges) {
+					handleGoBack();
+					return;
+				}
+				const answer = window.confirm("Discard changes?");
+				if (answer) {
+					handleGoBack();
+				}
+			}}
+		/>
 	);
 };
 

@@ -6,6 +6,7 @@ import UploadImage from "../../../../../../components/UploadImage.jsx";
 import UploadFile from "../../../../../../components/UploadFile.jsx";
 import Filter from "../../../../../../components/Filter.jsx";
 import FormHeader from "../../../../../../components/FormHeader.jsx";
+import RedStar from "../../../../../../components/RedStar.jsx";
 import {
 	addNewPostFormReducer,
 	INITIAL_STATE,
@@ -125,7 +126,9 @@ const AddNewPostForm = ({ toggleShowAddNewPostForm }) => {
 						discardChanges={state.makeChanges}
 					/>
 					{/* TEXT */}
-					<label htmlFor="text-description">Text desription:</label>
+					<label htmlFor="text-description">
+						Text desription <RedStar />
+					</label>
 					<textarea
 						id="text-description"
 						rows={6}

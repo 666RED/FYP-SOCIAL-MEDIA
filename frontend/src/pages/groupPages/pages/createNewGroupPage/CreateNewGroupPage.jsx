@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import Spinner from "../../../../components/Spinner/Spinner.jsx";
 import Error from "../../../../components/Error.jsx";
 import DirectBackArrowHeader from "../../../../components/BackArrow/DirectBackArrowHeader.jsx";
+import RedStar from "../../../../components/RedStar.jsx";
 import RemoveImageText from "../../../../components/RemoveImageText.jsx";
 import UploadCircleImage from "../../../../components/UploadCircleImage.jsx";
 import UploadImage from "../../../../components/UploadImage.jsx";
@@ -127,7 +128,7 @@ const CreateNewGroupPage = () => {
 	return user && token ? (
 		<form
 			onSubmit={handleSubmit}
-			className="page-layout-with-back-arrow"
+			className="page-layout-with-back-arrow pb-3"
 			autoComplete="off"
 		>
 			{state.loading && <Spinner />}
@@ -140,7 +141,9 @@ const CreateNewGroupPage = () => {
 			{/* MAIN CONTENT CONTAINER */}
 			<div className="md:w-2/3 mx-auto">
 				{/* NAME */}
-				<h3 className="mt-3">Name:</h3>
+				<h3 className="mt-3">
+					Name <RedStar />
+				</h3>
 				<input
 					id="name"
 					type="text"
@@ -182,7 +185,9 @@ const CreateNewGroupPage = () => {
 					imagePath={state.groupCoverImagePath}
 				/>
 				{/* BIO */}
-				<h3>Bio</h3>
+				<h3>
+					Bio <RedStar />
+				</h3>
 				<textarea
 					required
 					id="bio"
@@ -198,7 +203,7 @@ const CreateNewGroupPage = () => {
 					}}
 				/>
 				{/* CREATE BUTTON */}
-				<button className="btn-green mt-8 block mx-auto w-1/2 md:w-1/4 mb-5">
+				<button className="btn-green mt-8 block mx-auto w-1/2 md:w-1/4">
 					CREATE
 				</button>
 			</div>

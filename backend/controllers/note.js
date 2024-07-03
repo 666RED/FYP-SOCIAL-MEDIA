@@ -12,6 +12,15 @@ export const createNewFolder = async (req, res) => {
 	try {
 		const { groupId, folderName } = req.body;
 
+		const existingFolder = await Folder.findOne({
+			name: folderName,
+			groupId: groupId,
+		});
+
+		if (existingFolder) {
+			return res.status(400).json({ msg: "Folder name is already in use" });
+		}
+
 		const newFolder = new Folder({
 			name: folderName,
 			groupId: groupId,

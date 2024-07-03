@@ -197,7 +197,7 @@ const GroupPage = () => {
 	};
 
 	return user && token ? (
-		<div className="py-2">
+		<div className="flex flex-col h-full">
 			{/* SIDEBAR */}
 			<SideBar
 				selectedSection="Group"
@@ -211,7 +211,7 @@ const GroupPage = () => {
 				title="Group"
 			/>
 			{/* NAV BUTTONS */}
-			<div className="px-2 mt-3 grid grid-cols-12 items-end">
+			<div className="px-2 grid grid-cols-12 items-end">
 				<div className="flex col-span-7 md:col-span-5">
 					{/* YOUR GROUP NAV */}
 					<p
@@ -244,9 +244,8 @@ const GroupPage = () => {
 			</div>
 			{/* HORIZONTAL LINE */}
 			<hr className="border-4 border-gray-400 my-3" />
-			{/* MAIN CONTENT */}
-			<div className="px-2">
-				{/* SEARCH BAR */}
+			{/* SEARCH BAR */}
+			<div className="px-1">
 				<SearchBar
 					func={
 						currentNav === "Your groups"
@@ -257,7 +256,9 @@ const GroupPage = () => {
 					text={searchText}
 					isDisabled={loading}
 				/>
-				{/* YOUR GROUPS */}
+			</div>
+			{/* YOUR GROUPS / DISCOVER GROUPS */}
+			<div className="flex-1 h-full overflow-auto px-1 pb-2">
 				{currentNav === "Your groups" ? (
 					<YourGroups setLoading={setLoading} />
 				) : (

@@ -24,7 +24,9 @@ const ViewMembersPage = () => {
 	const sliceDispatch = useDispatch();
 	const { searchText } = useSelector((store) => store.search);
 	const { user, token } = useSelector((store) => store.auth);
-	const { originalMembersArr } = useSelector((store) => store.groupMember);
+	const { originalMembersArr, numberOfMembers } = useSelector(
+		(store) => store.groupMember
+	);
 	const serverURL = useContext(ServerContext);
 	const { enqueueSnackbar } = useSnackbar();
 	const [loading, setLoading] = useState(false);
@@ -106,25 +108,29 @@ const ViewMembersPage = () => {
 	};
 
 	return user && token ? (
-		<div className="page-layout-with-back-arrow">
+		<div className="page-layout-with-back-arrow flex flex-col h-full">
 			{/* HEADER */}
 			<DirectBackArrowHeader
 				destination={`/group/${groupId}`}
 				title="View members"
 			/>
-			<div className="w-full md:w-2/3 md:mx-auto mt-5">
-				{/* SEARCH BAR */}
-				<div className="mt-3">
-					<SearchBar
-						func={handleOnChange}
-						text={searchText}
-						placeholderText="Search member"
-						isDisabled={loading}
-					/>
-				</div>
-				{/* MEMBERS LIST */}
-				<MembersList setLoading={setLoading} />
+			{/* SEARCH BAR */}
+			<div className="my-3 middle-component">
+				<SearchBar
+					func={handleOnChange}
+					text={searchText}
+					placeholderText="Search member"
+					isDisabled={loading}
+				/>
 			</div>
+			{/* NUMBER OF MEMBERS */}
+			<p className="text-lg middle-component">
+				{numberOfMembers} {numberOfMembers > 1 ? "members" : "member"}
+			</p>
+			{/* HORIZONTAL LINE */}
+			<hr className="my-3 border-2 border-gray-500 middle-component" />
+			{/* MEMBERS LIST */}
+			<MembersList setLoading={setLoading} />
 		</div>
 	) : (
 		<Error />

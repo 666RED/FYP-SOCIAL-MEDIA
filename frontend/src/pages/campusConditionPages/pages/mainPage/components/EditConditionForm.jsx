@@ -8,6 +8,7 @@ import UploadImage from "../../../../../components/UploadImage.jsx";
 import Spinner from "../../../../../components/Spinner/Spinner.jsx";
 import RemoveImageText from "../../../../../components/RemoveImageText.jsx";
 import Places from "../../uploadPage/components/Places.jsx";
+import RedStar from "../../../../../components/RedStar.jsx";
 import {
 	editConditionFormReducer,
 	INITIAL_STATE,
@@ -181,7 +182,9 @@ const EditConditionForm = ({
 					/>
 
 					{/* TITLE */}
-					<label htmlFor="condition-title">Condition title:</label>
+					<label htmlFor="condition-title">
+						Condition title <RedStar />
+					</label>
 					<input
 						type="text"
 						id="condition-title"
@@ -198,7 +201,9 @@ const EditConditionForm = ({
 					/>
 
 					{/* DESCRIPTION */}
-					<label htmlFor="condition-description">Condition description:</label>
+					<label htmlFor="condition-description">
+						Condition description <RedStar />
+					</label>
 					<textarea
 						type="text"
 						id="condition-description"
@@ -234,7 +239,9 @@ const EditConditionForm = ({
 					/>
 
 					{/* LOCATION */}
-					<p className="mt-4">Location: </p>
+					<p className="mt-4">
+						Location <RedStar />
+					</p>
 					<Places />
 
 					{/* SUBMIT BUTTON */}

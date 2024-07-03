@@ -21,7 +21,7 @@ const Service = ({ service }) => {
 			<ViewButton path={`/marketplace/service/view-service/${service._id}`} />
 			{user._id !== service.userId ? (
 				// CONTACT BUTTON
-				<ContactButton contactUserId={service.userId} />
+				<ContactButton contactUserId={service.userId} marginTop={true} />
 			) : (
 				// EDIT BUTTON
 				<EditButton path={`/marketplace/service/edit-service/${service._id}`} />

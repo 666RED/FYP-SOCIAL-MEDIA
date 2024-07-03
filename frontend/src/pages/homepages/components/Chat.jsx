@@ -3,6 +3,7 @@ import { useSelector } from "react-redux";
 import { useSnackbar } from "notistack";
 import { useNavigate } from "react-router-dom";
 import { FaCircle } from "react-icons/fa6";
+import Spinner from "../../../components/Spinner/Spinner.jsx";
 import { formatDateTimeForFirebaseDoc } from "../../../usefulFunction.js";
 import { ServerContext } from "../../../App.js";
 
@@ -12,6 +13,7 @@ const Chat = ({ chat }) => {
 	const navigate = useNavigate();
 	const { user, token } = useSelector((store) => store.auth);
 	const [windowWidth, setWindowWidth] = useState(window.innerWidth);
+	const [loading, setLoading] = useState(false);
 
 	useEffect(() => {
 		const handleResize = () => {
@@ -27,6 +29,7 @@ const Chat = ({ chat }) => {
 
 	const handleNavigate = async () => {
 		try {
+			setLoading(true);
 			const res = await fetch(`${serverURL}/chat/update-viewed`, {
 				method: "PATCH",
 				body: JSON.stringify({
@@ -40,6 +43,7 @@ const Chat = ({ chat }) => {
 			});
 
 			if (!res.ok && res.status === 403) {
+				setLoading(false);
 				enqueueSnackbar("Access Denied", { variant: "error" });
 				return;
 			}
@@ -51,6 +55,9 @@ const Chat = ({ chat }) => {
 			} else {
 				console.log("Fail to update chats viewed");
 			}
+
+			setLoading(false);
+
 			const friendId =
 				chat.sender.toString() === user._id.toString()
 					? chat.receiver
@@ -61,6 +68,7 @@ const Chat = ({ chat }) => {
 			localStorage.setItem("previous", JSON.stringify(previousArr));
 			navigate(`/chat/${friendId}`);
 		} catch (err) {
+			setLoading(false);
 			console.log("Fail to update chats viewed");
 		}
 	};
@@ -70,30 +78,31 @@ const Chat = ({ chat }) => {
 			className="flex items-center py-2 px-1 cursor-pointer hover:bg-gray-200"
 			onClick={handleNavigate}
 		>
+			{loading && <Spinner />}
 			{/* IMAGE AND ICON */}
 			<div className="relative">
 				<img
 					src={chat.imagePath}
 					alt="Sender profile image"
-					className="rounded-full max-w-16"
+					className="rounded-full w-16 h-16 object-cover"
 				/>
 			</div>
 			<div className="ml-2">
 				{/* NAME */}
-				<p className="font-semibold">{chat.userName}</p>
+				<p className="font-semibold select-none">{chat.userName}</p>
 				{/* MESSAGE & TIME */}
 				<div className="flex items-center">
 					{/* CIRCLE ICON */}
 					{!chat.viewed && chat.sender.toString() !== user._id.toString() && (
-						<FaCircle className="text-xs text-blue-500 mr-3" />
+						<FaCircle className="text-xs text-blue-500 mr-3 select-none" />
 					)}
 					{/* MESSAGE */}
 					<p
 						className={`${
 							!chat.viewed && chat.sender.toString() !== user._id.toString()
-								? "text-black"
+								? "text-black font-semibold"
 								: "text-gray-500"
-						}`}
+						} select-none`}
 					>
 						{windowWidth >= 640
 							? chat.message.length > 35
@@ -104,7 +113,7 @@ const Chat = ({ chat }) => {
 							: chat.message}
 					</p>
 					{/* TIME */}
-					<p className="text-gray-500 ml-3">
+					<p className="text-gray-500 ml-3 select-none">
 						{formatDateTimeForFirebaseDoc(chat.createdAt)}
 					</p>
 				</div>

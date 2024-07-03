@@ -3,7 +3,7 @@ import { GiHamburgerMenu } from "react-icons/gi";
 
 const Header = ({ extendSideBar, setExtendSideBar, title }) => {
 	return (
-		<div className="mb-2 pl-2 sticky top-0 bg-white z-20">
+		<div className="header-design">
 			<div className="flex items-center">
 				<GiHamburgerMenu
 					onClick={() => setExtendSideBar(!extendSideBar)}

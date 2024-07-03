@@ -61,7 +61,7 @@ const Event = ({ event }) => {
 			<ViewButton path={`/marketplace/event/view-event/${event._id}`} />
 			{user._id !== event.userId ? (
 				// CONTACT BUTTON
-				<ContactButton contactUserId={event.userId} />
+				<ContactButton contactUserId={event.userId} marginTop={true} />
 			) : (
 				// EDIT BUTTON
 				<EditButton path={`/marketplace/event/edit-event/${event._id}`} />

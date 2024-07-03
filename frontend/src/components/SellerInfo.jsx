@@ -12,7 +12,7 @@ const SellerInfo = ({ state, handleOnClick, name, isAdmin = false }) => {
 				<img
 					src={state.userProfileImagePath}
 					alt="Seller profile image"
-					className={`rounded-full border-[2.5px] ${state.frameColor} w-14 mr-2 md:w-20`}
+					className={`rounded-full border-[2.5px] ${state.frameColor} w-14 h-14 mr-2 md:w-20 md:h-20 object-cover`}
 				/>
 				{/* SELLER NAME */}
 				<div className="flex flex-col">
@@ -27,6 +27,7 @@ const SellerInfo = ({ state, handleOnClick, name, isAdmin = false }) => {
 						<ContactButton
 							contactUserId={state.userId}
 							path={window.location.pathname}
+							marginTop={true}
 						/>
 					)}
 				</div>

@@ -58,6 +58,12 @@ export const postReducer = (state, action) => {
 				showComment: !state.showComment,
 			};
 		}
+		case "CLOSE_OPTION_DIV": {
+			return {
+				...state,
+				showOptionDiv: false,
+			};
+		}
 		case "TOGGLE_SHOW_OPTION_DIV": {
 			return {
 				...state,

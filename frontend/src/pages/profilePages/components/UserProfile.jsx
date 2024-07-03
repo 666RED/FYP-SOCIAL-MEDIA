@@ -540,7 +540,7 @@ const UserProfile = ({ isFriend }) => {
 						<img
 							src={state.profileImagePath}
 							alt="Profile picture"
-							className={`rounded-full md:w-36 w-28 ${state.frameColor} border-4 cursor-pointer`}
+							className={`md:w-36 md:h-36 w-28 h-28 ${state.frameColor} border-4 cursor-pointer rounded-full object-cover`}
 							onClick={() => setShowProfileImage(true)}
 						/>
 						{/* USER NAME */}
@@ -599,6 +599,7 @@ const UserProfile = ({ isFriend }) => {
 								contactUserId={userId}
 								path={`/profile/${userId}`}
 								text="Chat"
+								marginTop={true}
 							/>
 						)}
 					</div>

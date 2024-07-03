@@ -405,7 +405,7 @@ const GroupProfile = () => {
 					<img
 						src={state.groupImagePath}
 						alt="Group image"
-						className="rounded-full md:w-36 w-28 border border-blue-400 cursor-pointer"
+						className="rounded-full md:w-36 w-28 md:h-36 h-28 object-cover border border-blue-400 cursor-pointer"
 						onClick={() => setShowGroupImage(true)}
 					/>
 					{/* GROUP NAME */}

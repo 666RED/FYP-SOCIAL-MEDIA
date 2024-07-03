@@ -1,4 +1,4 @@
-import React, { useState, useContext, useEffect } from "react";
+import React, { useState, useContext, useEffect, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { useSnackbar } from "notistack";
@@ -11,8 +11,8 @@ import Spinner from "../../../../../../../components/Spinner/Spinner.jsx";
 import { ServerContext } from "../../../../../../../App.js";
 import { folderContext } from "../FolderPage.jsx";
 
-const Folder = ({ folder }) => {
-	const { user, token } = useSelector((store) => store.auth);
+const Folder = ({ folder, isGroupAdmin }) => {
+	const { token } = useSelector((store) => store.auth);
 	const [loading, setLoading] = useState(false);
 	const serverURL = useContext(ServerContext);
 	const navigate = useNavigate();
@@ -21,50 +21,7 @@ const Folder = ({ folder }) => {
 	const [showRenameFolderDiv, setShowRenameFolderDiv] = useState(false);
 	const { enqueueSnackbar } = useSnackbar();
 	const { folders, setFolders } = useContext(folderContext);
-	const [isGroupAdmin, setIsGroupAdmin] = useState(false);
-
-	// is group admin
-	useEffect(() => {
-		const getGroupAdminId = async () => {
-			try {
-				const res = await fetch(
-					`${serverURL}/group/get-group-admin-id?groupId=${groupId}`,
-					{
-						method: "GET",
-						headers: {
-							"Content-Type": "application/json",
-							Authorization: `Bearer ${token}`,
-						},
-					}
-				);
-
-				if (!res.ok && res.status === 403) {
-					enqueueSnackbar("Access Denied", { variant: "error" });
-					return;
-				}
-
-				const { msg, returnGroupAdminId } = await res.json();
-
-				if (msg === "Success") {
-					if (returnGroupAdminId === user._id) {
-						setIsGroupAdmin(true);
-					} else {
-						setIsGroupAdmin(false);
-					}
-				} else if (msg === "Group not found") {
-					enqueueSnackbar("Group not found", { variant: "error" });
-				} else {
-					enqueueSnackbar("An error occurred", { variant: "error" });
-				}
-			} catch (err) {
-				enqueueSnackbar("Could not connect to the server", {
-					variant: "error",
-				});
-			}
-		};
-
-		getGroupAdminId();
-	}, []);
+	const optionDivRef = useRef();
 
 	const handleNavigate = (e) => {
 		if (!e.target.closest(".folder-action")) {
@@ -131,6 +88,24 @@ const Folder = ({ folder }) => {
 		setShowRenameFolderDiv(true);
 	};
 
+	// close option divs
+	useEffect(() => {
+		const handleClickOutside = (event) => {
+			if (
+				optionDivRef.current &&
+				!optionDivRef.current.contains(event.target)
+			) {
+				setShowOptionDiv(false);
+			}
+		};
+
+		document.addEventListener("mousedown", handleClickOutside);
+
+		return () => {
+			document.removeEventListener("mousedown", handleClickOutside);
+		};
+	}, []);
+
 	return (
 		<div
 			className={`col-span-6 md:col-span-4 lg:col-span-3 rounded-xl bg-gray-200 py-2 pl-3 pr-6 ${
@@ -153,7 +128,10 @@ const Folder = ({ folder }) => {
 			</h3>
 			{/* OPTION DIV */}
 			{showOptionDiv && (
-				<div className="option-div-container right-1 top-6 bg-white">
+				<div
+					className="option-div-container right-1 top-6 bg-white"
+					ref={optionDivRef}
+				>
 					{/* RENAME */}
 					<OptionDiv
 						func={handleShowRenameDiv}

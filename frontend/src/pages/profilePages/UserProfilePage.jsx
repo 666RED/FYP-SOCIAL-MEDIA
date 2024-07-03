@@ -152,7 +152,7 @@ const UserProfilePage = () => {
 	};
 
 	return user && token ? (
-		<div className={`${userId === user._id && "py-2"}`}>
+		<div>
 			{loading && <Spinner />}
 			{/* ADD NEW POST FORM */}
 			{showAddNewPostForm && <AddNewPostForm />}
@@ -170,11 +170,9 @@ const UserProfilePage = () => {
 					title="Profile"
 				/>
 			) : (
-				<div className="px-3 py-1 bg-white">
-					<BackArrowHeader title="User Profile" />
-				</div>
+				<BackArrowHeader title="User Profile" />
 			)}
-			<div className="page-design">
+			<div className="main-content-design">
 				{/* USER PROFILE */}
 				<UserProfile isFriend={isFriend} />
 				<hr className="border-4 border-gray-400 my-4" />

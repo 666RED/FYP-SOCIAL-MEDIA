@@ -13,6 +13,7 @@ import { db } from "../../firebase-config.js";
 import Message from "./Message.jsx";
 import { formatDateForFirebaseDoc } from "../../usefulFunction.js";
 import { ServerContext } from "../../App.js";
+import Loader from "../Spinner/Loader.jsx";
 
 const Messages = ({ imagePath, scroll }) => {
 	const { enqueueSnackbar } = useSnackbar();
@@ -20,6 +21,7 @@ const Messages = ({ imagePath, scroll }) => {
 	const [messages, setMessages] = useState([]);
 	const { friendId } = useParams();
 	const { user, token } = useSelector((store) => store.auth);
+	const [sorted, setSorted] = useState(false);
 
 	useEffect(() => {
 		let first1 = true;
@@ -166,6 +168,9 @@ const Messages = ({ imagePath, scroll }) => {
 		setMessages((prevMessages) =>
 			prevMessages.sort((a, b) => a.createdAt - b.createdAt)
 		);
+		if (messages.length > 0) {
+			setSorted(true);
+		}
 	}, [messages]);
 
 	return (
@@ -173,41 +178,44 @@ const Messages = ({ imagePath, scroll }) => {
 			className={`overflow-y-auto px-2 bg-[#365486] pt-2 flex-1 relative messages`}
 		>
 			{messages.length > 0 ? (
-				// MESSAGES
-				messages.map((message, id) => {
-					const formattedDate = formatDateForFirebaseDoc(message.createdAt);
-					const lastElement = id === messages.length - 1;
-					const showDate =
-						id === 0 ||
-						formattedDate !==
-							formatDateForFirebaseDoc(messages[id - 1]?.createdAt);
+				sorted ? (
+					messages.map((message, id) => {
+						const formattedDate = formatDateForFirebaseDoc(message.createdAt);
+						const lastElement = id === messages.length - 1;
+						const showDate =
+							id === 0 ||
+							formattedDate !==
+								formatDateForFirebaseDoc(messages[id - 1]?.createdAt);
 
-					return (
-						<div key={id}>
-							{showDate && (
-								// DATE
-								<div>
-									<p className="text-center p-2 bg-gray-500 w-1/12 min-w-fit mx-auto rounded-2xl mb-2 text-white">
-										{formattedDate}
-									</p>
-								</div>
-							)}
-							{/* MESSAGE */}
-							<Message
-								currentMessage={message}
-								key={id}
-								imagePath={imagePath}
-								lastElement={lastElement}
-							/>
-							{/* SEEN */}
-							{id === messages.length - 1 &&
-								message.viewed &&
-								message.sender.toString() === user._id.toString() && (
-									<p className="text-end text-white mr-2">Seen</p>
+						return (
+							<div key={id}>
+								{showDate && (
+									// DATE
+									<div>
+										<p className="text-center p-2 bg-gray-500 w-1/12 min-w-fit mx-auto rounded-2xl mb-2 text-white">
+											{formattedDate}
+										</p>
+									</div>
 								)}
-						</div>
-					);
-				})
+								{/* MESSAGE */}
+								<Message
+									currentMessage={message}
+									key={id}
+									imagePath={imagePath}
+									lastElement={lastElement}
+								/>
+								{/* SEEN */}
+								{id === messages.length - 1 &&
+									message.viewed &&
+									message.sender.toString() === user._id.toString() && (
+										<p className="text-end text-white mr-2">Seen</p>
+									)}
+							</div>
+						);
+					})
+				) : (
+					<Loader />
+				)
 			) : (
 				// NO MESSAGE
 				<p className="absolute top-0 bottom-0 left-0 right-0 flex items-center justify-center text-white text-2xl">

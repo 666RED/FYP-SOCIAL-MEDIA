@@ -13,6 +13,12 @@ export const commentReducer = (state, action) => {
 				commentDescription: action.payload,
 			};
 		}
+		case "CLOSE_OPTIONS": {
+			return {
+				...state,
+				showOptions: false,
+			};
+		}
 		case "TOGGLE_SHOW_OPTIONS": {
 			return {
 				...state,

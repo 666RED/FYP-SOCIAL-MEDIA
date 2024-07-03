@@ -110,7 +110,7 @@ const RandomFriendsList = ({ setLoading }) => {
 	}, []);
 
 	return (
-		<div className="px-2 mt-3 grid grid-cols-12 md:gap-x-2">
+		<div className="flex-1 px-2 mt-3 grid grid-cols-12 md:gap-x-2">
 			{isLoadingFriend ? (
 				<div className="mt-4 col-span-12">
 					<Loader />

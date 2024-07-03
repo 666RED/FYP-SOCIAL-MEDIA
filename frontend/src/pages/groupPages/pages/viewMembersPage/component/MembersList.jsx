@@ -19,8 +19,9 @@ const MembersList = ({ setLoading }) => {
 	const { groupId } = useParams();
 	const serverURL = useContext(ServerContext);
 	const { token } = useSelector((store) => store.auth);
-	const { numberOfMembers, isLoadingMembers, membersArr, hasMembers } =
-		useSelector((store) => store.groupMember);
+	const { isLoadingMembers, membersArr, hasMembers } = useSelector(
+		(store) => store.groupMember
+	);
 	const { searchText } = useSelector((store) => store.search);
 	const [loadMore, setLoadMore] = useState(false);
 
@@ -177,40 +178,30 @@ const MembersList = ({ setLoading }) => {
 		}
 	};
 
-	return (
-		<div className="mt-3">
-			{/* NUMBER OF MEMBERS */}
-			<p className="text-lg">
-				{numberOfMembers} {numberOfMembers > 1 ? "members" : "member"}
-			</p>
-			{/* HORIZONTAL LINE */}
-			<hr className="my-3 border-2 border-gray-500" />
-			<div className="mt-4 min-[500px]:max-h-[26rem] max-h-[32rem] overflow-y-auto">
-				{isLoadingMembers ? (
-					<Loader />
-				) : membersArr.length !== 0 ? (
-					// MEMBER
-					<div>
-						{membersArr.map((member) => (
-							<Member key={member._id} member={member} />
-						))}
-						{/* LOAD MORE BUTTON */}
-						<LoadMoreButton
-							handleLoadMore={
-								searchText === "" ? handleLoadMore : handleLoadMoreSearch
-							}
-							hasComponent={hasMembers}
-							isLoadingComponent={isLoadingMembers}
-							loadMore={loadMore}
-						/>
-					</div>
-				) : searchText === "" ? (
-					<h2>No member</h2>
-				) : (
-					<h2>No result</h2>
-				)}
-			</div>
+	return isLoadingMembers ? (
+		<div className="middle-component">
+			<Loader />
 		</div>
+	) : membersArr.length !== 0 ? (
+		// MEMBER
+		<div className="flex-1 h-full overflow-auto middle-component pb-2">
+			{membersArr.map((member) => (
+				<Member key={member._id} member={member} />
+			))}
+			{/* LOAD MORE BUTTON */}
+			<LoadMoreButton
+				handleLoadMore={
+					searchText === "" ? handleLoadMore : handleLoadMoreSearch
+				}
+				hasComponent={hasMembers}
+				isLoadingComponent={isLoadingMembers}
+				loadMore={loadMore}
+			/>
+		</div>
+	) : searchText === "" ? (
+		<h2 className="middle-component">No member</h2>
+	) : (
+		<h2 className="middle-component">No result</h2>
 	);
 };
 

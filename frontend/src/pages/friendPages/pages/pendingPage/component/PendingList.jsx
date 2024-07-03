@@ -90,7 +90,7 @@ const PendingList = () => {
 	}, []);
 
 	return (
-		<div className="my-5 grid grid-cols-12 gap-x-5">
+		<div className="grid grid-cols-12 gap-x-5">
 			{isLoadingPendings ? (
 				<div className="col-span-12 mt-4">
 					<Loader />

@@ -22,7 +22,6 @@ const FramePreference = () => {
 		{ id: 0, name: "Default", frameColor: "none" },
 		{ id: 1, name: "Blue", frameColor: "border-blue-500" },
 		{ id: 2, name: "Green", frameColor: "border-green-500" },
-
 	];
 
 	if (user.isEarlyUser) {
@@ -127,7 +126,7 @@ const FramePreference = () => {
 						<img
 							alt="Profile image"
 							src={user.userProfile.profileImagePath}
-							className={`max-w-32 rounded-full cursor-pointer hover:opacity-70 border-4 ${frame.frameColor}`}
+							className={`w-24 h-24 md:w-32 md:h-32 object-cover rounded-full cursor-pointer hover:opacity-70 border-4 ${frame.frameColor}`}
 							onClick={() => handleOnClick(frame.id)}
 						/>
 						{/* NAME */}

@@ -5,6 +5,7 @@ import { useSnackbar } from "notistack";
 import EditText from "../../components/EditText.jsx";
 import Spinner from "../../components/Spinner/Spinner.jsx";
 import Error from "../../components/Error.jsx";
+import RedStar from "../../components/RedStar.jsx";
 import DirectBackArrowHeader from "../../components/BackArrow/DirectBackArrowHeader.jsx";
 import {
 	editProfileReducer,
@@ -193,7 +194,7 @@ const EditProfile = () => {
 	};
 
 	return user && token ? (
-		<form className="page-layout-with-back-arrow" onSubmit={handleSave}>
+		<form className="page-layout-with-back-arrow pb-3" onSubmit={handleSave}>
 			{state.loading && <Spinner />}
 			{/* HEADER */}
 			<DirectBackArrowHeader
@@ -242,7 +243,9 @@ const EditProfile = () => {
 					{/* USER NAME */}
 					<div className="md:col-span-4 col-span-9">
 						<div className="flex items-center justify-between mb-3">
-							<h3>Name</h3>
+							<h3>
+								Name <RedStar />
+							</h3>
 							<p
 								className="text-lg text-blue-600 cursor-pointer hover:opacity-80"
 								onClick={() =>
@@ -308,7 +311,7 @@ const EditProfile = () => {
 					</div>
 				</div>
 			</div>
-			<button className="btn-green mt-8 block mx-auto w-1/2 md:w-1/4 mb-5">
+			<button className="btn-green mt-8 block mx-auto w-1/2 md:w-1/4">
 				SAVE
 			</button>
 		</form>

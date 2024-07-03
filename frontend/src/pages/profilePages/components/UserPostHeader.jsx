@@ -35,12 +35,12 @@ const UserPostHeader = ({
 					<img
 						src={groupImagePath}
 						alt="Group image"
-						className={`rounded-full md:w-14 w-12 mr-2`}
+						className={`rounded-full md:w-14 w-12 md:h-14 h-12 object-cover mr-2`}
 					/>
 					<img
 						src={imgPath}
 						alt="Profile image"
-						className={`rounded-full mr-2 border-[2.5px] absolute ${frameColor} md:w-9 w-7 -right-1 top-6 bg-gray-200
+						className={`rounded-full mr-2 border-[2.5px] absolute ${frameColor} md:w-9 w-7 md:h-9 h-7 object-cover -right-1 top-6 bg-gray-200
 						`}
 					/>
 				</div>
@@ -48,15 +48,17 @@ const UserPostHeader = ({
 				<img
 					src={imgPath}
 					alt="Profile image"
-					className={`rounded-full mr-2 border-[2.5px] ${frameColor}  ${
-						isPost ? "md:w-14 w-12" : "md:w-12 w-8"
+					className={`rounded-full mr-2 border-[2.5px] object-cover ${frameColor}  ${
+						isPost ? "md:w-14 w-12 md:h-14 h-12" : "md:w-12 w-8 md:h-12 h-8"
 					}`}
 				/>
 			)}
 
 			<div>
 				{isGroup && (
-					<p className={`${!isPost && "text-sm md:text-base"}`}>{groupName}</p>
+					<p className={`${!isPost && "text-sm md:text-base"} font-semibold`}>
+						{groupName}
+					</p>
 				)}
 				{/* USER NAME */}
 				<p

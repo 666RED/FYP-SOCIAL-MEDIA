@@ -5,6 +5,7 @@ import Spinner from "../Spinner/Spinner.jsx";
 import Filter from "../Filter.jsx";
 import FormHeader from "../FormHeader.jsx";
 import Option from "./Option.jsx";
+import RedStar from "../RedStar.jsx";
 import { ServerContext } from "../../App.js";
 
 const ReportForm = ({
@@ -138,7 +139,7 @@ const ReportForm = ({
 							: type === "Event"
 							? "event"
 							: "condition"}
-						:
+						<RedStar />
 					</h3>
 					{/* OPTIONS */}
 					{options.map((option) => (

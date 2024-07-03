@@ -58,11 +58,11 @@ const ViewCondition = () => {
 	}, []);
 
 	return (
-		<div className="px-3 py-2">
+		<div className="">
 			{loading ? (
 				<Loader />
 			) : (
-				<div>
+				<div className="header-design">
 					<DirectBackArrowHeader destination="/home" title="View Condition" />
 					<div className="mt-5 md:w-4/5 md:mx-auto shadowDesign rounded-xl">
 						<CampusCondition condition={condition} inViewMostUseful={true} />

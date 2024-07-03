@@ -10,7 +10,11 @@ import {
 	setIsLoadingConditions,
 } from "../../../features/campusConditionSlice.js";
 
-const CampusConditions = ({ currentTime, yourCondition = false }) => {
+const CampusConditions = ({
+	currentTime,
+	yourCondition = false,
+	homePost = false,
+}) => {
 	const sliceDispatch = useDispatch();
 	const serverURL = useContext(ServerContext);
 	const { user, token } = useSelector((store) => store.auth);
@@ -80,10 +84,14 @@ const CampusConditions = ({ currentTime, yourCondition = false }) => {
 			{isLoadingConditions ? (
 				<Loader />
 			) : (
-				<div className="component-layout rounded-xl w-full">
+				<div className="rounded-xl w-full">
 					{campusConditions.length > 0 ? (
 						campusConditions.map((condition) => (
-							<CampusCondition key={condition._id} condition={condition} />
+							<CampusCondition
+								key={condition._id}
+								condition={condition}
+								homePost={homePost}
+							/>
 						))
 					) : (
 						<h2 className="text-center my-2">No condition</h2>

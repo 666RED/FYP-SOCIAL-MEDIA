@@ -79,7 +79,7 @@ const Member = ({ member }) => {
 				<img
 					src={member.profileImagePath}
 					alt="Member profile image"
-					className={`w-14 md:w-16 border-[2.5px] ${member.frameColor} rounded-full`}
+					className={`w-14 h-14 md:w-16 md:h-16 object-cover border-[2.5px] ${member.frameColor} rounded-full`}
 				/>
 				<div className="ml-3 text-sm md:text-base">
 					{/* USER NAME AND GENDER*/}

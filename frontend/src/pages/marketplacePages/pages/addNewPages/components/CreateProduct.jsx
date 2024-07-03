@@ -2,6 +2,7 @@ import { React, useEffect } from "react";
 import { useSelector } from "react-redux";
 import RemoveImageText from "../../../../../components/RemoveImageText.jsx";
 import UploadImage from "../../../../../components/UploadImage.jsx";
+import RedStar from "../../../../../components/RedStar.jsx";
 import ACTION_TYPES from "../actionTypes/createProductActionTypes.js";
 
 const CreateProduct = ({ state, dispatch }) => {
@@ -27,7 +28,9 @@ const CreateProduct = ({ state, dispatch }) => {
 	return (
 		<div>
 			{/* PRODUCT NAME */}
-			<h3 className="mt-3">Product name:</h3>
+			<h3 className="mt-3">
+				Product name <RedStar />
+			</h3>
 			<input
 				type="text"
 				id="product-name"
@@ -44,7 +47,9 @@ const CreateProduct = ({ state, dispatch }) => {
 				}}
 			/>
 			{/* PRODUCT DESCRIPTION */}
-			<h3 className="mt-3">Product description:</h3>
+			<h3 className="mt-3">
+				Product description <RedStar />
+			</h3>
 			<input
 				type="text"
 				id="product-description"
@@ -62,7 +67,9 @@ const CreateProduct = ({ state, dispatch }) => {
 			/>
 			{/* PRODUCT IMAGE */}
 			<div className="flex justify-between items-center mt-3">
-				<h3>Product image:</h3>
+				<h3>
+					Product image <RedStar />
+				</h3>
 				<RemoveImageText
 					handleRemove={handleRemoveImage}
 					imagePath={state.imagePath}
@@ -75,7 +82,9 @@ const CreateProduct = ({ state, dispatch }) => {
 				imagePath={state.imagePath}
 			/>
 			{/* PRODUCT PRICE */}
-			<h3 className="mt-3">Product price (RM):</h3>
+			<h3 className="mt-3">
+				Product price (RM) <RedStar />
+			</h3>
 			<input
 				placeholder="RM"
 				type="number"
@@ -90,7 +99,9 @@ const CreateProduct = ({ state, dispatch }) => {
 				}}
 			/>
 			{/* PRODUCT QUANTITY */}
-			<h3 className="mt-3">Product quantity:</h3>
+			<h3 className="mt-3">
+				Product quantity <RedStar />
+			</h3>
 			<input
 				type="number"
 				className="w-full my-1"
@@ -106,7 +117,9 @@ const CreateProduct = ({ state, dispatch }) => {
 				}}
 			/>
 			{/* CONTACT NUMBER */}
-			<h3 className="mt-3">Contact number:</h3>
+			<h3 className="mt-3">
+				Contact number <RedStar />
+			</h3>
 			<input
 				className="w-full my-1"
 				type="text"

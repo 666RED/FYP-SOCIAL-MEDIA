@@ -18,7 +18,7 @@ const ChatPage = () => {
 	const [profileFrameColor, setProfileFrameColor] = useState("");
 	const { enqueueSnackbar } = useSnackbar();
 	const { friendId } = useParams();
-	const scroll = useRef();
+	const scroll = useRef(null);
 	const [finish, setFinish] = useState(false);
 
 	// retrieve user name and profile image
@@ -75,7 +75,9 @@ const ChatPage = () => {
 	}, []);
 
 	useEffect(() => {
-		scroll.current.scrollIntoView({ behavior: "instant", block: "end" });
+		if (finish) {
+			scroll.current.scrollIntoView({ behavior: "instant", block: "end" });
+		}
 	}, [finish]);
 
 	return user && token ? (
@@ -92,7 +94,7 @@ const ChatPage = () => {
 						<img
 							src={imagePath}
 							alt="Friend image path"
-							className={`rounded-full max-w-12 mx-3 border-2 ${profileFrameColor}`}
+							className={`rounded-full w-12 h-12 object-cover mx-3 border-2 ${profileFrameColor}`}
 						/>
 						<p className="text-white">{userName}</p>
 					</div>

@@ -5,6 +5,7 @@ import { useSnackbar } from "notistack";
 import { FaThumbsUp, FaThumbsDown, FaUserGroup } from "react-icons/fa6";
 import { FaCommentAlt, FaUser } from "react-icons/fa";
 import { MdNoteAdd } from "react-icons/md";
+import Action from "./Action.jsx";
 
 import { formatDateTimeForFirebaseDoc } from "../../usefulFunction.js";
 import { ServerContext } from "../../App.js";
@@ -55,7 +56,9 @@ const Notification = ({ notification }) => {
 	useEffect(() => {
 		switch (notification.action) {
 			case "Like post": {
-				setAction(`${notification.userName} liked your post`);
+				setAction(
+					<Action actor={notification.userName} action={"liked your post"} />
+				);
 				setFunc(() => () => {
 					updateViewed();
 					navigate(`/notification/view-post/${notification.postId}/0`);
@@ -66,7 +69,12 @@ const Notification = ({ notification }) => {
 				break;
 			}
 			case "Comment post": {
-				setAction(`${notification.userName} commented on your post`);
+				setAction(
+					<Action
+						action={"commentd on your post"}
+						actor={notification.userName}
+					/>
+				);
 				setFunc(() => () => {
 					updateViewed();
 					navigate(`/notification/view-post/${notification.postId}/0`);
@@ -78,7 +86,12 @@ const Notification = ({ notification }) => {
 				break;
 			}
 			case "Rate up": {
-				setAction(`${notification.userName} rated up on your campus condition`);
+				setAction(
+					<Action
+						action={"rated up on your campus condition"}
+						actor={notification.userName}
+					/>
+				);
 				setFunc(() => () => {
 					updateViewed();
 					navigate(`/notification/view-condition/${notification.conditionId}`);
@@ -91,7 +104,10 @@ const Notification = ({ notification }) => {
 			}
 			case "Rate down": {
 				setAction(
-					`${notification.userName} rated down on your campus condition`
+					<Action
+						action={"rated down on your campus condition"}
+						actor={notification.userName}
+					/>
 				);
 				setFunc(() => () => {
 					updateViewed();
@@ -105,7 +121,10 @@ const Notification = ({ notification }) => {
 			}
 			case "Mark resolved": {
 				setAction(
-					`${notification.userName} marked resolved on your campus condition`
+					<Action
+						action={"marked resolved on your campus condition"}
+						actor={notification.userName}
+					/>
 				);
 				setFunc(() => () => {
 					updateViewed();
@@ -115,7 +134,12 @@ const Notification = ({ notification }) => {
 				break;
 			}
 			case "Add friend": {
-				setAction(`${notification.userName} sent you a friend request`);
+				setAction(
+					<Action
+						action={"sent you a friend request"}
+						actor={notification.userName}
+					/>
+				);
 				setFunc(() => () => {
 					updateViewed();
 					navigate("/friend/friend-request");
@@ -126,7 +150,12 @@ const Notification = ({ notification }) => {
 				break;
 			}
 			case "Accept friend request": {
-				setAction(`${notification.userName} accepted your friend request`);
+				setAction(
+					<Action
+						action={"accepted your friend request"}
+						actor={notification.userName}
+					/>
+				);
 				setFunc(() => () => {
 					updateViewed();
 					const previousArr =
@@ -142,7 +171,12 @@ const Notification = ({ notification }) => {
 				break;
 			}
 			case "Join group": {
-				setAction(`${notification.userName} sent a join group request`);
+				setAction(
+					<Action
+						action={"sent a join group request"}
+						actor={notification.userName}
+					/>
+				);
 				setFunc(() => () => {
 					updateViewed();
 					navigate(`/group/${notification.groupId}`);
@@ -155,7 +189,10 @@ const Notification = ({ notification }) => {
 			}
 			case "Accept join group": {
 				setAction(
-					`${notification.groupName}'s group admin accepted your join group request`
+					<p>
+						<span className="font-semibold">{`${notification.groupName}'s group admin`}</span>{" "}
+						accepted your join group request
+					</p>
 				);
 				setFunc(() => () => {
 					updateViewed();
@@ -168,7 +205,12 @@ const Notification = ({ notification }) => {
 				break;
 			}
 			case "Like group post": {
-				setAction(`${notification.userName} liked your group post`);
+				setAction(
+					<Action
+						action={"liked your group post"}
+						actor={notification.userName}
+					/>
+				);
 				setFunc(() => () => {
 					updateViewed();
 					navigate(`/notification/view-group-post/${notification.postId}`);
@@ -180,7 +222,12 @@ const Notification = ({ notification }) => {
 				break;
 			}
 			case "Comment group post": {
-				setAction(`${notification.userName} commented on your group post`);
+				setAction(
+					<Action
+						action={"commented on your group post"}
+						actor={notification.userName}
+					/>
+				);
 				setFunc(() => () => {
 					updateViewed();
 					navigate(`/notification/view-group-post/${notification.postId}`);
@@ -192,7 +239,12 @@ const Notification = ({ notification }) => {
 				break;
 			}
 			case "Add note": {
-				setAction(`New note added in ${notification.groupName}`);
+				setAction(
+					<p>
+						New note added in{" "}
+						<span className="font-semibold">{notification.groupName}</span>
+					</p>
+				);
 				setFunc(() => () => {
 					updateViewed();
 					navigate(
@@ -209,7 +261,7 @@ const Notification = ({ notification }) => {
 				setAction("");
 			}
 		}
-	}, []);
+	}, [notification]);
 
 	return (
 		<div
@@ -229,7 +281,7 @@ const Notification = ({ notification }) => {
 							: notification.imagePath
 					}
 					alt="Sender profile image"
-					className="rounded-full max-w-16"
+					className="rounded-full w-16 h-16 object-cover"
 				/>
 				{icon}
 			</div>
@@ -237,7 +289,7 @@ const Notification = ({ notification }) => {
 			{/* ACTION & TIME */}
 			<div className="ml-2">
 				{/* NAME */}
-				<p>{action}</p>
+				{action}
 				{/* TIME */}
 				<p className="text-xs text-gray-600">
 					{formatDateTimeForFirebaseDoc(notification.createdAt)}

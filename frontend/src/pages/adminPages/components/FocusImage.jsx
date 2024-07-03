@@ -12,8 +12,10 @@ const FocusImage = ({ imagePath, setShowImage, isProfileImage = false }) => {
 				<img
 					src={imagePath}
 					alt="Focus image"
-					className={`border border-black max-h-[35rem] ${
-						isProfileImage ? "rounded-full" : "rounded-xl"
+					className={`border border-black h-[28rem] ${
+						isProfileImage
+							? "rounded-full w-[28rem] object-cover"
+							: "rounded-xl"
 					} `}
 				/>
 			</div>

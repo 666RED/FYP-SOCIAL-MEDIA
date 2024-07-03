@@ -39,7 +39,7 @@ const Product = ({ product }) => {
 			<ViewButton path={`/marketplace/product/view-product/${product._id}`} />
 			{user._id !== product.userId ? (
 				// CONTACT BUTTON
-				<ContactButton contactUserId={product.userId} />
+				<ContactButton contactUserId={product.userId} marginTop={true} />
 			) : (
 				// EDIT BUTTON
 				<EditButton path={`/marketplace/product/edit-product/${product._id}`} />

@@ -1,4 +1,4 @@
-import { React, useContext, useReducer } from "react";
+import { React, useContext, useReducer, useRef, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useSnackbar } from "notistack";
 import { BsThreeDots } from "react-icons/bs/index.js";
@@ -18,6 +18,7 @@ const Comment = ({ comment, post }) => {
 	const serverURL = useContext(ServerContext);
 	const { user, token } = useSelector((store) => store.auth);
 	const [state, dispatch] = useReducer(commentReducer, INITIAL_STATE);
+	const optionDivRef = useRef();
 
 	const previous = window.location.pathname;
 
@@ -71,6 +72,24 @@ const Comment = ({ comment, post }) => {
 		}
 	};
 
+	// close option divs
+	useEffect(() => {
+		const handleClickOutside = (event) => {
+			if (
+				optionDivRef.current &&
+				!optionDivRef.current.contains(event.target)
+			) {
+				dispatch({ type: ACTION_TYPES.CLOSE_OPTIONS });
+			}
+		};
+
+		document.addEventListener("mousedown", handleClickOutside);
+
+		return () => {
+			document.removeEventListener("mousedown", handleClickOutside);
+		};
+	}, []);
+
 	return (
 		<div className="border border-gray-600 rounded-xl p-2 mb-3 relative">
 			{state.loading && <Spinner />}
@@ -97,7 +116,10 @@ const Comment = ({ comment, post }) => {
 
 			{/* OPTIONS DIV */}
 			{state.showOptions && (
-				<div className="absolute right-2 top-5 border border-gray-600 bg-gray-200">
+				<div
+					className="absolute right-2 top-5 border border-gray-600 bg-gray-200"
+					ref={optionDivRef}
+				>
 					{/* EDIT */}
 					{user._id === comment.userId && (
 						<OptionDiv

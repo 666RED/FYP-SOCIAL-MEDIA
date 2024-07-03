@@ -72,13 +72,13 @@ const PendingPage = () => {
 	};
 
 	return user && token ? (
-		<div className="page-layout-with-back-arrow mb-3">
+		<div className="page-layout-with-back-arrow">
 			{/* HEADER */}
 			<DirectBackArrowHeader
 				destination="/friend"
 				title="Pending friend request"
 			/>
-			<div className="overflow-y-auto overflow-x-hidden max-h-[42rem] min-[500px]:max-h-[35rem] pb-2">
+			<div className="mt-2 overflow-x-hidden pb-2">
 				{/* PENDING LIST */}
 				<PendingList />
 				{/* LOAD MORE BUTTON */}

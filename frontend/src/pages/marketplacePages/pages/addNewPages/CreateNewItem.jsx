@@ -382,7 +382,7 @@ const CreateNewItem = () => {
 					</EventContext.Provider>
 				)}
 				{/* CREATE BUTTON */}
-				<button className="btn-green mt-8 block mx-auto w-1/2 md:w-1/4 mb-5">
+				<button className="btn-green mt-8 block mx-auto w-1/2 md:w-1/4">
 					CREATE
 				</button>
 			</div>

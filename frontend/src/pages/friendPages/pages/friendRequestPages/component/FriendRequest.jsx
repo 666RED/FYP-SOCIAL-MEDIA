@@ -117,40 +117,48 @@ const FriendRequest = ({ friendRequest }) => {
 	};
 
 	return (
-		<div className="rounded-xl p-3 my-2 border border-gray-300 shadow-xl col-span-12 md:col-span-4 lg:col-span-3 grid grid-cols-12 grid-rows-2 md:flex md:flex-col items-center md:items-start gap-x-12">
+		<div className="rounded-xl p-3 my-2 border border-gray-300 shadow-xl col-span-12 md:col-span-4 lg:col-span-3 flex flex-row md:flex-col items-center">
 			{loading && <Spinner />}
 			{/* IMAGE */}
 			<img
 				src={profileImagePath}
 				alt="User profile image"
-				className={`col-span-2 row-span-3 border-[2.5px] md:border-4 ${friendRequest.requestorId.userProfile.profileFrameColor} rounded-full max-w-20 md:max-w-32 md:self-center`}
+				className={`border-[2.5px] md:border-4 ${friendRequest.requestorId.userProfile.profileFrameColor} rounded-full w-16 h-16 md:w-32 md:h-32 object-cover md:self-center`}
 			/>
-			{/* USER NAME */}
-			<div className="col-span-8 md:my-3 md:text-xl md:flex-1 flex">
-				<p className="cursor-pointer hover:opacity-80" onClick={handleNavigate}>
-					{friendRequest.requestorId.userName}
-					{/* GENDER */}
-					{friendRequest.requestorId.userGender === "male" ? (
-						<FaMale className="text-blue-500 inline" />
-					) : (
-						<FaFemale className="text-pink-500 inline" />
-					)}
-				</p>
-			</div>
+			<div className="flex-1 flex flex-col w-full justify-between ml-3 md:ml-0 md:mt-3">
+				{/* USER NAME */}
+				<div className="md:text-xl md:mx-auto flex mb-2">
+					<p
+						className="cursor-pointer hover:opacity-80"
+						onClick={handleNavigate}
+					>
+						{friendRequest.requestorId.userName}
+						{/* GENDER */}
+						{friendRequest.requestorId.userGender === "male" ? (
+							<FaMale className="text-blue-500 inline" />
+						) : (
+							<FaFemale className="text-pink-500 inline" />
+						)}
+					</p>
+				</div>
 
-			{/* BUTTONS ROW */}
-			<div className="col-span-8 md:flex md:w-full">
-				{/* ACCEPT BUTTON */}
-				<button
-					className="btn-green mr-3 min-w-24 md:flex-1"
-					onClick={handleAccept}
-				>
-					Accept
-				</button>
-				{/* REJECT BUTTON */}
-				<button className="btn-red min-w-24 md:flex-1" onClick={handleReject}>
-					Reject
-				</button>
+				{/* BUTTONS ROW */}
+				<div>
+					{/* ACCEPT BUTTON */}
+					<button
+						className="btn-green mr-3 min-w-24 md:flex-1 md:w-full"
+						onClick={handleAccept}
+					>
+						Accept
+					</button>
+					{/* REJECT BUTTON */}
+					<button
+						className="btn-red min-w-24 md:flex-1 md:w-full md:mt-2 mt-0"
+						onClick={handleReject}
+					>
+						Reject
+					</button>
+				</div>
 			</div>
 		</div>
 	);

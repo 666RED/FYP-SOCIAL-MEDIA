@@ -143,11 +143,11 @@ const JoinGroupRequestsList = () => {
 	};
 
 	return (
-		<div className="my-5">
+		<div className="mt-5">
 			{isLoadingJoinGroupRequests ? (
 				<Loader />
 			) : joinGroupRequestsArr.length > 0 ? (
-				<div className="grid grid-cols-12 gap-x-5 max-h-[33rem] overflow-y-auto">
+				<div className="grid grid-cols-12 gap-x-5 overflow-y-auto">
 					{/* JOIN GROUP REQUEST */}
 					{joinGroupRequestsArr.map((joinGroupRequest) => (
 						<JoinGroupRequest

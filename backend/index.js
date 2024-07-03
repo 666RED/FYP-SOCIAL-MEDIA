@@ -169,7 +169,7 @@ app.use("/chat", chatRoute);
 
 // DATABASE CONFIGURATION
 let databaseUrl;
-if (isPublish) {
+if (!isPublish) {
 	databaseUrl = process.env.MONGO_URL_PUBLISH;
 } else {
 	databaseUrl = process.env.MONGO_URL;

@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { MdExpandLess, MdExpandMore } from "react-icons/md";
 
 const FAQsElement = ({ element }) => {
 	const [showAnswer, setShowAnswer] = useState(false);
@@ -10,12 +11,13 @@ const FAQsElement = ({ element }) => {
 			}`}
 		>
 			{/* QUESTION */}
-			<h3
-				className="font-semibold text-base cursor-pointer hover:opacity-70"
+			<div
+				className="flex items-center justify-between cursor-pointer hover:opacity-70"
 				onClick={() => setShowAnswer((prev) => !prev)}
 			>
-				{element.question}
-			</h3>
+				<h3 className="font-semibold text-base">{element.question}</h3>
+				{showAnswer ? <MdExpandLess /> : <MdExpandMore />}
+			</div>
 			{/* ANSWR */}
 			<p className={"mt-2 bg-gray-200 rounded-xl p-2"}>{element.answer}</p>
 		</div>

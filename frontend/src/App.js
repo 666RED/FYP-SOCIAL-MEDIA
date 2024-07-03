@@ -59,7 +59,6 @@ import {
 	where,
 	onSnapshot,
 	collection,
-	getDocs,
 	orderBy,
 } from "firebase/firestore";
 import ChatPage from "./components/chat/ChatPage.jsx";
@@ -74,11 +73,12 @@ function App() {
 
 	const { user } = useSelector((store) => store.auth);
 	const [notifications, setNotifications] = useState([]);
+	const [notisLength, setNotisLength] = useState(0);
 	const [messages, setMessages] = useState([]);
 	const { enqueueSnackbar } = useSnackbar();
 
 	const snackBarSetting = {
-		autoHideDuration: null,
+		autoHideDuration: 5000,
 		variant: "custom-snackbar",
 		action: (key) => (
 			<button onClick={() => closeSnackbar(key)}>
@@ -87,7 +87,7 @@ function App() {
 		),
 	};
 
-	// for each time a new notification is added
+	// notifications
 	useEffect(() => {
 		if (!user) {
 			return () => {};
@@ -103,9 +103,15 @@ function App() {
 		let first = true;
 
 		const unsubscribe = onSnapshot(queryMessages, (snapshot) => {
+			const newNotifications = [];
+
 			snapshot.docChanges().forEach((change) => {
 				const data = change.doc.data();
-				const { id } = change.doc;
+				const id = change.doc.id;
+				const notification = { id, ...data };
+
+				newNotifications.push(notification);
+
 				if (!first) {
 					if (change.type === "added") {
 						switch (data.action) {
@@ -194,31 +200,28 @@ function App() {
 								break;
 							}
 						}
-						setNotifications((prevNotifications) => [
-							{ id, ...data },
-							...prevNotifications,
-						]);
+						getNotification({ notification: { ...data, id }, type: "added" });
 					} else if (change.type === "modified") {
-						setNotifications((prevNotifications) =>
-							prevNotifications.map((noti) =>
-								noti.id === id ? { id, ...data } : noti
-							)
-						);
+						getNotification({
+							notification: { ...data, id },
+							type: "modified",
+						});
 					} else if (change.type === "removed") {
-						setNotifications((prevNotifications) =>
-							prevNotifications.filter((noti) => noti.id !== id)
-						);
+						setNotifications((prev) => prev.filter((noti) => noti.id !== id));
 					}
 				}
 			});
-
-			first = false;
+			if (first) {
+				// get all notifications
+				getNotifications(newNotifications);
+				first = false;
+			}
 		});
 
 		return () => unsubscribe();
 	}, [user]);
 
-	// for each time a new message is added
+	// message
 	useEffect(() => {
 		if (!user) {
 			return () => {};
@@ -266,70 +269,173 @@ function App() {
 			first = false;
 		});
 
-		const handleNewMessages = (newMessages) => {
-			setMessages((prevMessages) => {
-				const combinedMessages = [...prevMessages, ...newMessages];
-				const sortedMessages = combinedMessages.sort((a, b) => {
-					const timeA =
-						a.createdAt.seconds * 1000 + a.createdAt.nanoseconds / 1000000;
-					const timeB =
-						b.createdAt.seconds * 1000 + b.createdAt.nanoseconds / 1000000;
-					return timeB - timeA;
-				});
-
-				const unread = {};
-				const filteredMessages = [];
-				sortedMessages.forEach((message) => {
-					if (
-						message.sender.toString() === user._id.toString() &&
-						!(message.receiver in unread)
-					) {
-						unread[message.receiver] = "1";
-						filteredMessages.push(message);
-					} else if (
-						message.receiver.toString() === user._id.toString() &&
-						!(message.sender in unread)
-					) {
-						unread[message.sender] = "1";
-						filteredMessages.push(message);
-					}
-				});
-
-				return filteredMessages;
-			});
-		};
-
 		return () => unsubscribe();
 	}, [user]);
+
+	const getNotifications = async (notifications) => {
+		try {
+			setNotisLength(
+				notifications.reduce((arr, value) => {
+					if (!value.viewed) {
+						return arr + 1;
+					} else {
+						return arr;
+					}
+				}, 0)
+			);
+			const res = await fetch(
+				`${server}/notification/get-notifications-profile?notifications=${JSON.stringify(
+					{
+						notifications: notifications.map((notification) => {
+							if (
+								notification.action === "Accept join group" ||
+								notification.action === "Add note"
+							) {
+								return {
+									id: notification.id,
+									acceptGroupId: notification.acceptGroupId,
+									type: "Group",
+								};
+							} else if (
+								notification.action === "Dismiss report" ||
+								notification.action === "Mark resolved" ||
+								notification.action === "Remove post to target" ||
+								notification.action === "Remove post to reporter"
+							) {
+								return {
+									id: notification.id,
+									sender: notification.sender,
+									type: "Admin",
+								};
+							} else {
+								return {
+									id: notification.id,
+									sender: notification.sender,
+									type: "User",
+								};
+							}
+						}),
+					}
+				)}`,
+				{
+					method: "GET",
+					headers: {
+						"Content-Type": "application/json",
+					},
+				}
+			);
+
+			const { msg, returnedNotifications } = await res.json();
+
+			if (msg === "Success") {
+				setNotifications(
+					returnedNotifications.map((noti) => {
+						const matchedNotification = notifications.find(
+							(notification) => notification.id === noti.id
+						);
+						if (matchedNotification) {
+							return {
+								...matchedNotification,
+								imagePath: noti.imagePath,
+								type: noti.type,
+							};
+						}
+						return noti;
+					})
+				);
+			}
+		} catch (err) {
+			console.log("Could not connect to the server");
+		}
+	};
+
+	const getNotification = async ({ notification, type }) => {
+		try {
+			let sentNotification = {};
+			if (
+				notification.action === "Accept join group" ||
+				notification.action === "Add note"
+			) {
+				sentNotification = {
+					id: notification.id,
+					sender: notification.acceptGroupId,
+					type: "Group",
+				};
+			} else if (
+				notification.action === "Dismiss report" ||
+				notification.action === "Mark resolved" ||
+				notification.action === "Remove post to target" ||
+				notification.action === "Remove post to reporter"
+			) {
+				sentNotification = {
+					id: notification.id,
+					sender: notification.sender,
+					type: "Admin",
+				};
+			} else {
+				sentNotification = {
+					id: notification.id,
+					sender: notification.sender,
+					type: "User",
+				};
+			}
+
+			const res = await fetch(
+				`${server}/notification/get-notification-profile?id=${sentNotification.id}&sender=${sentNotification.sender}&type=${sentNotification.type}
+				`,
+				{
+					method: "GET",
+					headers: {
+						"Content-Type": "application/json",
+					},
+				}
+			);
+
+			if (!res.ok && res.status === 403) {
+				console.log("Access denied");
+				return;
+			}
+
+			const { msg, returnedNotification } = await res.json();
+
+			if (msg === "Success") {
+				if (type === "added") {
+					setNotifications((prev) => [
+						{
+							...notification,
+							imagePath: returnedNotification.imagePath,
+							type: returnedNotification.type,
+						},
+						...prev,
+					]);
+				} else {
+					setNotifications((prev) =>
+						prev.map((noti) =>
+							noti.id === returnedNotification.id
+								? {
+										...notification,
+										imagePath: returnedNotification.imagePath,
+										type: returnedNotification.type,
+								  }
+								: noti
+						)
+					);
+				}
+			} else {
+				console.log("Fail to add notification");
+			}
+		} catch (err) {
+			console.log("Could not connect to the server");
+		}
+	};
 
 	// first render
 	useEffect(() => {
 		if (!user) {
 			return () => {};
 		}
-		getNotifications();
 		getChats();
 	}, [user]);
-
-	const getNotifications = async () => {
-		try {
-			const notificationRef = collection(db, "notifications");
-			const queryMessages = query(
-				notificationRef,
-				where("receiver", "==", user._id.toString()),
-				orderBy("createdAt", "desc")
-			);
-
-			const data = await getDocs(queryMessages);
-			const filteredData = data.docs.map((doc) => ({
-				id: doc.id,
-				...doc.data(),
-			}));
-			setNotifications(filteredData);
-		} catch (err) {
-			console.log("Fail to retrieve notifications");
-		}
-	};
 
 	const getChats = async () => {
 		try {
@@ -403,7 +509,7 @@ function App() {
 
 	return (
 		<ServerContext.Provider value={server}>
-			<NotificationContext.Provider value={notifications}>
+			<NotificationContext.Provider value={{ notifications, notisLength }}>
 				<MessageContext.Provider value={{ chats: messages }}>
 					<BrowserRouter>
 						<Routes>

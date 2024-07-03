@@ -206,11 +206,11 @@ const Events = ({ getEventPath, searchEventPath, setLoading }) => {
 	}, [getEventPath]);
 
 	return (
-		<div className="mt-3">
+		<div className="mt-3 flex-1 overflow-auto pb-2">
 			{isLoadingEvents ? (
 				<Loader />
 			) : eventsArr.length > 0 ? (
-				<div className="grid grid-cols-12 gap-4 px-2 max-img-height overflow-y-auto marketplace-content-height mb-2">
+				<div className="grid grid-cols-12 gap-4 px-2 max-img-height overflow-y-auto mb-2">
 					{eventsArr.map((event) => (
 						<Event key={event._id} event={event} />
 					))}
@@ -226,7 +226,7 @@ const Events = ({ getEventPath, searchEventPath, setLoading }) => {
 					</div>
 				</div>
 			) : (
-				<h2>No event</h2>
+				<h2 className="ml-2">No event</h2>
 			)}
 		</div>
 	);

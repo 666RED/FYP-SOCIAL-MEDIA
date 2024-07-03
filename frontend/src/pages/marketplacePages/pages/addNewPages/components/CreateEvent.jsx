@@ -4,6 +4,7 @@ import RemoveImageText from "../../../../../components/RemoveImageText.jsx";
 import ContactNumberInputs from "./ContactNumberInputs.jsx";
 import UploadImage from "../../../../../components/UploadImage.jsx";
 import AddNewContactNumber from "./AddNewContactNumber.jsx";
+import RedStar from "../../../../../components/RedStar.jsx";
 import ACTION_TYPES from "../actionTypes/createEventActionTypes.js";
 import { EventContext } from "../CreateNewItem.jsx";
 
@@ -52,7 +53,9 @@ const CreateEvent = () => {
 	return (
 		<div>
 			{/* EVENT NAME */}
-			<h3 className="mt-3">Event name:</h3>
+			<h3 className="mt-3">
+				Event name <RedStar />
+			</h3>
 			<input
 				type="text"
 				id="event-name"
@@ -69,7 +72,9 @@ const CreateEvent = () => {
 				}}
 			/>
 			{/* EVENT DESCRIPTION */}
-			<h3 className="mt-3">Event description:</h3>
+			<h3 className="mt-3">
+				Event description <RedStar />
+			</h3>
 			<input
 				type="text"
 				id="event-description"
@@ -87,7 +92,9 @@ const CreateEvent = () => {
 			/>
 			{/* EVENT POSTER IMAGE */}
 			<div className="flex justify-between items-center mt-3">
-				<h3>Event poster image:</h3>
+				<h3>
+					Event poster image <RedStar />
+				</h3>
 				<RemoveImageText
 					handleRemove={handleRemoveImage}
 					imagePath={state.imagePath}
@@ -100,7 +107,9 @@ const CreateEvent = () => {
 				imagePath={state.imagePath}
 			/>
 			{/* EVENT VENUE */}
-			<h3 className="mt-3">Event venue:</h3>
+			<h3 className="mt-3">
+				Event venue <RedStar />
+			</h3>
 			<input
 				type="text"
 				required
@@ -114,7 +123,9 @@ const CreateEvent = () => {
 				}
 			/>
 			{/* EVENT ORGANIZER */}
-			<h3 className="mt-3">Event organizer:</h3>
+			<h3 className="mt-3">
+				Event organizer <RedStar />
+			</h3>
 			<input
 				type="text"
 				required
@@ -148,7 +159,9 @@ const CreateEvent = () => {
 				<div className="my-1 grid grid-cols-6 gap-x-3">
 					{/* ONE DATE */}
 					<div className="col-span-6 md:col-span-2">
-						<h3>Date:</h3>
+						<h3>
+							Date <RedStar />
+						</h3>
 						<input
 							type="date"
 							className="w-full my-1"
@@ -165,7 +178,9 @@ const CreateEvent = () => {
 					</div>
 					{/* START TIME */}
 					<div className="col-span-3 md:col-span-2">
-						<h3>Start time:</h3>
+						<h3>
+							Start time <RedStar />
+						</h3>
 						<input
 							type="time"
 							className="w-full my-1"
@@ -181,7 +196,9 @@ const CreateEvent = () => {
 					</div>
 					{/* END TIME */}
 					<div className="col-span-3 md:col-span-2">
-						<h3>End time:</h3>
+						<h3>
+							End time <RedStar />
+						</h3>
 						<input
 							required
 							type="time"
@@ -201,7 +218,9 @@ const CreateEvent = () => {
 				<div className="my-1 grid grid-cols-6 gap-x-3">
 					<div className="col-span-3">
 						{/* START DATE */}
-						<h3>Start date:</h3>
+						<h3>
+							Start date <RedStar />
+						</h3>
 						<input
 							type="date"
 							className="w-full my-1"
@@ -212,7 +231,9 @@ const CreateEvent = () => {
 					</div>
 					<div className="col-span-3">
 						{/* END DATE */}
-						<h3>End date:</h3>
+						<h3>
+							End date <RedStar />
+						</h3>
 						<input
 							required
 							id="end-date"
@@ -234,7 +255,9 @@ const CreateEvent = () => {
 				</div>
 			)}
 			{/* CONTACT NUMBER */}
-			<h3 className="mt-3">Contact number:</h3>
+			<h3 className="mt-3">
+				Contact number <RedStar />
+			</h3>
 			<ContactNumberInputs />
 			<AddNewContactNumber />
 		</div>

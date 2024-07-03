@@ -10,6 +10,7 @@ import Error from "../../../components/Error.jsx";
 import LoadMoreButton from "../../../components/LoadMoreButton.jsx";
 import Posts from "../components/Posts.jsx";
 import ChatsContainer from "../components/ChatsContainer.jsx";
+import Loader from "../../../components/Spinner/Loader.jsx";
 import {
 	resetState,
 	setHasPosts,
@@ -20,7 +21,7 @@ import { MessageContext } from "../../../App.js";
 import { ServerContext } from "../../../App.js";
 
 const Homepage = () => {
-	const notifications = useContext(NotificationContext);
+	const { notisLength } = useContext(NotificationContext);
 	const { chats } = useContext(MessageContext);
 	const serverURL = useContext(ServerContext);
 	const [extendSideBar, setExtendSideBar] = useState(false);
@@ -115,7 +116,7 @@ const Homepage = () => {
 	};
 
 	return user && token ? (
-		<div className="py-2" id="example">
+		<div className="flex flex-col">
 			{/* SIDEBAR */}
 			<SideBar
 				selectedSection="Home"
@@ -123,7 +124,7 @@ const Homepage = () => {
 				extendSideBar={extendSideBar}
 			/>
 			{/* HEADER */}
-			<div className="mb-2 px-2 sticky top-0 bg-white z-20 flex items-center justify-between">
+			<div className="header-design flex items-center justify-between relative">
 				{/* LEFT HAND SIDE */}
 				<div className="flex items-center">
 					{/* BURGER ICON */}
@@ -136,68 +137,62 @@ const Homepage = () => {
 				</div>
 				{/* RIGHT HAND SIDE */}
 				<div className="flex items-center">
-					<div className="flex items-center">
-						{/* CHAT ICON */}
-						<div className="relative">
-							<IoChatbubbleEllipses
-								className="icon relative"
-								onClick={() => handleShow("Chats")}
-								id="chat-icon"
-							/>
-							{showChats && (
-								<div className="absolute left-0 right-0 bottom-[-4px] h-[2px] bg-blue-600"></div>
-							)}
+					{/* CHAT ICON */}
+					<div className="relative">
+						<IoChatbubbleEllipses
+							className="icon relative"
+							onClick={() => handleShow("Chats")}
+							id="chat-icon"
+						/>
+						{showChats && (
+							<div className="absolute left-0 right-0 bottom-[-4px] h-[2px] bg-blue-600"></div>
+						)}
 
-							<p
-								className="absolute bg-red-600 rounded-full text-white px-1 text-xs -right-1 -top-1 cursor-pointer"
-								onClick={() => handleShow("Chats")}
-							>
-								{chats.filter(
+						<p
+							className="absolute bg-red-600 rounded-full text-white px-1 text-xs -right-1 -top-1 cursor-pointer"
+							onClick={() => handleShow("Chats")}
+						>
+							{chats.filter(
+								(chat) =>
+									!chat.viewed && chat.sender.toString() !== user._id.toString()
+							).length !== 0 &&
+								chats.filter(
 									(chat) =>
 										!chat.viewed &&
 										chat.sender.toString() !== user._id.toString()
-								).length !== 0 &&
-									chats.filter(
-										(chat) =>
-											!chat.viewed &&
-											chat.sender.toString() !== user._id.toString()
-									).length}
-							</p>
-							{/* CHATS CONTAINER */}
-							<ChatsContainer
-								showChats={showChats}
-								setShowChats={setShowChats}
-							/>
-						</div>
-						{/* NOTIFICATION ICON*/}
-						<div className="relative mx-3">
-							<GoBellFill
-								className="icon"
-								onClick={() => handleShow("Notifications")}
-								id="notification-icon"
-							/>
-							{showNotifications && (
-								<div className="absolute left-0 right-0 bottom-[-4px] h-[2px] bg-blue-600"></div>
-							)}
-							<p
-								className="absolute bg-red-600 rounded-full text-white px-1 text-xs -right-2 -top-1 cursor-pointer"
-								onClick={() => handleShow("Notifications")}
-							>
-								{notifications.filter((noti) => !noti.viewed).length !== 0 &&
-									notifications.filter((noti) => !noti.viewed).length}
-							</p>
-							{/* NOTIFICATION CONTAINER */}
-							<NotificationContainer
-								showNotifications={showNotifications}
-								setShowNotifications={setShowNotifications}
-							/>
-						</div>
+								).length}
+						</p>
+					</div>
+					{/* NOTIFICATION ICON*/}
+					<div className="relative mx-3">
+						<GoBellFill
+							className="icon"
+							onClick={() => handleShow("Notifications")}
+							id="notification-icon"
+						/>
+						{showNotifications && (
+							<div className="absolute left-0 right-0 bottom-[-4px] h-[2px] bg-blue-600"></div>
+						)}
+						<p
+							className="absolute bg-red-600 rounded-full text-white px-1 text-xs -right-2 -top-1 cursor-pointer"
+							onClick={() => handleShow("Notifications")}
+						>
+							{notisLength !== 0 && notisLength}
+						</p>
 					</div>
 				</div>
+				{/* CHATS CONTAINER */}
+				<ChatsContainer showChats={showChats} setShowChats={setShowChats} />
+				{/* NOTIFICATION CONTAINER */}
+				<NotificationContainer
+					showNotifications={showNotifications}
+					setShowNotifications={setShowNotifications}
+				/>
 			</div>
 			{/* ADD NEW POST CONTAINER */}
+			{/* later add */}
 			{/* MAIN CONTENT */}
-			<div className="page-design overflow-hidden">
+			<div className="main-content-design flex-1">
 				{/* POSTS */}
 				<Posts />
 				{/* LOAD MORE BUTTON */}

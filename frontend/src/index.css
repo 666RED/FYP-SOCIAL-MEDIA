@@ -71,13 +71,10 @@
 		background: #555;
 	}
 	.page-design {
-		@apply px-3 py-2 bg-gray-200;
+		@apply p-2 bg-gray-200;
 	}
 	.component-layout {
 		@apply w-full lg:w-7/12 mx-auto;
-	}
-	.page-layout-with-back-arrow {
-		@apply mx-3 mt-2;
 	}
 	.map-container {
 		@apply mt-3 h-96 w-full;
@@ -153,5 +150,29 @@
 
 	.messages::-webkit-scrollbar-thumb {
 		background: #cecdcd;
+	}
+
+	.header-design {
+		@apply bg-white p-2 sticky top-0 z-20;
+	}
+
+	.direct-back-arrow-header-design {
+		@apply bg-white sticky top-0 z-20;
+	}
+
+	.main-content-design {
+		@apply bg-gray-200 w-full p-2;
+	}
+
+	.page-layout-with-back-arrow {
+		@apply p-2;
+	}
+
+	.middle-component {
+		@apply w-full md:w-2/3 md:mx-auto;
+	}
+
+	.right-container {
+		@apply absolute bg-white top-[55px] right-2 lg:w-5/12 md:w-7/12 sm:w-8/12 w-10/12 shadow-[rgba(0,0,0,0.1)_0px_0px_7px_7px] rounded-xl min-h-[6rem] max-h-[34rem] overflow-x-hidden overflow-y-auto;
 	}
 }

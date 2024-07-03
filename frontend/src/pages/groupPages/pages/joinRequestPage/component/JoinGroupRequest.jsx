@@ -10,7 +10,7 @@ import { ServerContext } from "../../../../../App.js";
 const JoinGroupRequest = ({ joinGroupRequest }) => {
 	const sliceDispatch = useDispatch();
 	const serverURL = useContext(ServerContext);
-	const { user, token } = useSelector((store) => store.auth);
+	const { token } = useSelector((store) => store.auth);
 	const profileImagePath =
 		joinGroupRequest.requestorId.userProfile.profileImagePath;
 	const [loading, setLoading] = useState(false);

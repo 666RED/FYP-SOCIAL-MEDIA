@@ -5,6 +5,7 @@ import UploadImage from "../../../components/UploadImage.jsx";
 import Filter from "../../../components/Filter.jsx";
 import FormHeader from "../../../components/FormHeader.jsx";
 import RemoveImageText from "../../../components/RemoveImageText.jsx";
+import RedStar from "../../../components/RedStar.jsx";
 import { useSnackbar } from "notistack";
 import {
 	setShowAddNewPostForm,
@@ -105,7 +106,9 @@ const AddNewPostForm = () => {
 						discardChanges={state.madeChange}
 					/>
 					{/* TEXT */}
-					<label htmlFor="text-description">Text description:</label>
+					<label htmlFor="text-description">
+						Text description <RedStar />
+					</label>
 					<textarea
 						id="text-description"
 						value={state.text}
@@ -123,7 +126,7 @@ const AddNewPostForm = () => {
 					/>
 					{/* IMAGE */}
 					<div className="flex justify-between items-center">
-						<label>Image:</label>
+						<label>Image</label>
 						<RemoveImageText
 							handleRemove={handleRemove}
 							imagePath={state.imagePath}

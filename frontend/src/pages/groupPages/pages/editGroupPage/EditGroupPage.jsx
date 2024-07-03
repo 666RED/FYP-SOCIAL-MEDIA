@@ -188,7 +188,7 @@ const EditGroupPage = () => {
 	};
 
 	return user && token ? (
-		<form className="page-layout-with-back-arrow" onSubmit={handleSave}>
+		<form className="page-layout-with-back-arrow pb-3" onSubmit={handleSave}>
 			{state.loading && <Spinner />}
 			{/* HEADER */}
 			<DirectBackArrowHeader
@@ -307,7 +307,8 @@ const EditGroupPage = () => {
 					/>
 				</div>
 			</div>
-			<button className="btn-green mt-8 block mx-auto w-1/2 md:w-1/4 mb-5">
+			{/* SAVE BUTTON */}
+			<button className="btn-green mt-8 block mx-auto w-1/2 md:w-1/4">
 				SAVE
 			</button>
 		</form>

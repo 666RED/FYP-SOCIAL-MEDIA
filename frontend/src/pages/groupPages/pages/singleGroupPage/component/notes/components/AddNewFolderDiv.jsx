@@ -56,6 +56,11 @@ const AddNewFolderDiv = ({ setShowAddNewFolderDiv }) => {
 				enqueueSnackbar("Fail to create new folder", {
 					variant: "error",
 				});
+			} else if (msg === "Folder name is already in use") {
+				enqueueSnackbar("Folder name is already in use", {
+					variant: "error",
+				});
+				document.querySelector("#name-input").focus();
 			} else {
 				enqueueSnackbar("An error occurred", { variant: "error" });
 			}
@@ -104,6 +109,7 @@ const AddNewFolderDiv = ({ setShowAddNewFolderDiv }) => {
 					}}
 					placeholder="Folder name"
 					maxLength={50}
+					id="name-input"
 				/>
 				{/* CREATE BUTTON */}
 				<button className="btn-green mx-auto mt-3 w-full">CREATE</button>

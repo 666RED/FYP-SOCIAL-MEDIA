@@ -152,10 +152,11 @@ const SingleGroupPage = () => {
 				/>
 			)}
 			{/* HEADER */}
-			<div className="mx-3 my-3 bg-white">
-				<DirectBackArrowHeader destination="/group" title="" />
+			<div className="p-2 sticky top-0 bg-white z-20">
+				<DirectBackArrowHeader destination="/group" title="View group" />
 			</div>
-			<div className="page-design pb-3">
+			{/* MAIN CONTENT */}
+			<div className="main-content-design">
 				{/* GROUP PROFILE */}
 				<GroupProfile />
 				{/* BUTTONS ROW */}

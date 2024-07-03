@@ -84,7 +84,7 @@ const Friend = ({ friend }) => {
 			<img
 				src={friend.userProfile.profileImagePath}
 				alt="Friend profile image"
-				className={`col-span-2 min-w-12 md:max-w-24 border-[2.5px] md:border-4 ${friend.userProfile.profileFrameColor} rounded-full`}
+				className={`col-span-2 w-16 md:w-24 h-16 md:h-24 object-cover border-[2.5px] md:border-4 ${friend.userProfile.profileFrameColor} rounded-full`}
 			/>
 			{/* USER NAME AND FRIEND COUNT DIV */}
 			<div className="col-span-6 md:my-3 md:flex-1 flex-col ml-2">
@@ -110,13 +110,6 @@ const Friend = ({ friend }) => {
 
 			{/* BUTTONS */}
 			<div className="col-span-4 md:w-full">
-				{/* VIEW PROFILE BUTTON */}
-				<button
-					className="btn-gray w-full text-sm sm:text-base"
-					onClick={handleOnClick}
-				>
-					View Profile
-				</button>
 				{/* CONTACT BUTTON */}
 				<ContactButton contactUserId={friend._id} path="/friend" text="Chat" />
 				{/* UNFRIEND BUTTON */}

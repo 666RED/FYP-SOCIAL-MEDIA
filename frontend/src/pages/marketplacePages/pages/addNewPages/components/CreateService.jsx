@@ -2,6 +2,7 @@ import { React, useEffect } from "react";
 import { useSelector } from "react-redux";
 import RemoveImageText from "../../../../../components/RemoveImageText.jsx";
 import UploadImage from "../../../../../components/UploadImage.jsx";
+import RedStar from "../../../../../components/RedStar.jsx";
 import ACTION_TYPES from "../actionTypes/createServiceActionTypes.js";
 
 const CreateService = ({ state, dispatch }) => {
@@ -27,7 +28,9 @@ const CreateService = ({ state, dispatch }) => {
 	return (
 		<div>
 			{/* SERVICE NAME */}
-			<h3 className="mt-3">Service name:</h3>
+			<h3 className="mt-3">
+				Service name <RedStar />
+			</h3>
 			<input
 				type="text"
 				id="service-name"
@@ -44,7 +47,9 @@ const CreateService = ({ state, dispatch }) => {
 				}}
 			/>
 			{/* SERVICE DESCRIPTION */}
-			<h3 className="mt-3">Service description:</h3>
+			<h3 className="mt-3">
+				Service description <RedStar />
+			</h3>
 			<input
 				type="text"
 				id="service-description"
@@ -60,7 +65,9 @@ const CreateService = ({ state, dispatch }) => {
 					});
 				}}
 			/>
-			<h3 className="mt-3">Service category:</h3>
+			<h3 className="mt-3">
+				Service category <RedStar />
+			</h3>
 			{/* SERVICE CATEGORY */}
 			<div>
 				{/* CATEGORY */}
@@ -94,7 +101,9 @@ const CreateService = ({ state, dispatch }) => {
 			</div>
 			{/* SERVICE POSTER IMAGE */}
 			<div className="flex justify-between items-center mt-3">
-				<h3>Service poster image:</h3>
+				<h3>
+					Service poster image <RedStar />
+				</h3>
 				<RemoveImageText
 					handleRemove={handleRemoveImage}
 					imagePath={state.imagePath}
@@ -107,7 +116,9 @@ const CreateService = ({ state, dispatch }) => {
 				imagePath={state.imagePath}
 			/>
 			{/* CONTACT NUMBER */}
-			<h3 className="mt-3">Contact number:</h3>
+			<h3 className="mt-3">
+				Contact number <RedStar />
+			</h3>
 			<input
 				className="w-full my-1"
 				type="text"

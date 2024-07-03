@@ -322,7 +322,7 @@ const FriendPage = () => {
 	};
 
 	return user && token ? (
-		<div className="py-2">
+		<div className="flex flex-col h-full">
 			{loading && <Spinner />}
 			{/* SIDEBAR */}
 			<SideBar
@@ -374,11 +374,13 @@ const FriendPage = () => {
 			{/* HORIZONTAL LINE */}
 			<hr className="border-4 border-gray-400 my-3" />
 			{/* MAIN CONTENT */}
-			<div className="px-2 flex justify-between w-full items-center">
+			<div className="px-2 pb-2 flex justify-between w-full items-center">
 				{/* TITLE */}
-				<h2>Your Friends ({numberOfFriends})</h2>
+				<h2 className="text-lg sm:text-2xl">
+					Your Friends ({numberOfFriends})
+				</h2>
 				{/* SEARCH BAR */}
-				<div className="max-w-[10.5rem] md:max-w-96">
+				<div className="max-w-96">
 					<SearchBar
 						func={handleOnChange}
 						placeholderText="Search user"
@@ -387,7 +389,7 @@ const FriendPage = () => {
 					/>
 				</div>
 			</div>
-			<div className="max-h-[33rem] min-[500px]:max-h-[26rem] overflow-y-auto pb-2">
+			<div className="overflow-y-auto pb-2 flex-1">
 				{/* FRIENDS LIST */}
 				<FriendsList setListLoading={setListLoading} />
 				{/* LOAD MORE BUTTON */}

@@ -86,26 +86,28 @@ const YourConditionsPage = () => {
 	};
 
 	return user && token ? (
-		<div>
+		<div className="flex flex-col h-full">
 			{/* HEADER */}
-			<div className="mx-3 my-3 bg-white">
+			<div className="p-2">
 				<DirectBackArrowHeader
 					destination={"/campus-condition"}
 					title="Your Conditions"
 				/>
 			</div>
-			<div className="page-design pb-3">
-				<div className="component-layout">
-					{/* CAMPUS CONDITIONS */}
-					<CampusConditions currentTime={updatedTime} yourCondition={true} />
-					{/* LOAD MORE BUTTON */}
-					<LoadMoreButton
-						handleLoadMore={handleLoadMore}
-						hasComponent={hasConditions}
-						isLoadingComponent={isLoadingConditions}
-						loadMore={loadMore}
-					/>
-				</div>
+			<div className="main-content-design flex-1">
+				{/* CAMPUS CONDITIONS */}
+				<CampusConditions
+					currentTime={updatedTime}
+					yourCondition={true}
+					homePost={true}
+				/>
+				{/* LOAD MORE BUTTON */}
+				<LoadMoreButton
+					handleLoadMore={handleLoadMore}
+					hasComponent={hasConditions}
+					isLoadingComponent={isLoadingConditions}
+					loadMore={loadMore}
+				/>
 			</div>
 		</div>
 	) : (

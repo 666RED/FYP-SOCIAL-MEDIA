@@ -40,6 +40,12 @@ export const CampusConditionReducer = (state, action) => {
 				showOptionDiv: !state.showOptionDiv,
 			};
 		}
+		case "CLOSE_OPTION_DIV": {
+			return {
+				...state,
+				showOptionDiv: false,
+			};
+		}
 		case "TOGGLE_CONDITION_RESOLVED": {
 			return {
 				...state,

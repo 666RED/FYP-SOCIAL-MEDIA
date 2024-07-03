@@ -6,6 +6,7 @@ import FormHeader from "../FormHeader.jsx";
 import UploadImage from "../UploadImage.jsx";
 import Spinner from "../Spinner/Spinner.jsx";
 import RemoveImageText from "../RemoveImageText.jsx";
+import RedStar from "../RedStar.jsx";
 import {
 	editPostFormReducer,
 	INITIAL_STATE,
@@ -112,7 +113,9 @@ const EditPostForm = ({
 						closeFunction={toggleShowEditPostForm}
 					/>
 					{/* TEXT */}
-					<label htmlFor="text-description">Text description:</label>
+					<label htmlFor="text-description">
+						Text description <RedStar />
+					</label>
 					<textarea
 						id="text-description"
 						value={state.postDescription}
@@ -133,7 +136,7 @@ const EditPostForm = ({
 					/>
 					{/* IMAGE */}
 					<div className="flex items-center justify-between">
-						<label>Image:</label>
+						<label>Image</label>
 						{/* REMOVE IMAGE TEXT */}
 						<RemoveImageText
 							imagePath={state.postImagePath}

@@ -11,7 +11,7 @@ const router = express.Router();
 
 router.get("/retrieve-user", verifyToken, retrieveUser);
 router.post("/send-message", verifyToken, sendMessage);
-router.get("/get-chats-profile", verifyToken, getChatsProfile);
+router.get("/get-chats-profile", getChatsProfile);
 router.patch("/update-viewed", verifyToken, updateViewed);
 
 export default router;

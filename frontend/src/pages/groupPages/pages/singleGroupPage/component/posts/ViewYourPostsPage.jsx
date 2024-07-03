@@ -82,15 +82,15 @@ const ViewYourPostsPage = () => {
 	};
 
 	return user && token ? (
-		<div>
+		<div className="flex flex-col h-full">
 			{/* HEADER */}
-			<div className="mx-3 my-3 bg-white">
+			<div className="p-2">
 				<DirectBackArrowHeader
 					destination={`/group/${groupId}`}
 					title="Your posts"
 				/>
 			</div>
-			<div className="page-design pb-3">
+			<div className="main-content-design flex-1">
 				{/* YOUR POSTS */}
 				<GroupPosts
 					currentTime={currentTime}

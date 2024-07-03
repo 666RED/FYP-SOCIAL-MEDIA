@@ -87,30 +87,20 @@ const Posts = () => {
 		};
 	}, []);
 
-	return (
-		<div>
-			{isLoadingPosts ? (
-				<Loader />
-			) : (
-				<div className="bg-gray-200 w-full py-1 px-3">
-					{hasPosts || posts.length > 0 ? (
-						posts.map((post) => {
-							if (post.type === "Post") {
-								return <Post key={post._id} post={post} />;
-							} else if (post.type === "Group") {
-								return <GroupPost key={post._id} post={post} viewPost={true} />;
-							} else if (post.type === "Condition") {
-								return (
-									<Condition condition={post} key={post._id} homePost={true} />
-								);
-							}
-						})
-					) : (
-						<h2 className="text-center my-2">No post</h2>
-					)}
-				</div>
-			)}
-		</div>
+	return isLoadingPosts ? (
+		<Loader />
+	) : hasPosts || posts.length > 0 ? (
+		posts.map((post) => {
+			if (post.type === "Post") {
+				return <Post key={post._id} post={post} />;
+			} else if (post.type === "Group") {
+				return <GroupPost key={post._id} post={post} viewPost={true} />;
+			} else if (post.type === "Condition") {
+				return <Condition condition={post} key={post._id} homePost={true} />;
+			}
+		})
+	) : (
+		<h2 className="text-center my-2">No post</h2>
 	);
 };
 

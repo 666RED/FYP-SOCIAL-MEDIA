@@ -1,11 +1,17 @@
-import { React, useContext, useEffect, useReducer, useState } from "react";
+import {
+	React,
+	useContext,
+	useEffect,
+	useReducer,
+	useState,
+	useRef,
+} from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useSnackbar } from "notistack";
 import { BsThreeDots } from "react-icons/bs/index.js";
 import { HiThumbUp } from "react-icons/hi/index.js";
 import { FaCommentDots } from "react-icons/fa/index.js";
 import { MdDeleteForever, MdEdit, MdReportProblem } from "react-icons/md";
-import Loader from "../Spinner/Loader.jsx";
 import Comments from "../comment/Comments.jsx";
 import EditPostForm from "./EditPostForm.jsx";
 import ReportForm from "./ReportForm.jsx";
@@ -25,6 +31,7 @@ const Post = ({ post, view = 0 }) => {
 	const [state, dispatch] = useReducer(postReducer, INITIAL_STATE);
 	const { enqueueSnackbar } = useSnackbar();
 	const [showImage, setShowImage] = useState(false);
+	const optionDivRef = useRef();
 
 	const previous = window.location.pathname;
 
@@ -179,12 +186,33 @@ const Post = ({ post, view = 0 }) => {
 		dispatch({ type: ACTION_TYPES.TOGGLE_SHOW_REPORT_POST_FORM });
 	};
 
+	// close option divs
+	useEffect(() => {
+		const handleClickOutside = (event) => {
+			if (
+				optionDivRef.current &&
+				!optionDivRef.current.contains(event.target)
+			) {
+				dispatch({ type: ACTION_TYPES.CLOSE_OPTION_DIV });
+			}
+		};
+
+		document.addEventListener("mousedown", handleClickOutside);
+
+		return () => {
+			document.removeEventListener("mousedown", handleClickOutside);
+		};
+	}, []);
+
 	return (
 		<div className="relative my-3 bg-white rounded-xl shadow-2xl py-4 px-2 component-layout">
 			{state.loading && <Spinner />}
 			{/* OPTION DIV */}
 			{state.showOptionDiv && (
-				<div className="absolute right-3 top-10 border border-gray-600 bg-gray-200">
+				<div
+					className="absolute right-3 top-10 border border-gray-600 bg-gray-200"
+					ref={optionDivRef}
+				>
 					{/* EDIT */}
 					{post.userId === user._id && (
 						<OptionDiv

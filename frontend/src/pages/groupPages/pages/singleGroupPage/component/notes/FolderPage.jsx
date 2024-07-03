@@ -112,7 +112,7 @@ const FolderPage = () => {
 
 	return user && token ? (
 		<folderContext.Provider value={{ folders, setFolders }}>
-			<div className="page-layout-with-back-arrow relative pb-2">
+			<div className="page-layout-with-back-arrow relative">
 				{/* HEADER */}
 				<DirectBackArrowHeader
 					destination={`/group/${groupId}`}
@@ -123,7 +123,7 @@ const FolderPage = () => {
 				{/* ADD NEW FOLDER BUTTON */}
 				{isGroupAdmin && (
 					<button
-						className="btn-green absolute flex items-center right-1 top-1"
+						className="btn-green absolute flex items-center right-2 top-2"
 						onClick={() => setShowAddNewFolderDiv((prev) => !prev)}
 					>
 						<MdCreateNewFolder className="mr-2" /> New Folder

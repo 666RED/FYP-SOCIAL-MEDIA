@@ -53,6 +53,10 @@ export const formatDateTimeForFirebaseDoc = (createdAt) => {
 	const hoursDifference = Math.floor(minutesDifference / 60);
 	const daysDifference = Math.floor(hoursDifference / 24);
 
+	if (hoursDifference < 0 || daysDifference < 0) {
+		return "just now";
+	}
+
 	if (hoursDifference < 24) {
 		if (hoursDifference === 0) {
 			return "within 1h";

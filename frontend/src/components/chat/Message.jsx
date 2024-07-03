@@ -15,7 +15,7 @@ const Message = ({ currentMessage, imagePath, lastElement }) => {
 				<img
 					src={isUser ? user.userProfile.profileImagePath : imagePath}
 					alt="User profile image"
-					className="rounded-full max-w-10 self-end"
+					className="rounded-full w-10 h-10 object-cover self-end"
 				/>
 				{/* MESSAGE */}
 				<div

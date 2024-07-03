@@ -10,7 +10,7 @@ const JoinRequestPage = () => {
 	const { groupId } = useParams();
 
 	return user && token ? (
-		<div className="page-layout-with-back-arrow">
+		<div className="page-layout-with-back-arrow pb-2">
 			{/* HEADER */}
 			<DirectBackArrowHeader
 				destination={`/group/${groupId}`}

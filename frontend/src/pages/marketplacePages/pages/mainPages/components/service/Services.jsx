@@ -205,11 +205,11 @@ const Services = ({ getServicePath, searchServicePath, setLoading }) => {
 	}, [getServicePath]);
 
 	return (
-		<div className="mt-3">
+		<div className="mt-3 flex-1 overflow-auto pb-2">
 			{isLoadingServices ? (
 				<Loader />
 			) : servicesArr.length > 0 ? (
-				<div className="grid grid-cols-12 gap-4 px-2 max-img-height overflow-y-auto marketplace-content-height mb-2">
+				<div className="grid grid-cols-12 gap-4 px-2 max-img-height overflow-y-auto">
 					{servicesArr.map((service) => (
 						<Service key={service._id} service={service} />
 					))}
@@ -225,7 +225,7 @@ const Services = ({ getServicePath, searchServicePath, setLoading }) => {
 					</div>
 				</div>
 			) : (
-				<h2>No service</h2>
+				<h2 className="ml-2">No service</h2>
 			)}
 		</div>
 	);
