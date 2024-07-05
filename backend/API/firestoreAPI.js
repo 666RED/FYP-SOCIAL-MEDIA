@@ -503,6 +503,8 @@ export const addNewMessage = async ({
 	friendId,
 	userName,
 	message,
+	imageURL,
+	type,
 }) => {
 	try {
 		const messageData = {
@@ -512,6 +514,8 @@ export const addNewMessage = async ({
 			receiver: friendId,
 			message,
 			viewed: false,
+			imageURL,
+			type,
 		};
 
 		await addDoc(messageRef, messageData);

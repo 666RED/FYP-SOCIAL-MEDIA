@@ -48,7 +48,7 @@ const UserPostHeader = ({
 				<img
 					src={imgPath}
 					alt="Profile image"
-					className={`rounded-full mr-2 border-[2.5px] object-cover ${frameColor}  ${
+					className={`rounded-full mr-2 border-[2.5px] object-cover ${frameColor} ${
 						isPost ? "md:w-14 w-12 md:h-14 h-12" : "md:w-12 w-8 md:h-12 h-8"
 					}`}
 				/>

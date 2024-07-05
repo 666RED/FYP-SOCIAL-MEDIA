@@ -7,6 +7,7 @@ import { store } from "./store/store.js";
 import { persistStore } from "redux-persist";
 import { PersistGate } from "redux-persist/integration/react";
 import { SnackbarProvider } from "notistack";
+import { BrowserRouter } from "react-router-dom";
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
@@ -17,7 +18,9 @@ root.render(
 				maxSnack={2}
 				preventDuplicate={true}
 			>
-				<App />
+				<BrowserRouter>
+					<App />
+				</BrowserRouter>
 			</SnackbarProvider>
 		</PersistGate>
 	</Provider>

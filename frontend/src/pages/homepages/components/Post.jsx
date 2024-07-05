@@ -232,7 +232,7 @@ const Post = ({ post, view = 0 }) => {
 			{state.showOptionDiv && (
 				<div
 					className="absolute right-3 top-10 border border-gray-600 bg-gray-200"
-					ref={useRef}
+					ref={optionDivRef}
 				>
 					{/* EDIT */}
 					{post.userId === user._id && (

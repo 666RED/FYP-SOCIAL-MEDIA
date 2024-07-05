@@ -28,6 +28,7 @@ const NotificationContainer = ({ showNotifications, setShowNotifications }) => {
 				containerRef.current &&
 				!containerRef.current.contains(event.target) &&
 				!(
+					document.getElementById("notification-number") &&
 					document.getElementById("notification-icon") &&
 					document.getElementById("notification-icon").contains(event.target)
 				)
@@ -36,10 +37,10 @@ const NotificationContainer = ({ showNotifications, setShowNotifications }) => {
 			}
 		};
 
-		document.addEventListener("mousedown", handleClickOutside);
+		document.addEventListener("click", handleClickOutside);
 
 		return () => {
-			document.removeEventListener("mousedown", handleClickOutside);
+			document.removeEventListener("click", handleClickOutside);
 		};
 	}, []);
 

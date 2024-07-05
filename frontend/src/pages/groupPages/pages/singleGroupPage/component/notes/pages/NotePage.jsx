@@ -113,7 +113,7 @@ const NotePage = () => {
 			<div className="page-layout-with-back-arrow relative">
 				{/* HEADER */}
 				<DirectBackArrowHeader
-					destination={view == 1 ? "/home" : `/group/${groupId}/view-notes`}
+					destination={view == 1 ? "/home/0" : `/group/${groupId}/view-notes`}
 					title="View Notes"
 				/>
 				{/* NOTES */}

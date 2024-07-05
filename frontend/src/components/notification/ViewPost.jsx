@@ -68,7 +68,7 @@ const ViewPost = () => {
 				<Loader />
 			) : (
 				<div>
-					<DirectBackArrowHeader destination={"/home"} title="View Post" />
+					<DirectBackArrowHeader destination={"/home/0"} title="View Post" />
 					<Post post={post} view={report} />
 				</div>
 			)}

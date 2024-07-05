@@ -75,7 +75,7 @@ const RegisterForm = ({ setDisplayRegForm }) => {
 						"Please click the link in your email to activate your account",
 						{
 							autoHideDuration: null,
-							variant: "custom-snackbar",
+							variant: "default",
 							action: (key) => (
 								<button onClick={() => closeSnackbar(key)}>
 									<MdCancel className="text-xl" />

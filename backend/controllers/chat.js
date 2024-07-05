@@ -1,5 +1,6 @@
 import { User } from "../models/userModel.js";
 import { addNewMessage, updateChatsViewed } from "../API/firestoreAPI.js";
+import { uploadFile } from "../middleware/handleFile.js";
 
 export const retrieveUser = async (req, res) => {
 	try {
@@ -26,12 +27,24 @@ export const retrieveUser = async (req, res) => {
 
 export const sendMessage = async (req, res) => {
 	try {
-		const { userName, userId, friendId, message } = req.body;
+		const { userName, userId, friendId, message, type } = req.body;
+		const image = req.file;
 
-		await addNewMessage({ userName, userId, friendId, message });
+		const imageURL = type === "image" ? await uploadFile("chat/", image) : "";
+
+		await addNewMessage({
+			userName,
+			userId,
+			friendId,
+			message,
+			imageURL,
+			type,
+		});
 
 		res.status(200).json({ msg: "Success" });
 	} catch (err) {
+		console.log(err);
+
 		res.status(500).json({ error: err.message });
 	}
 };

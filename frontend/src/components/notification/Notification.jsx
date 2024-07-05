@@ -160,7 +160,7 @@ const Notification = ({ notification }) => {
 					updateViewed();
 					const previousArr =
 						JSON.parse(localStorage.getItem("previous")) || [];
-					previousArr.push(`/home`);
+					previousArr.push(`/home/0`);
 					localStorage.setItem("previous", JSON.stringify(previousArr));
 					navigate(`/profile/${notification.acceptUserId}`);
 				});

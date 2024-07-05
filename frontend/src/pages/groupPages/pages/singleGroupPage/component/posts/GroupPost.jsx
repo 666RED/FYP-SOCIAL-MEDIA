@@ -295,7 +295,7 @@ const GroupPost = ({ post, isAdmin = false, viewPost = false }) => {
 				imgPath={post.profileImagePath}
 				postTime={post.time}
 				userName={post.userName}
-				destination={viewPost ? "/home" : `/profile/${post.userId}`}
+				destination={viewPost ? "/0" : `/profile/${post.userId}`}
 				previous={previous}
 				frameColor={post.frameColor}
 				isGroup={viewPost}

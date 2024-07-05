@@ -90,6 +90,7 @@ const ChatsContainer = ({ showChats, setShowChats }) => {
 				containerRef.current &&
 				!containerRef.current.contains(event.target) &&
 				!(
+					document.getElementById("chat-number") &&
 					document.getElementById("chat-icon") &&
 					document.getElementById("chat-icon").contains(event.target)
 				)
@@ -98,10 +99,10 @@ const ChatsContainer = ({ showChats, setShowChats }) => {
 			}
 		};
 
-		document.addEventListener("mousedown", handleClickOutside);
+		document.addEventListener("click", handleClickOutside);
 
 		return () => {
-			document.removeEventListener("mousedown", handleClickOutside);
+			document.removeEventListener("cick", handleClickOutside);
 		};
 	}, []);
 

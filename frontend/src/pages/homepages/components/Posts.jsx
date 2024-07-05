@@ -88,7 +88,9 @@ const Posts = () => {
 	}, []);
 
 	return isLoadingPosts ? (
-		<Loader />
+		<div className="component-layout">
+			<Loader />
+		</div>
 	) : hasPosts || posts.length > 0 ? (
 		posts.map((post) => {
 			if (post.type === "Post") {

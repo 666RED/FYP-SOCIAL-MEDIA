@@ -50,7 +50,7 @@ const Login = () => {
 			} else if (data.msg === "Success") {
 				authDispatch(setUser({ token: data.token, user: data.user }));
 				enqueueSnackbar("Login", { variant: "success" });
-				navigate("/home");
+				navigate("/home/0");
 			} else if (data.msg === "Early user") {
 				authDispatch(setUser({ token: data.token, user: data.user }));
 				enqueueSnackbar(
@@ -71,7 +71,7 @@ const Login = () => {
 					"Please click the link in your email to activate your account",
 					{
 						autoHideDuration: null,
-						variant: "custom-snackbar",
+						variant: "default",
 						action: (key) => (
 							<button onClick={() => closeSnackbar(key)}>
 								<MdCancel className="text-xl" />

@@ -63,7 +63,7 @@ const ViewCondition = () => {
 				<Loader />
 			) : (
 				<div className="header-design">
-					<DirectBackArrowHeader destination="/home" title="View Condition" />
+					<DirectBackArrowHeader destination="/home/0" title="View Condition" />
 					<div className="mt-5 md:w-4/5 md:mx-auto shadowDesign rounded-xl">
 						<CampusCondition condition={condition} inViewMostUseful={true} />
 					</div>

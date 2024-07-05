@@ -13,7 +13,7 @@ const SideBar = ({ selectedSection, setExtendSideBar, extendSideBar }) => {
 	const sidebarRef = useRef();
 
 	const sidebarListElements = [
-		{ page: "Home", destination: "/home" },
+		{ page: "Home", destination: "/home/0" },
 		{ page: "Profile", destination: `/profile/${user._id}` },
 		{ page: "Group", destination: "/group" },
 		{ page: "Campus Condition", destination: "/campus-condition" },

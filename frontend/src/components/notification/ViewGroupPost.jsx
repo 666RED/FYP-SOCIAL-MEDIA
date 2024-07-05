@@ -67,7 +67,10 @@ const ViewGroupPost = () => {
 				<Loader />
 			) : (
 				<div>
-					<DirectBackArrowHeader destination="/home" title="View Group Post" />
+					<DirectBackArrowHeader
+						destination="/home/0"
+						title="View Group Post"
+					/>
 					<GroupPost post={post} viewPost={true} />
 				</div>
 			)}

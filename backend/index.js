@@ -39,6 +39,7 @@ import { createNewService, editService } from "./controllers/service.js";
 import { createNewEvent, editEvent } from "./controllers/event.js";
 import { createNewNote } from "./controllers/note.js";
 import { confirmation } from "./controllers/auth.js";
+import { sendMessage } from "./controllers/chat.js";
 
 // change here before publish
 const isPublish = true;
@@ -62,7 +63,6 @@ const upload = multer({ storage });
 
 // DIRECT PATH
 app.get("/confirmation/:token", confirmation);
-
 app.post(
 	"/profile/edit-profile",
 	verifyToken,
@@ -143,6 +143,12 @@ app.post(
 	verifyToken,
 	upload.single("file"),
 	createNewNote
+);
+app.post(
+	"/chat/send-message",
+	verifyToken,
+	upload.single("image"),
+	sendMessage
 );
 
 // ROUTES

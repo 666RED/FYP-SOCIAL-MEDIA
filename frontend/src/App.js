@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { createContext, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 import Login from "./pages/loginPages/Login.jsx";
 import Homepage from "./pages/homepages/pages/Homepage.jsx";
@@ -52,7 +53,6 @@ import ViewGroupPost from "./components/notification/ViewGroupPost.jsx";
 import { useEffect } from "react";
 import { useSelector } from "react-redux";
 import { useSnackbar, closeSnackbar } from "notistack";
-import { MdCancel } from "react-icons/md";
 import { db } from "./firebase-config.js";
 import {
 	query,
@@ -76,14 +76,25 @@ function App() {
 	const [notisLength, setNotisLength] = useState(0);
 	const [messages, setMessages] = useState([]);
 	const { enqueueSnackbar } = useSnackbar();
+	const navigate = useNavigate();
+	const regex = /^\/chat\/.+/;
 
 	const snackBarSetting = {
+		style: {
+			backgroundColor: "#080808",
+			color: "white",
+		},
 		autoHideDuration: 5000,
-		variant: "custom-snackbar",
+		variant: "info",
+		hideIconVariant: true,
 		action: (key) => (
-			<button onClick={() => closeSnackbar(key)}>
-				<MdCancel className="text-xl" />
-			</button>
+			<button
+				onClick={() => {
+					closeSnackbar(key);
+					navigate("/home/1");
+				}}
+				className="absolute top-0 left-0 bottom-0 right-0"
+			></button>
 		),
 	};
 
@@ -201,13 +212,16 @@ function App() {
 							}
 						}
 						getNotification({ notification: { ...data, id }, type: "added" });
+						setNotisLength((prev) => prev + 1);
 					} else if (change.type === "modified") {
 						getNotification({
 							notification: { ...data, id },
 							type: "modified",
 						});
+						setNotisLength((prev) => prev - 1);
 					} else if (change.type === "removed") {
 						setNotifications((prev) => prev.filter((noti) => noti.id !== id));
+						setNotisLength((prev) => prev - 1);
 					}
 				}
 			});
@@ -220,6 +234,41 @@ function App() {
 
 		return () => unsubscribe();
 	}, [user]);
+
+	const handleNavigate = async ({ chat }) => {
+		try {
+			const res = await fetch(`${server}/chat/update-viewed`, {
+				method: "PATCH",
+				body: JSON.stringify({
+					receiverId: user._id.toString(),
+					senderId: chat.sender.toString(),
+				}),
+				headers: {
+					"Content-Type": "application/json",
+				},
+			});
+
+			const { msg } = await res.json();
+
+			if (msg === "Success") {
+				console.log("Chats viewed updated successfully");
+			} else {
+				console.log("Fail to update chats viewed");
+			}
+
+			const friendId =
+				chat.sender.toString() === user._id.toString()
+					? chat.receiver
+					: chat.sender;
+
+			const previousArr = JSON.parse(localStorage.getItem("previous")) || [];
+			previousArr.push(`/home/0`);
+			localStorage.setItem("previous", JSON.stringify(previousArr));
+			navigate(`/chat/${friendId}`);
+		} catch (err) {
+			console.log("Fail to update chats viewed");
+		}
+	};
 
 	// message
 	useEffect(() => {
@@ -239,32 +288,54 @@ function App() {
 
 		const unsubscribe = onSnapshot(queryMessage, (snapshot) => {
 			const newMessages = [];
-			snapshot.forEach((doc) => {
-				newMessages.push({ id: doc.id, ...doc.data() });
-			});
-			if (!first) {
-				newMessages.forEach((newMessage) => {
-					const existingMessageIndex = messages.findIndex(
-						(message) => message.id === newMessage.id
-					);
+			snapshot.docChanges().forEach((change) => {
+				newMessages.push({ id: change.doc.id, ...change.doc.data() });
+				if (!first) {
+					newMessages.forEach((newMessage) => {
+						const existingMessageIndex = messages.findIndex(
+							(message) => message.id === newMessage.id
+						);
 
-					if (existingMessageIndex !== -1) {
-						// Check if the viewed status has changed
-						const existingMessage = messages[existingMessageIndex];
-						if (existingMessage.viewed !== newMessage.viewed) {
-							// Update the message in the state
-							setMessages((prevMessages) =>
-								prevMessages.map((message, index) =>
-									index === existingMessageIndex ? newMessage : message
-								)
-							);
+						if (existingMessageIndex !== -1) {
+							// Check if the viewed status has changed
+							const existingMessage = messages[existingMessageIndex];
+							if (existingMessage.viewed !== newMessage.viewed) {
+								// Update the message in the state
+								setMessages((prevMessages) =>
+									prevMessages.map((message, index) =>
+										index === existingMessageIndex ? newMessage : message
+									)
+								);
+							}
+						} else {
+							// ADD NEW message
+							setMessages((prevMessages) => [newMessage, ...prevMessages]);
 						}
-					} else {
-						// ADD NEW message
-						setMessages((prevMessages) => [newMessage, ...prevMessages]);
+					});
+
+					if (
+						!regex.test(window.location.pathname) &&
+						change.type !== "modified"
+					) {
+						enqueueSnackbar(`${newMessages[0].userName} sent a new message`, {
+							style: {
+								backgroundColor: "#2196F3",
+								color: "white",
+							},
+							autoHideDuration: 5000,
+							action: (key) => (
+								<button
+									onClick={() => {
+										closeSnackbar(key);
+										handleNavigate({ chat: newMessages[0] });
+									}}
+									className="absolute top-0 left-0 bottom-0 right-0"
+								></button>
+							),
+						});
 					}
-				});
-			}
+				}
+			});
 
 			first = false;
 		});
@@ -511,136 +582,131 @@ function App() {
 		<ServerContext.Provider value={server}>
 			<NotificationContext.Provider value={{ notifications, notisLength }}>
 				<MessageContext.Provider value={{ chats: messages }}>
-					<BrowserRouter>
-						<Routes>
-							<Route path="/" element={<Login />} />
-							<Route path="/home" element={<Homepage />} />
-							<Route path="/recover-password" element={<RecoverPassword />} />
-							<Route
-								path="/recover-password/auth/:userId"
-								element={<AuthVerificationCode />}
-							/>
-							<Route
-								path="/recover-password/reset-password/:userId"
-								element={<ResetPassword />}
-							/>
-							<Route path="/profile/:userId" element={<UserProfilePage />} />
-							<Route path="/profile/edit-profile" element={<EditProfile />} />
-							<Route
-								path="/profile/view-friends/:userId"
-								element={<ViewFriends />}
-							/>
-							<Route path="/campus-condition" element={<CampusCondition />} />
-							<Route
-								path="/campus-condition/upload-condition"
-								element={<UploadCondition />}
-							/>
-							<Route
-								path="/campus-condition/your-conditions"
-								element={<YourConditionsPage />}
-							/>
-							<Route
-								path="/campus-condition/view-most-useful-condition/:conditionId"
-								element={<ViewMostUsefulCondition />}
-							/>
-							<Route path="/friend" element={<FriendPage />} />
-							<Route
-								path="/friend/friend-request"
-								element={<FriendRequestPage />}
-							/>
-							<Route
-								path="/friend/explore-friend"
-								element={<ExploreFriendPage />}
-							/>
-							<Route
-								path="/friend/friend-request-pending"
-								element={<PendingPage />}
-							/>
-							<Route path="/group" element={<GroupPage />} />
-							<Route
-								path="/group/create-new-group"
-								element={<CreateNewGroupPage />}
-							/>
-							<Route path="/group/:groupId" element={<SingleGroupPage />} />
-							<Route
-								path="/group/edit-group/:groupId"
-								element={<EditGroupPage />}
-							/>
-							<Route
-								path="/group/join-request/:groupId"
-								element={<JoinRequestPage />}
-							/>
-							<Route
-								path="/group/view-members/:groupId/:groupAdminId"
-								element={<ViewMembersPage />}
-							/>
-							<Route path="/marketplace" element={<MarketplaceMainPage />} />
-							<Route
-								path="/marketplace/create-new-item"
-								element={<CreateNewItem />}
-							/>
-							<Route
-								path="/marketplace/product/view-product/:id"
-								element={<ViewProduct />}
-							/>
-							<Route
-								path="/marketplace/product/edit-product/:id"
-								element={<EditProduct />}
-							/>
-							<Route
-								path="/marketplace/service/view-service/:id"
-								element={<ViewService />}
-							/>
-							<Route
-								path="/marketplace/service/edit-service/:id"
-								element={<EditService />}
-							/>
-							<Route
-								path="/marketplace/event/edit-event/:id"
-								element={<EditEvent />}
-							/>
-							<Route
-								path="/marketplace/event/view-event/:id"
-								element={<ViewEvent />}
-							/>
-							<Route path="/setting/:earlyUser" element={<SettingMainPage />} />
-							<Route path="/admin" element={<AdminLoginPage />} />
-							<Route path="/admin/dashboard" element={<DashboardPage />} />
-							<Route path="/admin/user" element={<UserPage />} />
-							<Route path="/admin/group" element={<AdminGroupPage />} />
-							<Route path="/admin/condition" element={<ConditionPage />} />
-							<Route path="/admin/product" element={<ProductPage />} />
-							<Route path="/admin/service" element={<ServicePage />} />
-							<Route path="/admin/event" element={<EventPage />} />
-							<Route path="/admin/report" element={<ReportPage />} />
-							<Route
-								path="/group/:groupId/view-notes"
-								element={<FolderPage />}
-							/>
-							<Route
-								path="/group/:groupId/view-notes/:folderId/:view"
-								element={<NotePage />}
-							/>
-							<Route
-								path="/group/:groupId/your-posts"
-								element={<ViewYourPostsPage />}
-							/>
-							<Route path="/admin/contact" element={<ContactPage />} />
-							<Route
-								path="/notification/view-post/:postId/:report"
-								element={<ViewPost />}
-							/>
-							<Route
-								path="/notification/view-condition/:conditionId"
-								element={<ViewCondition />}
-							/>
-							<Route
-								path="/notification/view-group-post/:postId/"
-								element={<ViewGroupPost />}
-							/>
-							<Route path="/chat/:friendId" element={<ChatPage />} />
-						</Routes>
-					</BrowserRouter>
+					<Routes>
+						<Route path="/" element={<Login />} />
+						<Route path="/home/:id" element={<Homepage />} />
+						<Route path="/recover-password" element={<RecoverPassword />} />
+						<Route
+							path="/recover-password/auth/:userId"
+							element={<AuthVerificationCode />}
+						/>
+						<Route
+							path="/recover-password/reset-password/:userId"
+							element={<ResetPassword />}
+						/>
+						<Route path="/profile/:userId" element={<UserProfilePage />} />
+						<Route path="/profile/edit-profile" element={<EditProfile />} />
+						<Route
+							path="/profile/view-friends/:userId"
+							element={<ViewFriends />}
+						/>
+						<Route path="/campus-condition" element={<CampusCondition />} />
+						<Route
+							path="/campus-condition/upload-condition"
+							element={<UploadCondition />}
+						/>
+						<Route
+							path="/campus-condition/your-conditions"
+							element={<YourConditionsPage />}
+						/>
+						<Route
+							path="/campus-condition/view-most-useful-condition/:conditionId"
+							element={<ViewMostUsefulCondition />}
+						/>
+						<Route path="/friend" element={<FriendPage />} />
+						<Route
+							path="/friend/friend-request"
+							element={<FriendRequestPage />}
+						/>
+						<Route
+							path="/friend/explore-friend"
+							element={<ExploreFriendPage />}
+						/>
+						<Route
+							path="/friend/friend-request-pending"
+							element={<PendingPage />}
+						/>
+						<Route path="/group" element={<GroupPage />} />
+						<Route
+							path="/group/create-new-group"
+							element={<CreateNewGroupPage />}
+						/>
+						<Route path="/group/:groupId" element={<SingleGroupPage />} />
+						<Route
+							path="/group/edit-group/:groupId"
+							element={<EditGroupPage />}
+						/>
+						<Route
+							path="/group/join-request/:groupId"
+							element={<JoinRequestPage />}
+						/>
+						<Route
+							path="/group/view-members/:groupId/:groupAdminId"
+							element={<ViewMembersPage />}
+						/>
+						<Route path="/marketplace" element={<MarketplaceMainPage />} />
+						<Route
+							path="/marketplace/create-new-item"
+							element={<CreateNewItem />}
+						/>
+						<Route
+							path="/marketplace/product/view-product/:id"
+							element={<ViewProduct />}
+						/>
+						<Route
+							path="/marketplace/product/edit-product/:id"
+							element={<EditProduct />}
+						/>
+						<Route
+							path="/marketplace/service/view-service/:id"
+							element={<ViewService />}
+						/>
+						<Route
+							path="/marketplace/service/edit-service/:id"
+							element={<EditService />}
+						/>
+						<Route
+							path="/marketplace/event/edit-event/:id"
+							element={<EditEvent />}
+						/>
+						<Route
+							path="/marketplace/event/view-event/:id"
+							element={<ViewEvent />}
+						/>
+						<Route path="/setting/:earlyUser" element={<SettingMainPage />} />
+						<Route path="/admin" element={<AdminLoginPage />} />
+						<Route path="/admin/dashboard" element={<DashboardPage />} />
+						<Route path="/admin/user" element={<UserPage />} />
+						<Route path="/admin/group" element={<AdminGroupPage />} />
+						<Route path="/admin/condition" element={<ConditionPage />} />
+						<Route path="/admin/product" element={<ProductPage />} />
+						<Route path="/admin/service" element={<ServicePage />} />
+						<Route path="/admin/event" element={<EventPage />} />
+						<Route path="/admin/report" element={<ReportPage />} />
+						<Route path="/group/:groupId/view-notes" element={<FolderPage />} />
+						<Route
+							path="/group/:groupId/view-notes/:folderId/:view"
+							element={<NotePage />}
+						/>
+						<Route
+							path="/group/:groupId/your-posts"
+							element={<ViewYourPostsPage />}
+						/>
+						<Route path="/admin/contact" element={<ContactPage />} />
+						<Route
+							path="/notification/view-post/:postId/:report"
+							element={<ViewPost />}
+						/>
+						<Route
+							path="/notification/view-condition/:conditionId"
+							element={<ViewCondition />}
+						/>
+						<Route
+							path="/notification/view-group-post/:postId/"
+							element={<ViewGroupPost />}
+						/>
+						<Route path="/chat/:friendId" element={<ChatPage />} />
+					</Routes>
 				</MessageContext.Provider>
 			</NotificationContext.Provider>
 		</ServerContext.Provider>

@@ -1,5 +1,6 @@
 import { React, useContext, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { useParams } from "react-router-dom";
 import { useSnackbar } from "notistack";
 import { GiHamburgerMenu } from "react-icons/gi/index.js";
 import { IoChatbubbleEllipses } from "react-icons/io5";
@@ -10,7 +11,7 @@ import Error from "../../../components/Error.jsx";
 import LoadMoreButton from "../../../components/LoadMoreButton.jsx";
 import Posts from "../components/Posts.jsx";
 import ChatsContainer from "../components/ChatsContainer.jsx";
-import Loader from "../../../components/Spinner/Loader.jsx";
+import AddNewPost from "./AddNewPost.jsx";
 import {
 	resetState,
 	setHasPosts,
@@ -21,6 +22,7 @@ import { MessageContext } from "../../../App.js";
 import { ServerContext } from "../../../App.js";
 
 const Homepage = () => {
+	const { id } = useParams();
 	const { notisLength } = useContext(NotificationContext);
 	const { chats } = useContext(MessageContext);
 	const serverURL = useContext(ServerContext);
@@ -33,7 +35,9 @@ const Homepage = () => {
 	const { hasPosts, isLoadingPosts, posts } = useSelector(
 		(store) => store.home
 	);
-	const [showNotifications, setShowNotifications] = useState(false);
+	const [showNotifications, setShowNotifications] = useState(
+		id === "0" ? false : true
+	);
 	const [showChats, setShowChats] = useState(false);
 
 	const handleLoadMore = async () => {
@@ -124,7 +128,7 @@ const Homepage = () => {
 				extendSideBar={extendSideBar}
 			/>
 			{/* HEADER */}
-			<div className="header-design flex items-center justify-between relative">
+			<div className="header-design flex items-center justify-between">
 				{/* LEFT HAND SIDE */}
 				<div className="flex items-center">
 					{/* BURGER ICON */}
@@ -144,13 +148,18 @@ const Homepage = () => {
 							onClick={() => handleShow("Chats")}
 							id="chat-icon"
 						/>
+						{/* UNDERLINE */}
 						{showChats && (
 							<div className="absolute left-0 right-0 bottom-[-4px] h-[2px] bg-blue-600"></div>
 						)}
-
+						{/* CHAT NUMBERS */}
 						<p
 							className="absolute bg-red-600 rounded-full text-white px-1 text-xs -right-1 -top-1 cursor-pointer"
-							onClick={() => handleShow("Chats")}
+							onClick={(e) => {
+								e.stopPropagation();
+								handleShow("Chats");
+							}}
+							id="chat-number"
 						>
 							{chats.filter(
 								(chat) =>
@@ -170,12 +179,18 @@ const Homepage = () => {
 							onClick={() => handleShow("Notifications")}
 							id="notification-icon"
 						/>
+						{/* UNDERLINE */}
 						{showNotifications && (
 							<div className="absolute left-0 right-0 bottom-[-4px] h-[2px] bg-blue-600"></div>
 						)}
+						{/* NOTIFICATION NUMBERS */}
 						<p
 							className="absolute bg-red-600 rounded-full text-white px-1 text-xs -right-2 -top-1 cursor-pointer"
-							onClick={() => handleShow("Notifications")}
+							onClick={(e) => {
+								e.stopPropagation();
+								handleShow("Notifications");
+							}}
+							id="notification-number"
 						>
 							{notisLength !== 0 && notisLength}
 						</p>
@@ -189,10 +204,10 @@ const Homepage = () => {
 					setShowNotifications={setShowNotifications}
 				/>
 			</div>
-			{/* ADD NEW POST CONTAINER */}
-			{/* later add */}
 			{/* MAIN CONTENT */}
 			<div className="main-content-design flex-1">
+				{/* ADD NEW POST CONTAINER */}
+				<AddNewPost />
 				{/* POSTS */}
 				<Posts />
 				{/* LOAD MORE BUTTON */}

@@ -64,7 +64,7 @@ const Chat = ({ chat }) => {
 					: chat.sender;
 
 			const previousArr = JSON.parse(localStorage.getItem("previous")) || [];
-			previousArr.push(`/home`);
+			previousArr.push(`/home/0`);
 			localStorage.setItem("previous", JSON.stringify(previousArr));
 			navigate(`/chat/${friendId}`);
 		} catch (err) {
