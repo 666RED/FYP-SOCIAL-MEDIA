@@ -170,4 +170,20 @@
 	.right-container {
 		@apply absolute bg-white top-[55px] right-2 lg:w-5/12 md:w-7/12 sm:w-8/12 w-10/12 shadow-[rgba(0,0,0,0.1)_0px_0px_7px_7px] rounded-xl min-h-[6rem] max-h-[34rem] overflow-x-hidden overflow-y-auto;
 	}
+
+	@keyframes scale-up-down {
+		0% {
+			transform: scale(1);
+		}
+		50% {
+			transform: scale(1.25); /* Scale up to 125% */
+		}
+		100% {
+			transform: scale(1); /* Scale back to normal size */
+		}
+	}
+
+	.scale-animation {
+		animation: scale-up-down 0.5s ease-in-out; /* Duration of the animation */
+	}
 }

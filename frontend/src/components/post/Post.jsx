@@ -53,6 +53,8 @@ const Post = ({ post, view = 0 }) => {
 				dispatch({
 					type: ACTION_TYPES.LIKE_POST,
 				});
+				new Audio("/like-sound.mp3").play();
+
 				const res = await fetch(`${serverURL}/post/up-likes`, {
 					method: "PATCH",
 					headers: {
@@ -312,8 +314,8 @@ const Post = ({ post, view = 0 }) => {
 						onClick={() => !state.processing && handleLikes()}
 					>
 						<div
-							className={`justify-self-center text-xl select-none ${
-								state.isLiked && "text-blue-600"
+							className={`justify-self-center text-xl select-none transition-all ${
+								state.isLiked && "text-blue-600 scale-animation"
 							}`}
 						>
 							<HiThumbUp />

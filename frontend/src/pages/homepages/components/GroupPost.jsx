@@ -59,6 +59,7 @@ const GroupPost = ({ post, isAdmin = false, viewPost = false }) => {
 				dispatch({
 					type: ACTION_TYPES.LIKE_POST,
 				});
+				new Audio("/like-sound.mp3").play();
 				const res = await fetch(`${serverURL}/group-post/up-likes`, {
 					method: "PATCH",
 					headers: {
@@ -340,7 +341,7 @@ const GroupPost = ({ post, isAdmin = false, viewPost = false }) => {
 					>
 						<div
 							className={`justify-self-center text-xl select-none ${
-								state.isLiked && "text-blue-600"
+								state.isLiked && "text-blue-600 scale-animation"
 							}`}
 						>
 							<HiThumbUp />

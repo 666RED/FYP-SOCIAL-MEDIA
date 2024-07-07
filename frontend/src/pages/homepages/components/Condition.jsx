@@ -63,6 +63,8 @@ const Condition = ({
 		try {
 			dispatch({ type: ACTION_TYPES.SET_IS_PROCESSING, payload: true });
 			if (!state.isUp) {
+				new Audio("/like-sound.mp3").play();
+
 				if (state.isDown) {
 					dispatch({ type: ACTION_TYPES.UP_POST_AND_CANCEL_DOWN });
 				} else {
@@ -147,6 +149,8 @@ const Condition = ({
 		try {
 			dispatch({ type: ACTION_TYPES.SET_IS_PROCESSING, payload: true });
 			if (!state.isDown) {
+				new Audio("/like-sound.mp3").play();
+
 				if (state.isUp) {
 					dispatch({ type: ACTION_TYPES.DOWN_POST_AND_CANCEL_UP });
 				} else {
@@ -543,7 +547,7 @@ const Condition = ({
 				>
 					<div
 						className={`justify-self-center text-xl ${
-							state.isUp && "text-blue-600"
+							state.isUp && "text-blue-600 scale-animation"
 						}`}
 					>
 						<HiThumbUp />
@@ -561,7 +565,7 @@ const Condition = ({
 				>
 					<div
 						className={`justify-self-center text-xl ${
-							state.isDown && "text-blue-600"
+							state.isDown && "text-blue-600 scale-animation"
 						}`}
 					>
 						<HiThumbDown />

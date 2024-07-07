@@ -38,7 +38,6 @@ const GroupPost = ({ post, isAdmin = false, viewPost = false }) => {
 	const sliceDispatch = useDispatch();
 	const serverURL = useContext(ServerContext);
 	const { user, token } = useSelector((store) => store.auth);
-	const { isMember } = useSelector((store) => store.group);
 	const [state, dispatch] = useReducer(groupPostReducer, INITIAL_STATE);
 	const { enqueueSnackbar } = useSnackbar();
 
@@ -66,6 +65,7 @@ const GroupPost = ({ post, isAdmin = false, viewPost = false }) => {
 				dispatch({
 					type: ACTION_TYPES.LIKE_POST,
 				});
+				new Audio("/like-sound.mp3").play();
 				const res = await fetch(`${serverURL}/group-post/up-likes`, {
 					method: "PATCH",
 					headers: {
@@ -347,7 +347,7 @@ const GroupPost = ({ post, isAdmin = false, viewPost = false }) => {
 					>
 						<div
 							className={`justify-self-center text-xl select-none ${
-								state.isLiked && "text-blue-600"
+								state.isLiked && "text-blue-600 scale-animation"
 							}`}
 						>
 							<HiThumbUp />

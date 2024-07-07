@@ -70,6 +70,7 @@ const CampusCondition = ({
 				} else {
 					dispatch({ type: ACTION_TYPES.UP_POST });
 				}
+				new Audio("/like-sound.mp3").play();
 				const res = await fetch(`${serverURL}/campus-condition/handle-up`, {
 					method: "PATCH",
 					body: JSON.stringify({
@@ -149,6 +150,7 @@ const CampusCondition = ({
 		try {
 			dispatch({ type: ACTION_TYPES.SET_IS_PROCESSING, payload: true });
 			if (!state.isDown) {
+				new Audio("/like-sound.mp	3").play();
 				if (state.isUp) {
 					dispatch({ type: ACTION_TYPES.DOWN_POST_AND_CANCEL_UP });
 				} else {
@@ -546,7 +548,7 @@ const CampusCondition = ({
 				>
 					<div
 						className={`justify-self-center text-xl ${
-							state.isUp && "text-blue-600"
+							state.isUp && "text-blue-600 scale-animation"
 						}`}
 					>
 						<HiThumbUp />
@@ -564,7 +566,7 @@ const CampusCondition = ({
 				>
 					<div
 						className={`justify-self-center text-xl ${
-							state.isDown && "text-blue-600"
+							state.isDown && "text-blue-600 scale-animation"
 						}`}
 					>
 						<HiThumbDown />
